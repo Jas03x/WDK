@@ -1,0 +1,95 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Include">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Include\WDK">
+      <UniqueIdentifier>{e3b66a48-b441-4733-9dfb-bf4739dc86e7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WDK\Gfx">
+      <UniqueIdentifier>{ea55765c-b8d5-4aab-acbc-2ac86f156a52}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WDK\Gfx\2D">
+      <UniqueIdentifier>{30de22e0-ab66-4ea4-8ae0-faea1b9851fe}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WDK\Gfx\3D">
+      <UniqueIdentifier>{f30ee0cd-0101-4ed4-a2f4-ea08a12c5f8b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WDK\Gfx\Core">
+      <UniqueIdentifier>{16799187-0a15-4e30-8b51-ae5c06f19e84}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WDK\Math">
+      <UniqueIdentifier>{529308d9-6d7d-4e07-9a38-b8910af3c53b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\WDK\System">
+      <UniqueIdentifier>{2f1a6da6-2734-4a64-a592-81469b0bfd67}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Gfx">
+      <UniqueIdentifier>{0cc2c583-6cd0-46c1-916d-d4d226ff5be0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Math">
+      <UniqueIdentifier>{14520042-ad22-4d35-b37d-a870b1730271}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\System">
+      <UniqueIdentifier>{5ae6818d-1c4e-465d-9e87-9f964af0cfcd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Gfx\2D">
+      <UniqueIdentifier>{1cb1ed9e-515e-499e-bb29-b77442a44ca3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Gfx\3D">
+      <UniqueIdentifier>{ecd431a1-d444-4ebb-9b4f-f614795f5b1e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Gfx\Core">
+      <UniqueIdentifier>{ca6edf7e-d6d4-43df-931e-7f5cd3cfdd82}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Include\WDK\Math\Linear.hpp">
+      <Filter>Include\WDK\Math</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\System\Console.hpp">
+      <Filter>Include\WDK\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\System\Memory.hpp">
+      <Filter>Include\WDK\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\System\Window.hpp">
+      <Filter>Include\WDK\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\Defines.hpp">
+      <Filter>Include\WDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\Object.hpp">
+      <Filter>Include\WDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\CMemory.hpp">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\CWindow.hpp">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\CConsole.hpp">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Source\Object.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\CWindow.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\CConsole.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\CMemory.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
