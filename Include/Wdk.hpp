@@ -1,7 +1,9 @@
-#ifndef WDK_HPP
-#define WDK_HPP
+#ifndef WDK__HPP
+#define WDK__HPP
 
 #include "WdkDef.hpp"
+
+INT WdkMain(INT argc, PWCHAR argv);
 
 class Object
 {
@@ -32,4 +34,4 @@ public:
 	static BOOL Write(LPCWSTR Msg, ...);
 };
 
-#endif // WDK_HPP
+#endif // WDK__HPP

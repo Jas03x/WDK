@@ -52,7 +52,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Object.cpp">
+    <ClCompile Include="Source\Wdk.cpp">
       <Filter>Source</Filter>
     </ClCompile>
     <ClCompile Include="Source\System\CMemory.cpp">

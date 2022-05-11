@@ -154,7 +154,7 @@
     <ClInclude Include="Source\System\CWindow.hpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Source\Object.cpp" />
+    <ClCompile Include="Source\Wdk.cpp" />
     <ClCompile Include="Source\System\CConsole.cpp" />
     <ClCompile Include="Source\System\CMemory.cpp" />
     <ClCompile Include="Source\System\CWindow.cpp" />
