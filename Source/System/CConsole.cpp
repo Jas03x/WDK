@@ -1,12 +1,10 @@
-#include "WDK/System/Console.hpp"
+#include "WDK.hpp"
 #include "CConsole.hpp"
 
 #include <cstdarg>
 
 #include <windows.h>
 #include <strsafe.h>
-
-#include "WDK/System/Memory.hpp"
 
 CConsole g_Console;
 

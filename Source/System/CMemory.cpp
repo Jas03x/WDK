@@ -1,4 +1,4 @@
-#include "WDK/System/Memory.hpp"
+#include "WDK.hpp"
 #include "CMemory.hpp"
 
 #include <windows.h>

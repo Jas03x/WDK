@@ -9,27 +9,6 @@
       <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
       <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
     </Filter>
-    <Filter Include="Include\WDK">
-      <UniqueIdentifier>{e3b66a48-b441-4733-9dfb-bf4739dc86e7}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Include\WDK\Gfx">
-      <UniqueIdentifier>{ea55765c-b8d5-4aab-acbc-2ac86f156a52}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Include\WDK\Gfx\2D">
-      <UniqueIdentifier>{30de22e0-ab66-4ea4-8ae0-faea1b9851fe}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Include\WDK\Gfx\3D">
-      <UniqueIdentifier>{f30ee0cd-0101-4ed4-a2f4-ea08a12c5f8b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Include\WDK\Gfx\Core">
-      <UniqueIdentifier>{16799187-0a15-4e30-8b51-ae5c06f19e84}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Include\WDK\Math">
-      <UniqueIdentifier>{529308d9-6d7d-4e07-9a38-b8910af3c53b}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Include\WDK\System">
-      <UniqueIdentifier>{2f1a6da6-2734-4a64-a592-81469b0bfd67}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Gfx">
       <UniqueIdentifier>{0cc2c583-6cd0-46c1-916d-d4d226ff5be0}</UniqueIdentifier>
     </Filter>
@@ -48,26 +27,11 @@
     <Filter Include="Source\Gfx\Core">
       <UniqueIdentifier>{ca6edf7e-d6d4-43df-931e-7f5cd3cfdd82}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Include\WDK">
+      <UniqueIdentifier>{d742ffad-007f-41ad-83f5-cf1f7f96cb12}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Include\WDK\Math\Linear.hpp">
-      <Filter>Include\WDK\Math</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\WDK\System\Console.hpp">
-      <Filter>Include\WDK\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\WDK\System\Memory.hpp">
-      <Filter>Include\WDK\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\WDK\System\Window.hpp">
-      <Filter>Include\WDK\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\WDK\Defines.hpp">
-      <Filter>Include\WDK</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\WDK\Object.hpp">
-      <Filter>Include\WDK</Filter>
-    </ClInclude>
     <ClInclude Include="Source\System\CMemory.hpp">
       <Filter>Source\System</Filter>
     </ClInclude>
@@ -77,18 +41,30 @@
     <ClInclude Include="Source\System\CConsole.hpp">
       <Filter>Source\System</Filter>
     </ClInclude>
+    <ClInclude Include="Include\WDK\System.hpp">
+      <Filter>Include\WDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\WDK.hpp">
+      <Filter>Include\WDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\Defines.hpp">
+      <Filter>Include\WDK</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\WDK\Linear.hpp">
+      <Filter>Include\WDK</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Object.cpp">
       <Filter>Source</Filter>
     </ClCompile>
+    <ClCompile Include="Source\System\CMemory.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
     <ClCompile Include="Source\System\CWindow.cpp">
       <Filter>Source\System</Filter>
     </ClCompile>
     <ClCompile Include="Source\System\CConsole.cpp">
-      <Filter>Source\System</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\System\CMemory.cpp">
       <Filter>Source\System</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,6 +1,4 @@
-#include "Object.hpp"
-
-#include "WDK/System/Memory.hpp"
+#include "WDK.hpp"
 
 Object::Object()
 {

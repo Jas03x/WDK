@@ -146,11 +146,9 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Include\WDK\Defines.hpp" />
-    <ClInclude Include="Include\WDK\Math\Linear.hpp" />
-    <ClInclude Include="Include\WDK\Object.hpp" />
-    <ClInclude Include="Include\WDK\System\Console.hpp" />
-    <ClInclude Include="Include\WDK\System\Memory.hpp" />
-    <ClInclude Include="Include\WDK\System\Window.hpp" />
+    <ClInclude Include="Include\WDK\Linear.hpp" />
+    <ClInclude Include="Include\WDK\System.hpp" />
+    <ClInclude Include="Include\WDK\WDK.hpp" />
     <ClInclude Include="Source\System\CConsole.hpp" />
     <ClInclude Include="Source\System\CMemory.hpp" />
     <ClInclude Include="Source\System\CWindow.hpp" />

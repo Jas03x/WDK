@@ -1,5 +1,5 @@
-#ifndef IWINDOW_HPP
-#define IWINDOW_HPP
+#ifndef SYSTEM_HPP
+#define SYSTEM_HPP
 
 #include "Defines.hpp"
 
@@ -26,4 +26,4 @@ public:
 	virtual BOOL	GetEvent(Event& rEvent) = 0;
 };
 
-#endif // IWINDOW_HPP
+#endif // SYSTEM_HPP

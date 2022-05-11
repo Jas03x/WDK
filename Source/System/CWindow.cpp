@@ -3,8 +3,6 @@
 #include <strsafe.h>
 #include <windows.h>
 
-#include "WDK/System/Console.hpp"
-
 IWindow* IWindow::Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height)
 {
 	return CWindow::Create(ClassName, WindowName, Width, Height);
