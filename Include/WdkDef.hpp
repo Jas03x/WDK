@@ -1,5 +1,5 @@
-#ifndef DEFINES_HPP
-#define DEFINES_HPP
+#ifndef WDK_DEF__HPP
+#define WDK_DEF__HPP
 
 #define CONST	const
 #define VOID	void
@@ -57,4 +57,4 @@ typedef void*				PVOID;
 
 typedef char*				va_list;
 
-#endif // DEFINES_HPP
+#endif // WDK_DEF__HPP

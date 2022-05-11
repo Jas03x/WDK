@@ -1,7 +1,7 @@
 #ifndef CMEMORY_HPP
 #define CMEMORY_HPP
 
-#include "Defines.hpp"
+#include "WdkDef.hpp"
 
 class CMemory
 {

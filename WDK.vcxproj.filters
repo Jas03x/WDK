@@ -27,9 +27,6 @@
     <Filter Include="Source\Gfx\Core">
       <UniqueIdentifier>{ca6edf7e-d6d4-43df-931e-7f5cd3cfdd82}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Include\WDK">
-      <UniqueIdentifier>{d742ffad-007f-41ad-83f5-cf1f7f96cb12}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Source\System\CMemory.hpp">
@@ -41,17 +38,17 @@
     <ClInclude Include="Source\System\CConsole.hpp">
       <Filter>Source\System</Filter>
     </ClInclude>
-    <ClInclude Include="Include\WDK\System.hpp">
-      <Filter>Include\WDK</Filter>
+    <ClInclude Include="Include\WdkDef.hpp">
+      <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="Include\WDK\WDK.hpp">
-      <Filter>Include\WDK</Filter>
+    <ClInclude Include="Include\WdkMath.hpp">
+      <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="Include\WDK\Defines.hpp">
-      <Filter>Include\WDK</Filter>
+    <ClInclude Include="Include\WdkSys.hpp">
+      <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="Include\WDK\Linear.hpp">
-      <Filter>Include\WDK</Filter>
+    <ClInclude Include="Include\Wdk.hpp">
+      <Filter>Include</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -145,10 +145,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Include\WDK\Defines.hpp" />
-    <ClInclude Include="Include\WDK\Linear.hpp" />
-    <ClInclude Include="Include\WDK\System.hpp" />
-    <ClInclude Include="Include\WDK\WDK.hpp" />
+    <ClInclude Include="Include\Wdk.hpp" />
+    <ClInclude Include="Include\WdkDef.hpp" />
+    <ClInclude Include="Include\WdkMath.hpp" />
+    <ClInclude Include="Include\WdkSys.hpp" />
     <ClInclude Include="Source\System\CConsole.hpp" />
     <ClInclude Include="Source\System\CMemory.hpp" />
     <ClInclude Include="Source\System\CWindow.hpp" />

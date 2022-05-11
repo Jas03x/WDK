@@ -1,7 +1,7 @@
 #ifndef WDK_HPP
 #define WDK_HPP
 
-#include "Defines.hpp"
+#include "WdkDef.hpp"
 
 class Object
 {

@@ -1,7 +1,7 @@
 #ifndef CCONSOLE_HPP
 #define CCONSOLE_HPP
 
-#include "Defines.hpp"
+#include "WdkDef.hpp"
 
 class CConsole
 {

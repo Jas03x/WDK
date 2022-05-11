@@ -1,7 +1,7 @@
-#ifndef SYSTEM_HPP
-#define SYSTEM_HPP
+#ifndef WDK_SYS__HPP
+#define WDK_SYS__HPP
 
-#include "Defines.hpp"
+#include "WdkDef.hpp"
 
 class IWindow
 {
@@ -26,4 +26,4 @@ public:
 	virtual BOOL	GetEvent(Event& rEvent) = 0;
 };
 
-#endif // SYSTEM_HPP
+#endif // WDK_SYS__HPP

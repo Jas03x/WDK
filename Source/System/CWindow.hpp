@@ -1,8 +1,8 @@
 #ifndef WINDOW_HPP
 #define WINDOW_HPP
 
-#include "WDK.hpp"
-#include "System.hpp"
+#include "Wdk.hpp"
+#include "WdkSys.hpp"
 
 class CWindow : public IWindow, public Object
 {
