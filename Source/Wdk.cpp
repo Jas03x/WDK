@@ -1,6 +1,5 @@
 #include "Wdk.hpp"
 
-#include "ntstatus.h"
 #include "windows.h"
 
 #include "processthreadsapi.h"
@@ -10,24 +9,20 @@ VOID WdkTerminate();
 
 INT main(INT argc, PWCHAR argv)
 {
-	BOOL Status = TRUE;
+	INT Status = STATUS::SUCCESS;
 
-	if (WdkInitialize(argc, argv) != TRUE)
+	if (WdkInitialize(argc, argv) == TRUE)
 	{
-		Status = FALSE;
+		Status = WdkMain(argc, argv);
 	}
-
-	if (Status == TRUE)
+	else
 	{
-		if (WdkMain(argc, argv) != TRUE)
-		{
-			Status = FALSE;
-		}
+		Status = STATUS::UNSUCCESSFUL;
 	}
 
 	WdkTerminate();
 
-	return ((Status == TRUE) ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL);
+	return Status;
 }
 
 BOOL WdkInitialize(INT argc, PWCHAR argv)
@@ -56,14 +51,14 @@ VOID WdkTerminate()
 PVOID operator new(SIZE_T size)
 {
 	Console::Write(L"New operator not supported - use Memory::Allocate instead\n");
-	ExitProcess(STATUS_NOT_IMPLEMENTED);
+	ExitProcess(STATUS::NOT_IMPLEMENTED);
 	return nullptr;
 }
 
 VOID operator delete(PVOID ptr)
 {
 	Console::Write(L"Delete operator not supported - use Memory::Release instead\n");
-	ExitProcess(STATUS_NOT_IMPLEMENTED);
+	ExitProcess(STATUS::NOT_IMPLEMENTED);
 }
 
 Object::Object()

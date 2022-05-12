@@ -57,4 +57,11 @@ typedef void*				PVOID;
 
 typedef char*				va_list;
 
+enum STATUS
+{
+	SUCCESS         = 0x00000000L,
+	UNSUCCESSFUL    = 0xC0000001L,
+	NOT_IMPLEMENTED = 0xC0000002L
+};
+
 #endif // WDK_DEF__HPP
