@@ -67,7 +67,7 @@ VOID CConsole::Uninitialize(VOID)
 
 	if (m_pBuffer != NULL)
 	{
-		Memory::Free(m_pBuffer);
+		Memory::Release(m_pBuffer);
 		m_pBuffer = NULL;
 	}
 }

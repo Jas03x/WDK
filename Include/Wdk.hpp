@@ -22,7 +22,7 @@ public:
 	static VOID  Uninitialize(VOID);
 
 	static PVOID Allocate(SIZE_T nBytes, BOOL bClear);
-	static BOOL  Free(PVOID pMemory);
+	static BOOL  Release(PVOID pMemory);
 };
 
 class Console

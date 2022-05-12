@@ -1,5 +1,10 @@
 #include "Wdk.hpp"
 
+#include "ntstatus.h"
+#include "windows.h"
+
+#include "processthreadsapi.h"
+
 BOOL WdkInitialize(INT argc, PWCHAR argv);
 VOID WdkTerminate();
 
@@ -22,7 +27,7 @@ INT main(INT argc, PWCHAR argv)
 
 	WdkTerminate();
 
-	return Status;
+	return ((Status == TRUE) ? STATUS_SUCCESS : STATUS_UNSUCCESSFUL);
 }
 
 BOOL WdkInitialize(INT argc, PWCHAR argv)
@@ -48,6 +53,19 @@ VOID WdkTerminate()
 	Memory::Uninitialize();
 }
 
+PVOID operator new(SIZE_T size)
+{
+	Console::Write(L"New operator not supported - use Memory::Allocate instead\n");
+	ExitProcess(STATUS_NOT_IMPLEMENTED);
+	return nullptr;
+}
+
+VOID operator delete(PVOID ptr)
+{
+	Console::Write(L"Delete operator not supported - use Memory::Release instead\n");
+	ExitProcess(STATUS_NOT_IMPLEMENTED);
+}
+
 Object::Object()
 {
 
@@ -65,5 +83,5 @@ PVOID Object::operator new(SIZE_T size)
 
 VOID Object::operator delete(PVOID ptr)
 {
-	Memory::Free(ptr);
+	Memory::Release(ptr);
 }

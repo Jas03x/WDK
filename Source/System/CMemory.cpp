@@ -20,9 +20,9 @@ PVOID Memory::Allocate(SIZE_T nBytes, BOOL bClear)
 	return g_Memory.Allocate(nBytes, bClear);
 }
 
-BOOL Memory::Free(PVOID pMemory)
+BOOL Memory::Release(PVOID pMemory)
 {
-	return g_Memory.Free(pMemory);
+	return g_Memory.Release(pMemory);
 }
 
 CMemory::CMemory()
@@ -65,7 +65,7 @@ PVOID CMemory::Allocate(SIZE_T nBytes, BOOL bClear)
 	return HeapAlloc(m_hHeap, Flags, nBytes);
 }
 
-BOOL CMemory::Free(PVOID pMemory)
+BOOL CMemory::Release(PVOID pMemory)
 {
 	BOOL Status = TRUE;
 

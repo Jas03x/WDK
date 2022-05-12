@@ -12,11 +12,11 @@ public:
 	CMemory();
 	~CMemory();
 
-	BOOL Initialize(VOID);
-	VOID Uninitialize(VOID);
+	BOOL  Initialize(VOID);
+	VOID  Uninitialize(VOID);
 
 	PVOID Allocate(SIZE_T nBytes, BOOL bClear);
-	BOOL Free(PVOID pMemory);
+	BOOL  Release(PVOID pMemory);
 };
 
 #endif // CMEMORY_HPP
