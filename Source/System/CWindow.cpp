@@ -182,7 +182,7 @@ BOOL CWindow::GetEvent(WinEvent& rEvent)
 	if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE)
 	{
 		TranslateMessage(&msg);
-		DispatchMessageA(&msg);
+		DispatchMessage(&msg);
 
 		if (msg.message == WM_QUIT)
 		{
