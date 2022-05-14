@@ -29,7 +29,7 @@ public:
 public:
 	virtual HWND GetHandle(VOID);
 	virtual BOOL Open(VOID);
-	virtual BOOL GetEvent(Event& rEvent);
+	virtual BOOL GetEvent(WinEvent& rEvent);
 };
 
 #endif // WINDOW_HPP

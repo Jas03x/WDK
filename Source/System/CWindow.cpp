@@ -55,7 +55,7 @@ BOOL CWindow::Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULO
 	BOOL Status = TRUE;
 
 	m_hInstance = GetModuleHandle(NULL);
-	StringCchCopy(m_ClassName, sizeof(m_ClassName), ClassName);
+	StringCchCopy(m_ClassName, sizeof(m_ClassName) / sizeof(WCHAR), ClassName);
 
 	WNDCLASSEX wndClassEx = { 0 };
 	wndClassEx.cbSize = sizeof(WNDCLASSEX);
@@ -164,7 +164,7 @@ LRESULT CWindow::WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 		default:
 		{
-			Result = DefWindowProcA(hWnd, message, wParam, lParam);
+			Result = DefWindowProc(hWnd, message, wParam, lParam);
 			break;
 		}
 	}
@@ -172,12 +172,12 @@ LRESULT CWindow::WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return Result;
 }
 
-BOOL CWindow::GetEvent(Event& rEvent)
+BOOL CWindow::GetEvent(WinEvent& rEvent)
 {
 	BOOL Status = FALSE;
 	MSG msg = { 0 };
 
-	rEvent.ID = EventID::INVALID;
+	rEvent.msg = WIN_MSG::INVALID;
 
 	if (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE) != FALSE)
 	{
@@ -186,7 +186,7 @@ BOOL CWindow::GetEvent(Event& rEvent)
 
 		if (msg.message == WM_QUIT)
 		{
-			rEvent.ID = EventID::QUIT;
+			rEvent.msg = WIN_MSG::QUIT;
 		}
 	}
 

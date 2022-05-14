@@ -52,7 +52,7 @@ PVOID operator new(SIZE_T size)
 {
 	Console::Write(L"New operator not supported - use Memory::Allocate instead\n");
 	ExitProcess(STATUS::NOT_IMPLEMENTED);
-	return nullptr;
+	return NULL;
 }
 
 VOID operator delete(PVOID ptr)
