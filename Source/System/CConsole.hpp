@@ -12,8 +12,8 @@ private:
 	PWCHAR m_pBuffer;
 
 public:
-	CConsole();
-	~CConsole();
+	CConsole(VOID);
+	~CConsole(VOID);
 
 	BOOL Initialize(VOID);
 	VOID Uninitialize(VOID);

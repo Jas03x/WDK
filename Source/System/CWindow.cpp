@@ -3,12 +3,16 @@
 #include <strsafe.h>
 #include <windows.h>
 
-IWindow* IWindow::Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height)
+#undef CreateWindow
+
+using namespace Wdk;
+
+IWindow* Wdk::CreateWindow(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height)
 {
 	return CWindow::Create(ClassName, WindowName, Width, Height);
 }
 
-VOID IWindow::Destroy(IWindow* pWindow)
+VOID Wdk::DestroyWindow(IWindow* pWindow)
 {
 	return CWindow::Destroy(static_cast<CWindow*>(pWindow));
 }
@@ -17,10 +21,13 @@ CWindow* CWindow::Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULO
 {
 	CWindow* pWindow = new CWindow();
 	
-	if (pWindow->Initialize(ClassName, WindowName, Width, Height) == FALSE)
+	if (pWindow != NULL)
 	{
-		CWindow::Destroy(pWindow);
-		pWindow = NULL;
+		if (pWindow->Initialize(ClassName, WindowName, Width, Height) == FALSE)
+		{
+			CWindow::Destroy(pWindow);
+			pWindow = NULL;
+		}
 	}
 
 	return pWindow;
@@ -35,7 +42,7 @@ VOID CWindow::Destroy(CWindow* pWindow)
 	}
 }
 
-CWindow::CWindow()
+CWindow::CWindow(VOID)
 {
 	m_hCID = 0;
 	m_bOpen = FALSE;
@@ -46,7 +53,7 @@ CWindow::CWindow()
 	ZeroMemory(m_ClassName, sizeof(m_ClassName));
 }
 
-CWindow::~CWindow()
+CWindow::~CWindow(VOID)
 {
 }
 

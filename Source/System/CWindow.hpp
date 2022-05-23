@@ -4,32 +4,35 @@
 #include "Wdk.hpp"
 #include "WdkSys.hpp"
 
-class CWindow : public IWindow, public Object
+namespace Wdk
 {
-private:
-	HINSTANCE m_hInstance;
-	ATOM m_hCID;
-	HWND m_hWnd;
-	BOOL m_bOpen;
-	WCHAR m_ClassName[256];
+	class CWindow : public Object, public IWindow
+	{
+	private:
+		HINSTANCE m_hInstance;
+		ATOM m_hCID;
+		HWND m_hWnd;
+		BOOL m_bOpen;
+		WCHAR m_ClassName[256];
 
-	static LRESULT WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
+		static LRESULT WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-private:
-	CWindow();
-	~CWindow();
+	private:
+		CWindow(VOID);
+		virtual ~CWindow(VOID);
 
-	BOOL Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
-	VOID Uninitialize(VOID);
+		BOOL Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
+		VOID Uninitialize(VOID);
 
-public:
-	static CWindow* Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
-	static VOID Destroy(CWindow* pWindow);
+	public:
+		static CWindow* Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
+		static VOID Destroy(CWindow* pWindow);
 
-public:
-	virtual HWND GetHandle(VOID);
-	virtual BOOL Open(VOID);
-	virtual BOOL GetEvent(WinEvent& rEvent);
-};
+	public:
+		virtual HWND GetHandle(VOID);
+		virtual BOOL Open(VOID);
+		virtual BOOL GetEvent(WinEvent& rEvent);
+	};
+}
 
 #endif // WINDOW_HPP

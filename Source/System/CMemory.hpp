@@ -9,8 +9,8 @@ protected:
 	HANDLE m_hHeap;
 
 public:
-	CMemory();
-	~CMemory();
+	CMemory(VOID);
+	~CMemory(VOID);
 
 	BOOL  Initialize(VOID);
 	VOID  Uninitialize(VOID);

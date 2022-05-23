@@ -3,26 +3,29 @@
 
 #include "WdkDef.hpp"
 
-enum WIN_MSG
+namespace Wdk
 {
-	INVALID = 0,
-	QUIT = 1
-};
+	enum WIN_MSG
+	{
+		INVALID = 0,
+		QUIT = 1
+	};
 
-struct WinEvent
-{
-	WIN_MSG msg;
-};
+	struct WinEvent
+	{
+		WIN_MSG msg;
+	};
 
-class IWindow
-{
-public:
-	static IWindow* Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
-	static VOID		Destroy(IWindow* pWindow);
+	class __declspec(novtable) IWindow
+	{
+	public:
+		virtual HWND	GetHandle(VOID) = 0;
+		virtual BOOL	Open(VOID) = 0;
+		virtual BOOL	GetEvent(WinEvent& rEvent) = 0;
+	};
 
-	virtual HWND	GetHandle(VOID) = 0;
-	virtual BOOL	Open(VOID) = 0;
-	virtual BOOL	GetEvent(WinEvent& rEvent) = 0;
-};
+	IWindow* CreateWindow(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
+	VOID	 DestroyWindow(IWindow* pWindow);
+}
 
 #endif // WDK_SYS__HPP

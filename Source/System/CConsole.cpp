@@ -32,13 +32,13 @@ BOOL Console::Write(LPCWSTR Msg, ...)
 	return Status;
 }
 
-CConsole::CConsole()
+CConsole::CConsole(VOID)
 {
 	m_hStdOut = NULL;;
 	m_pBuffer = NULL;
 }
 
-CConsole::~CConsole()
+CConsole::~CConsole(VOID)
 {
 }
 

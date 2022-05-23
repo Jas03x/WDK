@@ -147,13 +147,16 @@
   <ItemGroup>
     <ClInclude Include="Include\Wdk.hpp" />
     <ClInclude Include="Include\WdkDef.hpp" />
+    <ClInclude Include="Include\WdkGfx.hpp" />
     <ClInclude Include="Include\WdkMath.hpp" />
     <ClInclude Include="Include\WdkSys.hpp" />
+    <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp" />
     <ClInclude Include="Source\System\CConsole.hpp" />
     <ClInclude Include="Source\System\CMemory.hpp" />
     <ClInclude Include="Source\System\CWindow.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Source\Gfx\Core\CGfxDevice.cpp" />
     <ClCompile Include="Source\Wdk.cpp" />
     <ClCompile Include="Source\System\CConsole.cpp" />
     <ClCompile Include="Source\System\CMemory.cpp" />

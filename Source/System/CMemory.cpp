@@ -25,12 +25,12 @@ BOOL Memory::Release(PVOID pMemory)
 	return g_Memory.Release(pMemory);
 }
 
-CMemory::CMemory()
+CMemory::CMemory(VOID)
 {
 	m_hHeap = NULL;
 }
 
-CMemory::~CMemory()
+CMemory::~CMemory(VOID)
 {
 }
 

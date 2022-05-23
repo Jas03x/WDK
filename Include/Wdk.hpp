@@ -5,16 +5,6 @@
 
 INT WdkMain(INT argc, PWCHAR argv);
 
-class Object
-{
-public:
-	Object();
-	~Object();
-
-	PVOID operator new(SIZE_T size);
-	VOID  operator delete(PVOID ptr);
-};
-
 class Memory
 {
 public:
@@ -33,5 +23,18 @@ public:
 
 	static BOOL Write(LPCWSTR Msg, ...);
 };
+
+namespace Wdk
+{
+	class Object
+	{
+	public:
+		Object();
+		~Object();
+
+		PVOID operator new(SIZE_T size);
+		VOID  operator delete(PVOID ptr);
+	};
+}
 
 #endif // WDK__HPP

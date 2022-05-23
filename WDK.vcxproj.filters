@@ -50,6 +50,12 @@
     <ClInclude Include="Include\Wdk.hpp">
       <Filter>Include</Filter>
     </ClInclude>
+    <ClInclude Include="Include\WdkGfx.hpp">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -63,6 +69,9 @@
     </ClCompile>
     <ClCompile Include="Source\System\CConsole.cpp">
       <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CGfxDevice.cpp">
+      <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

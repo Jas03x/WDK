@@ -4,8 +4,10 @@
 
 #include "processthreadsapi.h"
 
+using namespace Wdk;
+
 BOOL WdkInitialize(INT argc, PWCHAR argv);
-VOID WdkTerminate();
+VOID WdkTerminate(VOID);
 
 INT main(INT argc, PWCHAR argv)
 {
@@ -42,7 +44,7 @@ BOOL WdkInitialize(INT argc, PWCHAR argv)
 	return Status;
 }
 
-VOID WdkTerminate()
+VOID WdkTerminate(VOID)
 {
 	Console::Uninitialize();
 	Memory::Uninitialize();
@@ -61,12 +63,12 @@ VOID operator delete(PVOID ptr)
 	ExitProcess(STATUS::NOT_IMPLEMENTED);
 }
 
-Object::Object()
+Object::Object(VOID)
 {
 
 }
 
-Object::~Object()
+Object::~Object(VOID)
 {
 
 }
