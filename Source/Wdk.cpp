@@ -52,14 +52,14 @@ VOID WdkTerminate(VOID)
 
 PVOID operator new(SIZE_T size)
 {
-	Console::Write(L"New operator not supported - use Memory::Allocate instead\n");
+	Console::Write(L"Error: New operator not supported - use Memory::Allocate instead\n");
 	ExitProcess(STATUS::NOT_IMPLEMENTED);
 	return NULL;
 }
 
 VOID operator delete(PVOID ptr)
 {
-	Console::Write(L"Delete operator not supported - use Memory::Release instead\n");
+	Console::Write(L"Error: Delete operator not supported - use Memory::Release instead\n");
 	ExitProcess(STATUS::NOT_IMPLEMENTED);
 }
 

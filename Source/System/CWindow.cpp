@@ -38,7 +38,9 @@ VOID CWindow::Destroy(CWindow* pWindow)
 	if (pWindow != NULL)
 	{
 		pWindow->Uninitialize();
+
 		delete pWindow;
+		pWindow = NULL;
 	}
 }
 

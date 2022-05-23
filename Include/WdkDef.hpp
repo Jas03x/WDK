@@ -40,6 +40,7 @@ typedef char*				PCHAR;
 typedef wchar_t*            PWCHAR;
 typedef const char*			LPCCH;
 typedef const char*			LPCSTR;
+typedef const wchar_t*		LPCWCH;
 typedef const wchar_t*		LPCWSTR;
 
 typedef unsigned __int64    WPARAM;
