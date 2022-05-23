@@ -5,12 +5,14 @@
 
 namespace Wdk
 {
+	class IWindow;
+
 	class __declspec(novtable) IGfxDevice
 	{
 	public:
 	};
 
-	IGfxDevice* CreateDevice(VOID);
+	IGfxDevice* CreateDevice(HWND hWND, ULONG Width, ULONG Height);
 	VOID        DestroyDevice(IGfxDevice* pDevice);
 }
 

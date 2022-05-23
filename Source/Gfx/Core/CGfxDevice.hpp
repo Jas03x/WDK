@@ -12,11 +12,11 @@ namespace Wdk
 		CGfxDevice(VOID);
 		virtual ~CGfxDevice(VOID);
 
-		BOOL Initialize(VOID);
+		BOOL Initialize(HWND hWND, ULONG Width, ULONG Height);
 		VOID Uninitialize(VOID);
 
 	public:
-		static CGfxDevice* Create();
+		static CGfxDevice* Create(HWND hWND, ULONG Width, ULONG Height);
 		static VOID        Destroy(CGfxDevice* pDevice);
 
 	public:

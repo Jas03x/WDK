@@ -2,9 +2,9 @@
 
 using namespace Wdk;
 
-IGfxDevice* Wdk::CreateDevice(VOID)
+IGfxDevice* Wdk::CreateDevice(HWND hWND, ULONG Width, ULONG Height)
 {
-	return CGfxDevice::Create();
+	return CGfxDevice::Create(hWND, Width, Height);
 }
 
 VOID Wdk::DestroyDevice(IGfxDevice* pDevice)
@@ -12,13 +12,13 @@ VOID Wdk::DestroyDevice(IGfxDevice* pDevice)
 	CGfxDevice::Destroy(static_cast<CGfxDevice*>(pDevice));
 }
 
-CGfxDevice* CGfxDevice::Create()
+CGfxDevice* CGfxDevice::Create(HWND hWND, ULONG Width, ULONG Height)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
 	if (pDevice != NULL)
 	{
-		if (pDevice->Initialize() == FALSE)
+		if (pDevice->Initialize(hWND, Width, Height) == FALSE)
 		{
 			DestroyDevice(pDevice);
 			pDevice = NULL;
@@ -47,7 +47,7 @@ CGfxDevice::~CGfxDevice(VOID)
 
 }
 
-BOOL CGfxDevice::Initialize(VOID)
+BOOL CGfxDevice::Initialize(HWND hWND, ULONG Width, ULONG Height)
 {
 	BOOL Status = TRUE;
 

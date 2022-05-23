@@ -21,17 +21,18 @@ namespace Wdk
 		CWindow(VOID);
 		virtual ~CWindow(VOID);
 
-		BOOL Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
+		BOOL Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 		VOID Uninitialize(VOID);
 
 	public:
-		static CWindow* Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height);
+		static CWindow* Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 		static VOID Destroy(CWindow* pWindow);
 
 	public:
 		virtual HWND GetHandle(VOID);
 		virtual BOOL Open(VOID);
 		virtual BOOL GetEvent(WinEvent& rEvent);
+		virtual BOOL GetRect(WIN_AREA area, WinRect& rRect);
 	};
 }
 

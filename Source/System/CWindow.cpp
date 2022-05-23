@@ -7,9 +7,9 @@
 
 using namespace Wdk;
 
-IWindow* Wdk::CreateWindow(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height)
+IWindow* Wdk::CreateWindow(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
-	return CWindow::Create(ClassName, WindowName, Width, Height);
+	return CWindow::Create(ClassName, WindowName, ClientWidth, ClientHeight);
 }
 
 VOID Wdk::DestroyWindow(IWindow* pWindow)
@@ -57,7 +57,7 @@ CWindow::~CWindow(VOID)
 {
 }
 
-BOOL CWindow::Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height)
+BOOL CWindow::Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	BOOL Status = TRUE;
 
@@ -82,11 +82,14 @@ BOOL CWindow::Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULO
 
 	RECT wndRect = { };
 	GetClientRect(hDesktopWindow, &wndRect);
-	wndRect.left = ((wndRect.right - wndRect.left) - Width) / 2;
-	wndRect.top = ((wndRect.bottom - wndRect.top) - Height) / 2;
-	wndRect.right = (wndRect.left + Width);
-	wndRect.bottom = (wndRect.top + Height);
+	wndRect.left = ((wndRect.right - wndRect.left) - ClientWidth) / 2;
+	wndRect.top = ((wndRect.bottom - wndRect.top) - ClientHeight) / 2;
+	wndRect.right = (wndRect.left + ClientWidth);
+	wndRect.bottom = (wndRect.top + ClientHeight);
 
+	// The window size includes the borders, top bar, etc.
+	// The client area is the area with the contents of the window.
+	// We use AdjustWindowRect to calculate the window size based off the required client size.
 	if (AdjustWindowRect(&wndRect, WS_OVERLAPPEDWINDOW, FALSE) != TRUE)
 	{
 		Status = FALSE;
@@ -195,6 +198,31 @@ BOOL CWindow::GetEvent(WinEvent& rEvent)
 		{
 			rEvent.msg = WIN_MSG::QUIT;
 		}
+	}
+
+	return Status;
+}
+
+BOOL CWindow::GetRect(WIN_AREA area, WinRect& rRect)
+{
+	BOOL Status = TRUE;
+	RECT rect = {};
+
+	if (area == WIN_AREA::CLIENT)
+	{
+		Status = (GetClientRect(m_hWnd, &rect) != TRUE) ? FALSE : TRUE;
+	}
+	else
+	{
+		Status = (GetWindowRect(m_hWnd, &rect) != TRUE) ? FALSE : TRUE;
+	}
+
+	if (Status == TRUE)
+	{
+		rRect.x = rect.left;
+		rRect.y = rect.top;
+		rRect.width = rect.right - rect.left;
+		rRect.height = rect.bottom - rect.top;
 	}
 
 	return Status;
