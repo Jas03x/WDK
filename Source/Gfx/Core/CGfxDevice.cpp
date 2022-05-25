@@ -6,11 +6,13 @@
 
 #include <math.h>
 
+#include "WdkSys.hpp"
+
 using namespace Wdk;
 
-IGfxDevice* Wdk::CreateDevice(VOID)
+IGfxDevice* Wdk::CreateDevice(IWindow* pIWindow)
 {
-	return CGfxDevice::Create();
+	return CGfxDevice::Create(pIWindow);
 }
 
 VOID Wdk::DestroyDevice(IGfxDevice* pDevice)
@@ -18,13 +20,13 @@ VOID Wdk::DestroyDevice(IGfxDevice* pDevice)
 	CGfxDevice::Destroy(static_cast<CGfxDevice*>(pDevice));
 }
 
-CGfxDevice* CGfxDevice::Create(VOID)
+CGfxDevice* CGfxDevice::Create(IWindow* pIWindow)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
 	if (pDevice != NULL)
 	{
-		if (pDevice->Initialize() == FALSE)
+		if (pDevice->Initialize(pIWindow) == FALSE)
 		{
 			DestroyDevice(pDevice);
 			pDevice = NULL;
@@ -47,6 +49,8 @@ VOID CGfxDevice::Destroy(CGfxDevice* pDevice)
 
 CGfxDevice::CGfxDevice(VOID)
 {
+	m_pIWindow = NULL;
+
 	m_hDxgiDebugModule = NULL;
 
 	m_pIDxgiDebugInterface = NULL;
@@ -54,7 +58,20 @@ CGfxDevice::CGfxDevice(VOID)
 
 	m_pIDxgiFactory = NULL;
 	m_pIDxgiAdapter = NULL;
+	m_pISwapChain = NULL;
+
 	m_pIDevice = NULL;
+	m_pICommandQueue = NULL;
+	m_pIRtvDescriptorHeap = NULL;
+	m_pICommandAllocator = NULL;
+
+	for (uint32_t i = 0; i < NumBuffers; i++)
+	{
+		m_pIRenderBuffers[i] = NULL;
+	}
+
+	m_FrameIndex = 0;
+	m_RtvDescriptorIncrement = 0;
 }
 
 CGfxDevice::~CGfxDevice(VOID)
@@ -62,9 +79,11 @@ CGfxDevice::~CGfxDevice(VOID)
 
 }
 
-BOOL CGfxDevice::Initialize(VOID)
+BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 {
 	BOOL Status = TRUE;
+
+	m_pIWindow = pIWindow;
 
 #if _DEBUG
 	if (D3D12GetDebugInterface(__uuidof(ID3D12Debug), reinterpret_cast<VOID**>(&m_pID3D12DebugInterface)) == S_OK)
@@ -146,11 +165,146 @@ BOOL CGfxDevice::Initialize(VOID)
 		}
 	}
 
+	if (Status == TRUE)
+	{
+		D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = { };
+		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+		cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		cmdQueueDesc.NodeMask = 0;
+
+		if (m_pIDevice->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pICommandQueue)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create command queue\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		WinRect rect = {};
+		
+		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, rect) == TRUE)
+		{
+			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { };
+			swapChainDesc.Width = rect.width;
+			swapChainDesc.Height = rect.height;
+			swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			swapChainDesc.Stereo = FALSE;
+			swapChainDesc.SampleDesc.Count = 1;
+			swapChainDesc.SampleDesc.Quality = 0;
+			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+			swapChainDesc.BufferCount = NumBuffers;
+			swapChainDesc.Scaling = DXGI_SCALING_NONE;
+			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+			swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+			swapChainDesc.Flags = 0;
+
+			IDXGISwapChain1* pISwapChain1 = NULL;
+
+			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pICommandQueue, m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
+			{
+				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<VOID**>(&m_pISwapChain));
+				pISwapChain1->Release();
+
+				m_FrameIndex = m_pISwapChain->GetCurrentBackBufferIndex();
+			}
+			else
+			{
+				Status = FALSE;
+				Console::Write(L"Error: Failed to create swap chain\n");
+			}
+		}
+		else
+		{
+			Status = FALSE;
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		D3D12_DESCRIPTOR_HEAP_DESC descHeap = {};
+		descHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		descHeap.NumDescriptors = NumBuffers;
+		descHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		descHeap.NodeMask = 0;
+
+		if (m_pIDevice->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pIRtvDescriptorHeap)) == S_OK)
+		{
+			m_RtvDescriptorIncrement = m_pIDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		}
+		else
+		{
+			Console::Write(L"Error: Failed to create descriptor heap\n");
+			Status = FALSE;
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandle = m_pIRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+		for (UINT i = 0; (Status == TRUE) && (i < NumBuffers); i++)
+		{
+			if (m_pISwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&m_pIRenderBuffers[i])) != S_OK)
+			{
+				Console::Write(L"Error: Could not get swap chain buffer %u\n", i);
+				Status = FALSE;
+			}
+
+			m_pIDevice->CreateRenderTargetView(m_pIRenderBuffers[i], NULL, cpuDescHandle);
+
+			cpuDescHandle.ptr += m_RtvDescriptorIncrement;
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		if (m_pIDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&m_pICommandAllocator)) != S_OK)
+		{
+			Console::Write(L"Error: Could not create command allocator\n");
+			Status = FALSE;
+		}
+	}
+
 	return Status;
 }
 
 VOID CGfxDevice::Uninitialize(VOID)
 {
+	if (m_pICommandAllocator != NULL)
+	{
+		m_pICommandAllocator->Release();
+		m_pICommandAllocator = NULL;
+	}
+
+	for (uint32_t i = 0; i < NumBuffers; i++)
+	{
+		if (m_pIRenderBuffers[i] != NULL)
+		{
+			m_pIRenderBuffers[i]->Release();
+			m_pIRenderBuffers[i] = NULL;
+		}
+	}
+
+	if (m_pIRtvDescriptorHeap != NULL)
+	{
+		m_pIRtvDescriptorHeap->Release();
+		m_pIRtvDescriptorHeap = NULL;
+	}
+
+	if (m_pISwapChain != NULL)
+	{
+		m_pISwapChain->Release();
+		m_pISwapChain = NULL;
+	}
+
+	if (m_pICommandQueue != NULL)
+	{
+		m_pICommandQueue->Release();
+		m_pICommandQueue = NULL;
+	}
+
 	if (m_pIDevice != NULL)
 	{
 		m_pIDevice->Release();
@@ -190,6 +344,8 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pID3D12DebugInterface = NULL;
 	}
 #endif
+
+	m_pIWindow = NULL;
 }
 
 BOOL CGfxDevice::EnumerateDxgiAdapters(VOID)

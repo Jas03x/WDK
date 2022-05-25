@@ -12,7 +12,7 @@ namespace Wdk
 	public:
 	};
 
-	IGfxDevice* CreateDevice(VOID);
+	IGfxDevice* CreateDevice(IWindow* pIWindow);
 	VOID        DestroyDevice(IGfxDevice* pDevice);
 }
 

@@ -3,6 +3,10 @@
 
 #include "WdkDef.hpp"
 
+#ifdef CreateWindow
+	#undef CreateWindow
+#endif
+
 namespace Wdk
 {
 	enum WIN_AREA
