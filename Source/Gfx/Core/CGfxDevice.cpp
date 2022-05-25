@@ -8,9 +8,9 @@
 
 using namespace Wdk;
 
-IGfxDevice* Wdk::CreateDevice(IWindow* pIWindow)
+IGfxDevice* Wdk::CreateDevice(VOID)
 {
-	return CGfxDevice::Create(pIWindow);
+	return CGfxDevice::Create();
 }
 
 VOID Wdk::DestroyDevice(IGfxDevice* pDevice)
@@ -18,13 +18,13 @@ VOID Wdk::DestroyDevice(IGfxDevice* pDevice)
 	CGfxDevice::Destroy(static_cast<CGfxDevice*>(pDevice));
 }
 
-CGfxDevice* CGfxDevice::Create(IWindow* pIWindow)
+CGfxDevice* CGfxDevice::Create(VOID)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
 	if (pDevice != NULL)
 	{
-		if (pDevice->Initialize(pIWindow) == FALSE)
+		if (pDevice->Initialize() == FALSE)
 		{
 			DestroyDevice(pDevice);
 			pDevice = NULL;
@@ -47,8 +47,6 @@ VOID CGfxDevice::Destroy(CGfxDevice* pDevice)
 
 CGfxDevice::CGfxDevice(VOID)
 {
-	m_pIWindow = NULL;
-
 	m_hDxgiDebugModule = NULL;
 
 	m_pIDxgiDebugInterface = NULL;
@@ -64,11 +62,9 @@ CGfxDevice::~CGfxDevice(VOID)
 
 }
 
-BOOL CGfxDevice::Initialize(IWindow* pIWindow)
+BOOL CGfxDevice::Initialize(VOID)
 {
 	BOOL Status = TRUE;
-
-	m_pIWindow = pIWindow;
 
 #if _DEBUG
 	if (D3D12GetDebugInterface(__uuidof(ID3D12Debug), reinterpret_cast<VOID**>(&m_pID3D12DebugInterface)) == S_OK)
@@ -194,8 +190,6 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pID3D12DebugInterface = NULL;
 	}
 #endif
-
-	m_pIWindow = NULL;
 }
 
 BOOL CGfxDevice::EnumerateDxgiAdapters(VOID)

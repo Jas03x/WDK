@@ -12,13 +12,9 @@ class ID3D12Device;
 
 namespace Wdk
 {
-	class IWindow;
-
 	class CGfxDevice : public Object, public IGfxDevice
 	{
 	private:
-		IWindow*       m_pIWindow;
-
 #if _DEBUG
 		HMODULE        m_hDxgiDebugModule;
 
@@ -34,14 +30,14 @@ namespace Wdk
 		CGfxDevice(VOID);
 		virtual ~CGfxDevice(VOID);
 
-		BOOL Initialize(IWindow* pIWindow);
+		BOOL Initialize(VOID);
 		VOID Uninitialize(VOID);
 
 		BOOL EnumerateDxgiAdapters(VOID);
 		BOOL PrintAdapterDesc(UINT uIndex, IDXGIAdapter4* pIAdapter);
 
 	public:
-		static CGfxDevice* Create(IWindow* pIWindow);
+		static CGfxDevice* Create(VOID);
 		static VOID        Destroy(CGfxDevice* pDevice);
 
 	public:
