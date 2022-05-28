@@ -5,6 +5,8 @@
 
 INT WdkMain(INT argc, PWCHAR argv);
 
+void WdkAssert(BOOL b, LPCWSTR error, ...);
+
 class Memory
 {
 public:
@@ -22,6 +24,7 @@ public:
 	static VOID Uninitialize(VOID);
 
 	static BOOL Write(LPCWSTR Msg, ...);
+	static BOOL Write(LPCWSTR Msg, va_list Args);
 };
 
 namespace Wdk

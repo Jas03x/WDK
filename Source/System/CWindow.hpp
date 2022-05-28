@@ -1,5 +1,5 @@
-#ifndef WINDOW_HPP
-#define WINDOW_HPP
+#ifndef WDK_CWINDOW_HPP
+#define WDK_CWINDOW_HPP
 
 #include "Wdk.hpp"
 #include "WdkSys.hpp"
@@ -36,4 +36,4 @@ namespace Wdk
 	};
 }
 
-#endif // WINDOW_HPP
+#endif // WDK_CWINDOW_HPP

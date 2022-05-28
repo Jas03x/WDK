@@ -1,20 +1,21 @@
-#ifndef GFX_DEVICE_HPP
-#define GFX_DEVICE_HPP
+#ifndef WDK_CGFX_DEVICE_HPP
+#define WDK_CGFX_DEVICE_HPP
 
 #include "Wdk.hpp"
 #include "WdkGfx.hpp"
 
-class IDXGIDebug;
-class IDXGIFactory7;
-class IDXGIAdapter4;
-class IDXGISwapChain4;
+struct IDXGIDebug;
+struct IDXGIFactory7;
+struct IDXGIAdapter4;
+struct IDXGISwapChain4;
 
-class ID3D12Debug;
-class ID3D12Device;
-class ID3D12CommandQueue;
-class ID3D12DescriptorHeap;
-class ID3D12CommandAllocator;
-class ID3D12Resource;
+struct ID3D12Debug;
+struct ID3D12Device;
+struct ID3D12CommandQueue;
+struct ID3D12DescriptorHeap;
+struct ID3D12CommandAllocator;
+struct ID3D12RootSignature;
+struct ID3D12Resource;
 
 namespace Wdk
 {
@@ -39,6 +40,7 @@ namespace Wdk
 		ID3D12CommandQueue*		m_pICommandQueue;
 		ID3D12DescriptorHeap*	m_pIRtvDescriptorHeap;
 		ID3D12CommandAllocator* m_pICommandAllocator;
+		ID3D12RootSignature*	m_pIRootSignature;
 
 		ID3D12Resource*			m_pIRenderBuffers[NumBuffers];
 
@@ -63,4 +65,4 @@ namespace Wdk
 	};
 }
 
-#endif // GFX_DEVICE_HPP
+#endif // WDK_CGFX_DEVICE_HPP

@@ -32,6 +32,15 @@ BOOL Console::Write(LPCWSTR Msg, ...)
 	return Status;
 }
 
+BOOL Console::Write(LPCWSTR Msg, va_list Args)
+{
+	BOOL Status = TRUE;
+
+	Status = g_Console.Write(Msg, Args);
+
+	return Status;
+}
+
 CConsole::CConsole(VOID)
 {
 	m_hStdOut = NULL;;
@@ -76,12 +85,12 @@ BOOL CConsole::Write(LPCWSTR Msg, va_list Args)
 {
 	BOOL Status = TRUE;
 	SIZE_T CharsFree = 0;
-	SIZE_T CharsUsed = 0;
+	DWORD  CharsUsed = 0;
 	DWORD  CharsWritten = 0;
 
 	if (StringCchVPrintfEx(m_pBuffer, MaxLength, NULL, &CharsFree, 0, Msg, Args) == S_OK)
 	{
-		CharsUsed = MaxLength - CharsFree;
+		CharsUsed = static_cast<DWORD>(MaxLength - CharsFree);
 	}
 	else
 	{

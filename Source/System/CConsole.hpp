@@ -1,5 +1,5 @@
-#ifndef CCONSOLE_HPP
-#define CCONSOLE_HPP
+#ifndef WDK_CCONSOLE_HPP
+#define WDK_CCONSOLE_HPP
 
 #include "WdkDef.hpp"
 
@@ -21,4 +21,4 @@ public:
 	BOOL Write(LPCWSTR Msg, va_list Args);
 };
 
-#endif // CCONSOLE_HPP
+#endif // WDK_CCONSOLE_HPP

@@ -1,5 +1,5 @@
-#ifndef CMEMORY_HPP
-#define CMEMORY_HPP
+#ifndef WDK_CMEMORY_HPP
+#define WDK_CMEMORY_HPP
 
 #include "WdkDef.hpp"
 
@@ -19,4 +19,4 @@ public:
 	BOOL  Release(PVOID pMemory);
 };
 
-#endif // CMEMORY_HPP
+#endif // WDK_CMEMORY_HPP

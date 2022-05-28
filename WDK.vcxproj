@@ -121,6 +121,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Workspace\WDK\Include\</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -128,6 +129,7 @@
     </Link>
     <Lib>
       <AdditionalDependencies>dxgi.lib;d3d12.lib;dxguid.lib;d3dcompiler.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalOptions>/IGNORE:4006 %(AdditionalOptions)</AdditionalOptions>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -154,12 +156,14 @@
     <ClInclude Include="Include\WdkMath.hpp" />
     <ClInclude Include="Include\WdkSys.hpp" />
     <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp" />
+    <ClInclude Include="Source\Math\CMath.hpp" />
     <ClInclude Include="Source\System\CConsole.hpp" />
     <ClInclude Include="Source\System\CMemory.hpp" />
     <ClInclude Include="Source\System\CWindow.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Gfx\Core\CGfxDevice.cpp" />
+    <ClCompile Include="Source\Math\CMath.cpp" />
     <ClCompile Include="Source\Wdk.cpp" />
     <ClCompile Include="Source\System\CConsole.cpp" />
     <ClCompile Include="Source\System\CMemory.cpp" />

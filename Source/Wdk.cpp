@@ -1,5 +1,7 @@
 #include "Wdk.hpp"
 
+#include <cstdarg>
+
 #include "windows.h"
 
 #include "processthreadsapi.h"
@@ -8,6 +10,19 @@ using namespace Wdk;
 
 BOOL WdkInitialize(INT argc, PWCHAR argv);
 VOID WdkTerminate(VOID);
+
+void WdkAssert(BOOL b, LPCWSTR error, ...)
+{
+	if (b != TRUE)
+	{
+		va_list args;
+		va_start(args, error);
+
+		Console::Write(error, args);
+
+		va_end(args);
+	}
+}
 
 INT main(INT argc, PWCHAR argv)
 {

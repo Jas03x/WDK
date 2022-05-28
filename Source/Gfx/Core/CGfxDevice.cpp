@@ -64,6 +64,7 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pICommandQueue = NULL;
 	m_pIRtvDescriptorHeap = NULL;
 	m_pICommandAllocator = NULL;
+	m_pIRootSignature = NULL;
 
 	for (uint32_t i = 0; i < NumBuffers; i++)
 	{
@@ -267,6 +268,50 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 		}
 	}
 
+	if (Status == TRUE)
+	{
+		D3D12_ROOT_SIGNATURE_DESC desc = { };
+		desc.NumParameters = 0;
+		desc.pParameters = NULL;
+		desc.NumStaticSamplers = 0;
+		desc.pStaticSamplers = NULL;
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		ID3DBlob* pSignature = NULL;
+		ID3DBlob* pError = NULL;
+
+		if (D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignature, &pError) == S_OK)
+		{
+			if (m_pIDevice->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&m_pIRootSignature)) != S_OK)
+			{
+				Console::Write(L"Error: Could not create root signature\n");
+				Status = FALSE;
+			}
+		}
+		else
+		{
+			Console::Write(L"Error: Could not initialize root signature\n");
+			Status = FALSE;
+
+			if (pError != NULL)
+			{
+				Console::Write(L"Error Info: %s\n", pError->GetBufferPointer());
+			}
+		}
+
+		if (pSignature != NULL)
+		{
+			pSignature->Release();
+			pSignature = NULL;
+		}
+
+		if (pError != NULL)
+		{
+			pError->Release();
+			pError = NULL;
+		}
+	}
+
 	return Status;
 }
 
@@ -422,9 +467,9 @@ BOOL CGfxDevice::PrintAdapterDesc(UINT uIndex, IDXGIAdapter4* pIAdapter)
 		Console::Write(L"\tDeviceId: %X\n", Desc.DeviceId);
 		Console::Write(L"\tsubSysId: %X\n", Desc.SubSysId);
 		Console::Write(L"\tRevision: %X\n", Desc.Revision);
-		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<double>(Desc.DedicatedVideoMemory) / GB));
-		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<double>(Desc.DedicatedSystemMemory) / GB));
-		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<double>(Desc.SharedSystemMemory) / GB));
+		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedVideoMemory) / GB));
+		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedSystemMemory) / GB));
+		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.SharedSystemMemory) / GB));
 
 		if (Desc.Flags != DXGI_ADAPTER_FLAG3_NONE)
 		{

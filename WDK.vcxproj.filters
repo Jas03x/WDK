@@ -56,6 +56,9 @@
     <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Math\CMath.hpp">
+      <Filter>Source\Math</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -72,6 +75,9 @@
     </ClCompile>
     <ClCompile Include="Source\Gfx\Core\CGfxDevice.cpp">
       <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Math\CMath.cpp">
+      <Filter>Source\Math</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
