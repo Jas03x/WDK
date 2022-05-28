@@ -241,11 +241,11 @@ template <typename T> VOID WriteToBuffer(PWCHAR& pBuffer, SIZE_T& size, T t)
 
 	if constexpr (std::is_arithmetic<T>::value)
 	{
-		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfEx(pBuffer, size, NULL, &pcchRemaining, 0, L"%f", t); }
-		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfEx(pBuffer, size, NULL, &pcchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
-		else                                            { StringCchPrintfEx(pBuffer, size, NULL, &pcchRemaining, 0, L"%lli", static_cast<LONGLONG>(t)); }
+		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%f", t); }
+		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
+		else                                            { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%lli", static_cast<LONGLONG>(t)); }
 	}
-	else                                                { StringCchPrintfEx(pBuffer, size, NULL, &pcchRemaining, 0, L"%s", t); }
+	else                                                { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%s", t); }
 
 	pBuffer += pcchRemaining;
 	size -= pcchRemaining;
