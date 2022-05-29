@@ -11,7 +11,7 @@ using namespace Wdk;
 BOOL WdkInitialize(INT argc, PWCHAR argv);
 VOID WdkTerminate(VOID);
 
-void WdkAssert(BOOL b, LPCWSTR error, ...)
+void WdkAssert(BOOL b, PCWCHAR error, ...)
 {
 	if (b != TRUE)
 	{

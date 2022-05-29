@@ -18,7 +18,7 @@ public:
 	BOOL Initialize(VOID);
 	VOID Uninitialize(VOID);
 
-	BOOL Write(LPCWSTR Msg, va_list Args);
+	BOOL Write(PCWCHAR Msg, va_list Args);
 };
 
 #endif // WDK_CCONSOLE_HPP

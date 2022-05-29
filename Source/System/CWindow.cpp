@@ -1,7 +1,6 @@
 #include "CWindow.hpp"
 
 #include <strsafe.h>
-#include <windows.h>
 
 #undef CreateWindow
 

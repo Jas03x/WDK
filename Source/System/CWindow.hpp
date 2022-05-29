@@ -1,6 +1,8 @@
 #ifndef WDK_CWINDOW_HPP
 #define WDK_CWINDOW_HPP
 
+#include "Windows.h"
+
 #include "Wdk.hpp"
 #include "WdkSys.hpp"
 

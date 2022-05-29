@@ -25,6 +25,24 @@ using namespace Wdk;
 #define DET2(a, b, c, d) ((a) * (d) - (b) * (c))
 #define DET3(a, b, c, d, e, f, g, h, i) (((a) * DET2(e, f, h, i)) - ((b) * DET2(d, f, g, i)) + ((c) * DET2(d, e, g, h)))
 
+// ------------------------------------ Helper functions ------------------------------------------
+
+template <typename T> VOID WriteToBuffer(PWCHAR& bufPtr, SIZE_T& bufSize, T t)
+{
+	SIZE_T cchRemaining = 0;
+
+	if constexpr (std::is_arithmetic<T>::value)
+	{
+		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%f", t); }
+		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
+		else											{ StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%lli", static_cast<LONGLONG>(t)); }
+	}
+	else												{ StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%S", t); }
+
+	bufPtr  += cchRemaining;
+	bufSize -= cchRemaining;
+}
+
 // ------------------------------------ Scalar functions ------------------------------------------
 
 template <typename T>
@@ -235,28 +253,12 @@ template <typename T> T Vector::Distance(const Vector2<T>& v0, const Vector2<T>&
 template <typename T> T Vector::Distance(const Vector3<T>& v0, const Vector3<T>& v1) { return std::sqrt(SQR(v1.x - v0.x) + SQR(v1.y - v0.y) + SQR(v1.z - v0.z)); }
 template <typename T> T Vector::Distance(const Vector4<T>& v0, const Vector4<T>& v1) { return std::sqrt(SQR(v1.x - v0.x) + SQR(v1.y - v0.y) + SQR(v1.z - v0.z) + SQR(v1.w - v0.w)); }
 
-template <typename T> VOID WriteToBuffer(PWCHAR& pBuffer, SIZE_T& size, T t)
-{
-	SIZE_T pcchRemaining = 0;
-
-	if constexpr (std::is_arithmetic<T>::value)
-	{
-		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%f", t); }
-		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
-		else                                            { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%lli", static_cast<LONGLONG>(t)); }
-	}
-	else                                                { StringCchPrintfExW(pBuffer, size, NULL, &pcchRemaining, 0, L"%s", t); }
-
-	pBuffer += pcchRemaining;
-	size -= pcchRemaining;
-}
-
 template <typename T> std::wstring VectorToString(T* pElements, SIZE_T nElements)
 {
 	WCHAR buffer[2048] = {};
 
 	PWCHAR bufPtr = buffer;
-	SIZE_T bufSize = 2048;
+	SIZE_T bufSize = _countof(buffer);
 
 	WriteToBuffer(bufPtr, bufSize, "<");
 	for (uint32_t i = 0; i < nElements; i++)
@@ -280,17 +282,16 @@ template <typename T> std::wstring Vector::ToString(const Vector4<T>& v) { retur
 
 // ------------------------- Vector template/function instantiations ------------------------------
 
-#define INSTANTIATE_VECTOR_TEMPLATES(X)                                                 \
+#define INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(X)                                        \
     template struct Vector2<X>;                                                         \
     template struct Vector3<X>;                                                         \
     template struct Vector4<X>;                                                         \
+	template std::wstring Vector::ToString(const Vector2<X>& v);						\
+	template std::wstring Vector::ToString(const Vector3<X>& v);						\
+	template std::wstring Vector::ToString(const Vector4<X>& v);						\
 
-#define INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(X)										\
-	template std::wstring Vector::ToString(const Vector2<X>& v);							\
-	template std::wstring Vector::ToString(const Vector3<X>& v);							\
-	template std::wstring Vector::ToString(const Vector4<X>& v);							\
-
-#define INSTANTIATE_VECTOR_MATH_TEMPLATES(X)											\
+#define INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(X)							\
+	INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(X)											\
     template X Vector::Length(const Vector2<X>& v);                                     \
     template X Vector::Length(const Vector3<X>& v);                                     \
     template X Vector::Length(const Vector4<X>& v);                                     \
@@ -305,30 +306,17 @@ template <typename T> std::wstring Vector::ToString(const Vector4<T>& v) { retur
     template X Vector::Distance(const Vector3<X>& v0, const Vector3<X>& v1);            \
     template X Vector::Distance(const Vector4<X>& v0, const Vector4<X>& v1);            \
 
-INSTANTIATE_VECTOR_TEMPLATES(char);
-INSTANTIATE_VECTOR_TEMPLATES(short);
-INSTANTIATE_VECTOR_TEMPLATES(int);
-INSTANTIATE_VECTOR_TEMPLATES(long);
-INSTANTIATE_VECTOR_TEMPLATES(unsigned char);
-INSTANTIATE_VECTOR_TEMPLATES(unsigned short);
-INSTANTIATE_VECTOR_TEMPLATES(unsigned int);
-INSTANTIATE_VECTOR_TEMPLATES(unsigned long);
-INSTANTIATE_VECTOR_TEMPLATES(float);
-INSTANTIATE_VECTOR_TEMPLATES(double);
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(char)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(short)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(int)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(long)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned char)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned short)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned int)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned long)
 
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(char);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(short);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(int);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(long);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(unsigned char);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(unsigned short);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(unsigned int);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(unsigned long);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(float);
-INSTANTIATE_VECTOR_FUNCTION_TEMPLATES(double);
-
-INSTANTIATE_VECTOR_MATH_TEMPLATES(float);
-INSTANTIATE_VECTOR_MATH_TEMPLATES(double);
+INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(double)
 
 // ----------------------------------------- Matrix2 ----------------------------------------------
 
@@ -790,12 +778,10 @@ template <typename T> Matrix4<T> Matrix::Transpose(const Matrix4<T>& m)
 
 // ------------------------- Matrix template/function instantiations ------------------------------
 
-#define INSTANTIATE_MATRIX_TEMPLATES(X)                                                 \
+#define INSTANTIATE_MATRIX_TEMPLATES_FOR_FLOATING_POINT_TYPE(X)							\
     template struct Matrix2<X>;                                                         \
     template struct Matrix2<X>;                                                         \
     template struct Matrix2<X>;                                                         \
-
-#define INSTANTIATE_MATRIX_FUNCTION_TEMPLATES(X)                                        \
 	template Matrix2<X> Matrix::Inverse(const Matrix2<X>& m);							\
 	template Matrix3<X> Matrix::Inverse(const Matrix3<X>& m);							\
 	template Matrix4<X> Matrix::Inverse(const Matrix4<X>& m);							\
@@ -803,4 +789,4 @@ template <typename T> Matrix4<T> Matrix::Transpose(const Matrix4<T>& m)
 	template Matrix3<X> Matrix::Transpose(const Matrix3<X>& m);							\
 	template Matrix4<X> Matrix::Transpose(const Matrix4<X>& m);							\
 
-INSTANTIATE_MATRIX_TEMPLATES(float);
+INSTANTIATE_MATRIX_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)

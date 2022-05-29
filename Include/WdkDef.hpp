@@ -12,9 +12,9 @@
 #define FALSE   0
 
 typedef signed char			int8_t;
-typedef short				int16_t;
-typedef int					int32_t;
-typedef long long			int64_t;
+typedef signed short		int16_t;
+typedef signed int			int32_t;
+typedef signed long long	int64_t;
 typedef unsigned char		uint8_t;
 typedef unsigned short		uint16_t;
 typedef unsigned int		uint32_t;
@@ -38,18 +38,14 @@ typedef unsigned long		DWORD;
 
 typedef float				FLOAT;
 
-typedef char*				PCHAR;
-typedef wchar_t*            PWCHAR;
-typedef const char*			LPCCH;
-typedef const char*			LPCSTR;
-typedef const wchar_t*		LPCWCH;
-typedef const wchar_t*		LPCWSTR;
+typedef char				*PCH,  *PCHAR;
+typedef wchar_t             *PWCH, *PWCHAR;
+
+typedef const char			*PCCH, *PCCHAR;
+typedef const wchar_t		*PCWCH, *PCWCHAR;
 
 typedef unsigned __int64    WPARAM;
 typedef __int64				LPARAM;
-
-typedef long				HRESULT;
-typedef __int64             LRESULT;
 
 typedef unsigned short      ATOM;
 typedef void*				HANDLE;

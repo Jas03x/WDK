@@ -18,7 +18,7 @@ VOID Console::Uninitialize(VOID)
 	g_Console.Uninitialize();
 }
 
-BOOL Console::Write(LPCWSTR Msg, ...)
+BOOL Console::Write(PCWCHAR Msg, ...)
 {
 	BOOL Status = TRUE;
 
@@ -32,7 +32,7 @@ BOOL Console::Write(LPCWSTR Msg, ...)
 	return Status;
 }
 
-BOOL Console::Write(LPCWSTR Msg, va_list Args)
+BOOL Console::Write(PCWCHAR Msg, va_list Args)
 {
 	BOOL Status = TRUE;
 
@@ -81,7 +81,7 @@ VOID CConsole::Uninitialize(VOID)
 	}
 }
 
-BOOL CConsole::Write(LPCWSTR Msg, va_list Args)
+BOOL CConsole::Write(PCWCHAR Msg, va_list Args)
 {
 	BOOL Status = TRUE;
 	SIZE_T CharsFree = 0;
