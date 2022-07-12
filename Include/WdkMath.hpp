@@ -2,8 +2,9 @@
 #define WDK_MATH__HPP
 
 #ifndef _USE_MATH_DEFINES
-	#define _USE_MATH_DEFINES // for M_PI
+#define _USE_MATH_DEFINES // for M_PI
 #endif
+
 #include <cmath>
 
 #include <cstdint>
@@ -31,9 +32,10 @@ namespace Wdk
 	template <typename T>
 	struct Vector2
 	{
-		union {
-			struct { T x, y; };
+		union
+		{
 			T elements[2];
+			struct { T x, y; };
 		};
 
 		Vector2<T>();
@@ -46,8 +48,8 @@ namespace Wdk
 		T&       operator[] (uint32_t i);
 		const T& operator[] (uint32_t i) const;
 
-		Vector2<T> operator - () const;
 		Vector2<T> operator + () const;
+		Vector2<T> operator - () const;
 
 		Vector2<T>  operator +  (const Vector2<T>& v) const;
 		Vector2<T>  operator -  (const Vector2<T>& v) const;
@@ -66,12 +68,14 @@ namespace Wdk
 	template <typename T>
 	struct Vector3
 	{
-		union {
-			struct { T x, y, z; };
+		union
+		{
 			T elements[3];
-
-			// sub-vectors
-			struct { Vector2<T> xy; };
+			struct { T x, y, z; };
+			union // sub-vectors
+			{
+				Vector2<T> xy;
+			};
 		};
 
 		Vector3<T>();
@@ -84,8 +88,8 @@ namespace Wdk
 		T& operator[] (uint32_t i);
 		const T& operator[] (uint32_t i) const;
 
-		Vector3<T> operator - () const;
 		Vector3<T> operator + () const;
+		Vector3<T> operator - () const;
 
 		Vector3<T>  operator +  (const Vector3<T>& v) const;
 		Vector3<T>  operator -  (const Vector3<T>& v) const;
@@ -104,13 +108,15 @@ namespace Wdk
 	template <typename T>
 	struct Vector4
 	{
-		union {
-			struct { T x, y, z, w; };
+		union
+		{
 			T elements[4];
-
-			// sub-vectors
-			struct { Vector2<T> xy; };
-			struct { Vector3<T> xyz; };
+			struct { T x, y, z, w; };
+			union // sub-vectors
+			{
+				Vector2<T> xy;
+				Vector3<T> xyz;
+			};
 		};
 
 		Vector4<T>();
@@ -123,8 +129,8 @@ namespace Wdk
 		T& operator[] (uint32_t i);
 		const T& operator[] (uint32_t i) const;
 
-		Vector4<T> operator - () const;
 		Vector4<T> operator + () const;
+		Vector4<T> operator - () const;
 
 		Vector4<T>  operator +  (const Vector4<T>& v) const;
 		Vector4<T>  operator -  (const Vector4<T>& v) const;
@@ -183,9 +189,10 @@ namespace Wdk
 	template <typename T>
 	struct Quaternion
 	{
-		union {
-			struct { T x, y, z, w; };
+		union
+		{
 			T elements[4];
+			struct { T x, y, z, w; };
 		};
 
 		Quaternion();
@@ -209,8 +216,9 @@ namespace Wdk
 	{
 		union
 		{
-			struct { Vector2<T> v0, v1; };
 			Vector2<T> rows[2];
+			float      elements[2][2];
+			struct   { Vector2<T> v0, v1; };
 		};
 
 		Matrix2<T>();
@@ -234,7 +242,7 @@ namespace Wdk
 		Matrix2<T>  operator *  (const Matrix2<T>& m) const;
 		Matrix2<T>& operator *= (const Matrix2<T>& m);
 
-		Vector2<T> operator * (const Vector2<T>& v) const;
+		Vector2<T> operator  * (const Vector2<T>& v) const;
 	};
 
 	template <typename T>
@@ -242,8 +250,9 @@ namespace Wdk
 	{
 		union
 		{
-			struct { Vector2<T> v0, v1, v2; };
 			Vector3<T> rows[3];
+			float      elements[3][3];
+			struct   { Vector3<T> v0, v1, v2; };
 		};
 
 		Matrix3<T>();
@@ -267,7 +276,7 @@ namespace Wdk
 		Matrix3<T>  operator *  (const Matrix3<T>& m) const;
 		Matrix3<T>& operator *= (const Matrix3<T>& m);
 
-		Vector3<T> operator * (const Vector3<T>& v) const;
+		Vector3<T> operator  * (const Vector3<T>& v) const;
 	};
 
 	template <typename T>
@@ -275,8 +284,9 @@ namespace Wdk
 	{
 		union
 		{
-			struct { Vector2<T> v0, v1, v2, v3; };
 			Vector4<T> rows[4];
+			float      elements[4][4];
+			struct   { Vector4<T> v0, v1, v2, v3; };
 		};
 
 		Matrix4<T>();
@@ -301,7 +311,7 @@ namespace Wdk
 		Matrix4<T>  operator *  (const Matrix4<T>& m) const;
 		Matrix4<T>& operator *= (const Matrix4<T>& m);
 
-		Vector4<T> operator * (const Vector4<T>& v) const;
+		Vector4<T> operator  * (const Vector4<T>& v) const;
 	};
 
 	typedef Matrix2<float> Matrix2F;
@@ -318,9 +328,9 @@ namespace Wdk
 		template <typename T> Matrix3<T> Transpose(const Matrix3<T>& m);
 		template <typename T> Matrix4<T> Transpose(const Matrix4<T>& m);
 
-		template <typename T> Matrix2<T> Translate(const Vector2<T>& v);
-		template <typename T> Matrix2<T> Scale(const Vector2<T>& v);
-		// template <typename T> Matrix2<T> Rotate();
+		template <typename T> Matrix4<T> Translate(const Vector3<T>& v);
+		template <typename T> Matrix4<T> Scale(const Vector3<T>& v);
+		template <typename T> Matrix4<T> Rotate(const Vector3<T>& v);
 	}
 }
 

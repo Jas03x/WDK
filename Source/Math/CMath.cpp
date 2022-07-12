@@ -12,6 +12,21 @@
 
 using namespace Wdk;
 
+#define CMP(x0, x1)						\
+	if ((x0) < (x1)) return true;		\
+	else if ((x0) > (x1)) return false;	\
+
+#define ADD2(v0, v1, v) { (v)[0] = (v0)[0] + (v1)[0]; (v)[1] = (v0)[1] + (v1)[1]; }
+#define SUB2(v0, v1, v) { (v)[0] = (v0)[0] - (v1)[0]; (v)[1] = (v0)[1] - (v1)[1]; }
+#define ADD3(v0, v1, v) { (v)[0] = (v0)[0] + (v1)[0]; (v)[1] = (v0)[1] + (v1)[1]; (v)[2] = (v0)[2] + (v1)[2]; }
+#define SUB3(v0, v1, v) { (v)[0] = (v0)[0] - (v1)[0]; (v)[1] = (v0)[1] - (v1)[1]; (v)[2] = (v0)[2] - (v1)[2]; }
+#define ADD4(v0, v1, v) { (v)[0] = (v0)[0] + (v1)[0]; (v)[1] = (v0)[1] + (v1)[1]; (v)[2] = (v0)[2] + (v1)[2]; (v)[3] = (v0)[3] + (v1)[3]; }
+#define SUB4(v0, v1, v) { (v)[0] = (v0)[0] - (v1)[0]; (v)[1] = (v0)[1] - (v1)[1]; (v)[2] = (v0)[2] - (v1)[2]; (v)[3] = (v0)[3] - (v1)[3]; }
+
+#define MUL2(a, v0, v) { (v)[0] = (a) * (v0)[0]; (v)[1] = (a) * (v0)[1]; }
+#define MUL3(a, v0, v) { (v)[0] = (a) * (v0)[0]; (v)[1] = (a) * (v0)[1]; (v)[2] = (a) * (v0)[2]; }
+#define MUL4(a, v0, v) { (v)[0] = (a) * (v0)[0]; (v)[1] = (a) * (v0)[1]; (v)[2] = (a) * (v0)[2]; (v)[3] = (a) * (v0)[3]; }
+
 #define SQR(x) ((x) * (x))
 
 #define __DOT2(x0, y0, x1, y1) (((x0) * (x1)) + ((y0) * (y1)))
@@ -27,20 +42,20 @@ using namespace Wdk;
 
 // ------------------------------------ Helper functions ------------------------------------------
 
-template <typename T> VOID WriteToBuffer(PWCHAR& bufPtr, SIZE_T& bufSize, T t)
+template <typename T> VOID WriteToBuffer(PWCHAR& pBuffer, SIZE_T& szBuffer, T t)
 {
 	SIZE_T cchRemaining = 0;
 
 	if constexpr (std::is_arithmetic<T>::value)
 	{
-		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%f", t); }
-		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
-		else											{ StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%lli", static_cast<LONGLONG>(t)); }
+		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%f", t); }
+		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
+		else											{ StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%lli", static_cast<LONGLONG>(t));  }
 	}
-	else												{ StringCchPrintfExW(bufPtr, bufSize, NULL, &cchRemaining, 0, L"%S", t); }
+	else												{ StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%S", t); }
 
-	bufPtr  += cchRemaining;
-	bufSize -= cchRemaining;
+	pBuffer  += cchRemaining;
+	szBuffer -= cchRemaining;
 }
 
 // ------------------------------------ Scalar functions ------------------------------------------
@@ -66,16 +81,16 @@ T Clamp(T val, T min, T max)
 	template X Step(X v0, X v1, X step);		 \
     template X Clamp(X val, X min, X max);       \
 
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(char);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(short);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(int);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(long);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned char);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned short);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned int);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned long);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(float);
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(double);
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(char)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(short)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(int)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(long)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned char)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned short)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned int)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(unsigned long)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(float)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(double)
 
 // ----------------------------------------- Vector2 ----------------------------------------------
 
@@ -86,22 +101,20 @@ template <typename T> Vector2<T>::Vector2(T _x, T _y) { x = _x; y = _y; }
 
 template <typename T> Vector2<T>& Vector2<T>::operator = (const Vector2<T>& v)
 {
-	for (uint32_t i = 0; i < _countof(elements); i++)
-	{
-		elements[i] = v.elements[i];
-	}
+	this->x = v.x;
+	this->y = v.y;
 	return *this;
 }
 
 template <typename T> T& Vector2<T>::operator[] (uint32_t i) { return elements[i]; }
 template <typename T> const T& Vector2<T>::operator[] (uint32_t i) const { return elements[i]; }
 
+template <typename T> Vector2<T> Vector2<T>::operator + () const { return Vector2<T>(+x, +y); }
 template <typename T> Vector2<T> Vector2<T>::operator - () const
 {
 	if constexpr (std::is_signed<T>::value) { return Vector2<T>(-x, -y); }
 	else { WdkAssert(false, __FUNCTION__ L": cannot use unary minus operator on unsigned type"); return *this; }
 }
-template <typename T> Vector2<T> Vector2<T>::operator + () const { return Vector2<T>(+x, +y); }
 
 template <typename T> Vector2<T>  Vector2<T>::operator +  (const Vector2<T>& v) const { return Vector2<T>(x + v.x, y + v.y); }
 template <typename T> Vector2<T>  Vector2<T>::operator -  (const Vector2<T>& v) const { return Vector2<T>(x - v.x, y - v.y); }
@@ -115,12 +128,8 @@ template <typename T> Vector2<T> operator * (T t, Vector2<T>& v) { return v * t;
 
 template <typename T> bool Vector2<T>::operator < (const Vector2<T>& v) const
 {
-	for (uint32_t i = 0; i < _countof(elements); i++)
-	{
-		if (elements[i] < v.elements[i]) return true;
-		else if (elements[i] == v.elements[i]) continue;
-		else return false;
-	}
+	CMP(this->x, v.x);
+	CMP(this->y, v.y);
 	return false;
 }
 
@@ -136,22 +145,21 @@ template <typename T> Vector3<T>::Vector3(T _x, T _y, T _z) { x = _x; y = _y; z 
 
 template <typename T> Vector3<T>& Vector3<T>::operator = (const Vector3<T>& v)
 {
-	for (uint32_t i = 0; i < _countof(elements); i++)
-	{
-		elements[i] = v.elements[i];
-	}
+	this->x = v.x;
+	this->y = v.y;
+	this->z = v.z;
 	return *this;
 }
 
 template <typename T> T& Vector3<T>::operator[] (uint32_t i) { return elements[i]; }
 template <typename T> const T& Vector3<T>::operator[] (uint32_t i) const { return elements[i]; }
 
+template <typename T> Vector3<T> Vector3<T>::operator + () const { return Vector3<T>(+x, +y, +z); }
 template <typename T> Vector3<T> Vector3<T>::operator - () const
 {
 	if constexpr (std::is_signed<T>::value) { return Vector3<T>(-x, -y, -z); }
 	else { WdkAssert(false, __FUNCTION__ L": cannot use unary minus operator on unsigned type"); return *this; }
 }
-template <typename T> Vector3<T> Vector3<T>::operator + () const { return Vector3<T>(+x, +y, +z); }
 
 template <typename T> Vector3<T>  Vector3<T>::operator +  (const Vector3<T>& v) const { return Vector3<T>(x + v.x, y + v.y, z + v.z); }
 template <typename T> Vector3<T>  Vector3<T>::operator -  (const Vector3<T>& v) const { return Vector3<T>(x - v.x, y - v.y, z - v.z); }
@@ -165,12 +173,9 @@ template <typename T> Vector3<T> operator * (T t, Vector3<T>& v) { return v * t;
 
 template <typename T> bool Vector3<T>::operator < (const Vector3<T>& v) const
 {
-	for (uint32_t i = 0; i < _countof(elements); i++)
-	{
-		if (elements[i] < v.elements[i]) return true;
-		else if (elements[i] == v.elements[i]) continue;
-		else return false;
-	}
+	CMP(this->x, v.x);
+	CMP(this->y, v.y);
+	CMP(this->z, v.z);
 	return false;
 }
 
@@ -186,22 +191,22 @@ template <typename T> Vector4<T>::Vector4(T _x, T _y, T _z, T _w) { x = _x; y = 
 
 template <typename T> Vector4<T>& Vector4<T>::operator = (const Vector4<T>& v)
 {
-	for (uint32_t i = 0; i < _countof(elements); i++)
-	{
-		elements[i] = v.elements[i];
-	}
+	this->x = v.x;
+	this->y = v.y;
+	this->z = v.z;
+	this->w = v.w;
 	return *this;
 }
 
 template <typename T> T& Vector4<T>::operator[] (uint32_t i) { return elements[i]; }
 template <typename T> const T& Vector4<T>::operator[] (uint32_t i) const { return elements[i]; }
 
+template <typename T> Vector4<T> Vector4<T>::operator + () const { return Vector4<T>(+x, +y, +z, +w); }
 template <typename T> Vector4<T> Vector4<T>::operator - () const
 {
 	if constexpr (std::is_signed<T>::value) { return Vector4<T>(-x, -y, -z, -w); }
 	else { WdkAssert(false, __FUNCTION__ L": cannot use unary minus operator on unsigned type"); return *this; }
 }
-template <typename T> Vector4<T> Vector4<T>::operator + () const { return Vector4<T>(+x, +y, +z, +w); }
 
 template <typename T> Vector4<T>  Vector4<T>::operator +  (const Vector4<T>& v) const { return Vector4<T>(x + v.x, y + v.y, z + v.z, w + v.w); }
 template <typename T> Vector4<T>  Vector4<T>::operator -  (const Vector4<T>& v) const { return Vector4<T>(x - v.x, y - v.y, z - v.z, w - v.w); }
@@ -215,12 +220,10 @@ template <typename T> Vector4<T> operator * (T t, Vector4<T>& v) { return v * t;
 
 template <typename T> bool Vector4<T>::operator < (const Vector4<T>& v) const
 {
-	for (uint32_t i = 0; i < _countof(elements); i++)
-	{
-		if (elements[i] < v.elements[i]) return true;
-		else if (elements[i] == v.elements[i]) continue;
-		else return false;
-	}
+	CMP(this->x, v.x);
+	CMP(this->y, v.y);
+	CMP(this->z, v.z);
+	CMP(this->w, v.w);
 	return false;
 }
 
@@ -257,21 +260,21 @@ template <typename T> std::wstring VectorToString(T* pElements, SIZE_T nElements
 {
 	WCHAR buffer[2048] = {};
 
-	PWCHAR bufPtr = buffer;
-	SIZE_T bufSize = _countof(buffer);
+	PWCHAR pBuffer = buffer;
+	SIZE_T szBuffer = _countof(buffer);
 
-	WriteToBuffer(bufPtr, bufSize, "<");
+	WriteToBuffer(pBuffer, szBuffer, "<");
 	for (uint32_t i = 0; i < nElements; i++)
 	{
-		WriteToBuffer(bufPtr, bufSize, pElements[i]);
+		WriteToBuffer(pBuffer, szBuffer, pElements[i]);
 		if (i != (nElements - 1))
 		{
-			WriteToBuffer(bufPtr, bufSize, ", ");
+			WriteToBuffer(pBuffer, szBuffer, ", ");
 		}
 	}
-	WriteToBuffer(bufPtr, bufSize, ">");
+	WriteToBuffer(pBuffer, szBuffer, ">");
 	
-	*bufPtr = 0; // null-terminate
+	*pBuffer = 0; // null-terminate
 
 	return std::wstring(buffer);
 }
@@ -318,13 +321,17 @@ INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned long)
 INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)
 INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(double)
 
+// --------------------------------------- Quaternion ---------------------------------------------
+
+
+
 // ----------------------------------------- Matrix2 ----------------------------------------------
 
 template <typename T> Matrix2<T>::Matrix2() : Matrix2<T>(static_cast<T>(1)) { }
 template <typename T> Matrix2<T>::Matrix2(T t)
 {
-	rows[0] = Vector2<T>(1, 0);
-	rows[1] = Vector2<T>(0, 1);
+	rows[0] = Vector2<T>(t, 0);
+	rows[1] = Vector2<T>(0, t);
 }
 template <typename T> Matrix2<T>::Matrix2(const Vector2<T>& v0, const Vector2<T>& v1)
 {
@@ -335,10 +342,8 @@ template <typename T> Matrix2<T>::Matrix2(const Matrix2<T>& m) : Matrix2<T>(m[0]
 
 template <typename T> Matrix2<T>& Matrix2<T>::operator = (const Matrix2<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] = m.rows[i];
-	}
+	this->rows[0] = m.rows[0];
+	this->rows[1] = m.rows[1];
 	return *this;
 }
 
@@ -347,70 +352,66 @@ template <typename T> const Vector2<T>& Matrix2<T>::operator[] (uint32_t i) cons
 
 template <typename T> Matrix2<T> Matrix2<T>::operator * (T t) const
 {
-	return Matrix2<T>(
-		t * rows[0],
-		t * rows[1]
-	);
+	Matrix2<T> r;
+	MUL2(t, this->elements[0], r.elements[0]);
+	MUL2(t, this->elements[1], r.elements[1]);
+	return r;
 }
 
 template <typename T> Matrix2<T>& Matrix2<T>::operator *= (T t)
 {
-	rows[0] *= t;
-	rows[1] *= t;
+	MUL2(t, this->elements[0], this->elements[0]);
+	MUL2(t, this->elements[1], this->elements[1]);
 	return *this;
 }
 
 template <typename T> Matrix2<T> Matrix2<T>::operator + (const Matrix2<T>& m) const
 {
-	return Matrix2<T>(
-		rows[0] + m.rows[0],
-		rows[1] + m.rows[1]
-	);
+	Matrix2<T> r;
+	ADD2(this->elements[0], m.elements[0], r.elements[0]);
+	ADD2(this->elements[1], m.elements[1], r.elements[1]);
+	return r;
 }
 
 template <typename T> Matrix2<T> Matrix2<T>::operator - (const Matrix2<T>& m) const
 {
-	return Matrix2<T>(
-		rows[0] - m.rows[0],
-		rows[1] - m.rows[1]
-	);
+	Matrix2<T> r;
+	SUB2(this->elements[0], m.elements[0], r.elements[0]);
+	SUB2(this->elements[1], m.elements[1], r.elements[1]);
+	return r;
 }
 
 template <typename T> Matrix2<T>& Matrix2<T>::operator += (const Matrix2<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] += m.rows[i];
-	}
+	ADD2(this->elements[0], m.elements[0], this->elements[0]);
+	ADD2(this->elements[1], m.elements[1], this->elements[1]);
 	return *this;
 }
 
 template <typename T> Matrix2<T>& Matrix2<T>::operator -= (const Matrix2<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] -= m.rows[i];
-	}
+	SUB2(this->elements[0], m.elements[0], this->elements[0]);
+	SUB2(this->elements[1], m.elements[1], this->elements[1]);
 	return *this;
 }
 
 template <typename T> Matrix2<T> Matrix2<T>::operator * (const Matrix2<T>& m) const
 {
 	Matrix2<T> r;
-	DOT2(r.rows, rows, m.rows, 0, 0);
-	DOT2(r.rows, rows, m.rows, 0, 1);
-	DOT2(r.rows, rows, m.rows, 1, 0);
-	DOT2(r.rows, rows, m.rows, 1, 1);
+	DOT2(r.rows, this->rows, m.rows, 0, 0);
+	DOT2(r.rows, this->rows, m.rows, 0, 1);
+	DOT2(r.rows, this->rows, m.rows, 1, 0);
+	DOT2(r.rows, this->rows, m.rows, 1, 1);
 	return r;
 }
 
 template <typename T> Matrix2<T>& Matrix2<T>::operator *= (const Matrix2<T>& m)
 {
 	Matrix2<T> c(*this);
-	DOT2(rows, c.rows, m.rows, 0, 0);
-	DOT2(rows, c.rows, m.rows, 0, 1);
-	DOT2(rows, c.rows, m.rows, 1, 0);
-	DOT2(rows, c.rows, m.rows, 1, 1);
+	DOT2(this->rows, c.rows, m.rows, 0, 0);
+	DOT2(this->rows, c.rows, m.rows, 0, 1);
+	DOT2(this->rows, c.rows, m.rows, 1, 0);
+	DOT2(this->rows, c.rows, m.rows, 1, 1);
 	return *this;
 }
 
@@ -427,9 +428,9 @@ template <typename T> Vector2<T> Matrix2<T>::operator * (const Vector2<T>& v) co
 template <typename T> Matrix3<T>::Matrix3() : Matrix3<T>(static_cast<T>(1)) { }
 template <typename T> Matrix3<T>::Matrix3(T t)
 {
-	rows[0] = Vector3<T>(1, 0, 0);
-	rows[1] = Vector3<T>(0, 1, 0);
-	rows[2] = Vector3<T>(0, 0, 1);
+	rows[0] = Vector3<T>(t, 0, 0);
+	rows[1] = Vector3<T>(0, t, 0);
+	rows[2] = Vector3<T>(0, 0, t);
 }
 template <typename T> Matrix3<T>::Matrix3(const Vector3<T>& v0, const Vector3<T>& v1, const Vector3<T>& v2)
 {
@@ -441,10 +442,10 @@ template <typename T> Matrix3<T>::Matrix3(const Matrix3<T>& m) : Matrix3<T>(m[0]
 
 template <typename T> Matrix3<T>& Matrix3<T>::operator = (const Matrix3<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] = m.rows[i];
-	}
+	rows[0] = m.rows[0];
+	rows[1] = m.rows[1];
+	rows[2] = m.rows[2];
+	return *this;
 }
 
 template <typename T> Vector3<T>& Matrix3<T>::operator[] (uint32_t i) { return rows[i]; }
@@ -452,54 +453,52 @@ template <typename T> const Vector3<T>& Matrix3<T>::operator[] (uint32_t i) cons
 
 template <typename T> Matrix3<T> Matrix3<T>::operator * (T t) const
 {
-	return Matrix3<T>(
-		t * rows[0],
-		t * rows[1],
-		t * rows[2]
-	);
+	Matrix3<T> r;
+	MUL3(t, this->elements[0], r.elements[0]);
+	MUL3(t, this->elements[1], r.elements[1]);
+	MUL3(t, this->elements[2], r.elements[2]);
+	return r;
 }
 
 template <typename T> Matrix3<T>& Matrix3<T>::operator *= (T t)
 {
-	rows[0] *= t;
-	rows[1] *= t;
-	rows[2] *= t;
+	MUL3(t, this->elements[0], this->elements[0]);
+	MUL3(t, this->elements[1], this->elements[1]);
+	MUL3(t, this->elements[2], this->elements[2]);
 	return *this;
 }
 
 template <typename T> Matrix3<T> Matrix3<T>::operator + (const Matrix3<T>& m) const
 {
-	return Matrix3<T>(
-		rows[0] + m.rows[0],
-		rows[1] + m.rows[1],
-		rows[2] + m.rows[2]
-	);
+	Matrix3<T> r;
+	ADD3(this->elements[0], m.elements[0], r.elements[0]);
+	ADD3(this->elements[1], m.elements[1], r.elements[1]);
+	ADD3(this->elements[2], m.elements[2], r.elements[2]);
+	return r;
 }
 
 template <typename T> Matrix3<T> Matrix3<T>::operator - (const Matrix3<T>& m) const
 {
-	return Matrix3<T>(
-		rows[0] - m.rows[0],
-		rows[1] - m.rows[1],
-		rows[2] - m.rows[2]
-	);
+	Matrix3<T> r;
+	SUB3(this->elements[0], m.elements[0], r.elements[0]);
+	SUB3(this->elements[1], m.elements[1], r.elements[1]);
+	SUB3(this->elements[2], m.elements[2], r.elements[2]);
+	return r;
 }
 
 template <typename T> Matrix3<T>& Matrix3<T>::operator += (const Matrix3<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] += m.rows[i];
-	}
+	ADD3(this->elements[0], m.elements[0], this->elements[0]);
+	ADD3(this->elements[1], m.elements[1], this->elements[1]);
+	ADD3(this->elements[2], m.elements[2], this->elements[2]);
 	return *this;
 }
 
 template <typename T> Matrix3<T>& Matrix3<T>::operator -= (const Matrix3<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] -= m.rows[i];
-	}
+	SUB3(this->elements[0], m.elements[0], this->elements[0]);
+	SUB3(this->elements[1], m.elements[1], this->elements[1]);
+	SUB3(this->elements[2], m.elements[2], this->elements[2]);
 	return *this;
 }
 
@@ -547,10 +546,10 @@ template <typename T> Vector3<T> Matrix3<T>::operator * (const Vector3<T>& v) co
 template <typename T> Matrix4<T>::Matrix4() : Matrix4<T>(static_cast<T>(1)) { }
 template <typename T> Matrix4<T>::Matrix4(T t)
 {
-	rows[0] = Vector4<T>(1, 0, 0, 0);
-	rows[1] = Vector4<T>(0, 1, 0, 0);
-	rows[2] = Vector4<T>(0, 0, 1, 0);
-	rows[3] = Vector4<T>(0, 0, 0, 1);
+	rows[0] = Vector4<T>(t, 0, 0, 0);
+	rows[1] = Vector4<T>(0, t, 0, 0);
+	rows[2] = Vector4<T>(0, 0, t, 0);
+	rows[3] = Vector4<T>(0, 0, 0, t);
 }
 template <typename T> Matrix4<T>::Matrix4(const Vector4<T>& v0, const Vector4<T>& v1, const Vector4<T>& v2, const Vector4<T>& v3)
 {
@@ -563,10 +562,11 @@ template <typename T> Matrix4<T>::Matrix4(const Matrix4<T>& m) : Matrix4<T>(m[0]
 
 template <typename T> Matrix4<T>& Matrix4<T>::operator = (const Matrix4<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] = m.rows[i];
-	}
+	rows[0] = m.rows[0];
+	rows[1] = m.rows[1];
+	rows[2] = m.rows[2];
+	rows[3] = m.rows[3];
+	return *this;
 }
 
 template <typename T> Vector4<T>& Matrix4<T>::operator[] (uint32_t i) { return rows[i]; }
@@ -574,58 +574,58 @@ template <typename T> const Vector4<T>& Matrix4<T>::operator[] (uint32_t i) cons
 
 template <typename T> Matrix4<T> Matrix4<T>::operator * (T t) const
 {
-	return Matrix4<T>(
-		t * rows[0],
-		t * rows[1],
-		t * rows[2],
-		t * rows[3]
-	);
+	Matrix4<T> r;
+	MUL4(t, this->elements[0], r.elements[0]);
+	MUL4(t, this->elements[1], r.elements[1]);
+	MUL4(t, this->elements[2], r.elements[2]);
+	MUL4(t, this->elements[3], r.elements[3]);
+	return r;
 }
 
 template <typename T> Matrix4<T>& Matrix4<T>::operator *= (T t)
 {
-	rows[0] *= t;
-	rows[1] *= t;
-	rows[2] *= t;
-	rows[3] *= t;
+	MUL4(t, this->elements[0], this->elements[0]);
+	MUL4(t, this->elements[1], this->elements[1]);
+	MUL4(t, this->elements[2], this->elements[2]);
+	MUL4(t, this->elements[3], this->elements[3]);
 	return *this;
 }
 
 template <typename T> Matrix4<T> Matrix4<T>::operator + (const Matrix4<T>& m) const
 {
-	return Matrix4<T>(
-		rows[0] + m.rows[0],
-		rows[1] + m.rows[1],
-		rows[2] + m.rows[2],
-		rows[3] + m.rows[3]
-	);
+	Matrix4<T> r;
+	ADD4(this->elements[0], m.elements[0], r.elements[0]);
+	ADD4(this->elements[1], m.elements[1], r.elements[1]);
+	ADD4(this->elements[2], m.elements[2], r.elements[2]);
+	ADD4(this->elements[3], m.elements[3], r.elements[3]);
+	return r;
 }
 
 template <typename T> Matrix4<T> Matrix4<T>::operator - (const Matrix4<T>& m) const
 {
-	return Matrix4<T>(
-		rows[0] - m.rows[0],
-		rows[1] - m.rows[1],
-		rows[2] - m.rows[2],
-		rows[3] - m.rows[3]
-	);
+	Matrix4<T> r;
+	SUB4(this->elements[0], m.elements[0], r.elements[0]);
+	SUB4(this->elements[1], m.elements[1], r.elements[1]);
+	SUB4(this->elements[2], m.elements[2], r.elements[2]);
+	SUB4(this->elements[3], m.elements[3], r.elements[3]);
+	return r;
 }
 
 template <typename T> Matrix4<T>& Matrix4<T>::operator += (const Matrix4<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] += m.rows[i];
-	}
+	ADD4(this->elements[0], m.elements[0], this->elements[0]);
+	ADD4(this->elements[1], m.elements[1], this->elements[1]);
+	ADD4(this->elements[2], m.elements[2], this->elements[2]);
+	ADD4(this->elements[3], m.elements[3], this->elements[3]);
 	return *this;
 }
 
 template <typename T> Matrix4<T>& Matrix4<T>::operator -= (const Matrix4<T>& m)
 {
-	for (uint32_t i = 0; i < _countof(rows); i++)
-	{
-		rows[i] -= m.rows[i];
-	}
+	SUB4(this->elements[0], m.elements[0], this->elements[0]);
+	SUB4(this->elements[1], m.elements[1], this->elements[1]);
+	SUB4(this->elements[2], m.elements[2], this->elements[2]);
+	SUB4(this->elements[3], m.elements[3], this->elements[3]);
 	return *this;
 }
 

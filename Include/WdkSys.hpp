@@ -4,7 +4,7 @@
 #include "WdkDef.hpp"
 
 #ifdef CreateWindow
-	#undef CreateWindow
+#undef CreateWindow
 #endif
 
 namespace Wdk
