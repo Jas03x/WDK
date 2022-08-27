@@ -5,7 +5,7 @@
 #define VOID	void
 
 #ifndef NULL
-#define NULL 0
+#define NULL	0
 #endif
 
 #define TRUE	1
