@@ -38,7 +38,7 @@ using namespace Wdk;
 #define DOT4(m, m0, m1, r, c) (m)[c][r] = __DOT4((m0)[0][r], (m0)[1][r], (m0)[2][r], (m0)[3][r], (m1)[c][0], (m1)[c][1], (m1)[c][2], (m1)[c][3])
 
 #define DET2(a, b, c, d) ((a) * (d) - (b) * (c))
-#define DET3(a, b, c, d, e, f, g, h, i) (((a) * DET2(e, f, h, i)) - ((b) * DET2(d, f, g, i)) + ((c) * DET2(d, e, g, h)))
+#define DET3(a, b, c, d, e, f, g, h, i) (((a) * DET2((e), (f), (h), (i))) - ((b) * DET2((d), (f), (g), (i))) + ((c) * DET2((d), (e), (g), (h))))
 
 // ------------------------------------ Helper functions ------------------------------------------
 
