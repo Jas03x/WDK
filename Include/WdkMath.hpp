@@ -186,7 +186,7 @@ namespace Wdk
 	// prototype for Quaternion::Quaternion(const struct Matrix3<T>&)
 	template <typename T> struct Matrix3;
 
-	template <typename T>
+	template <typename T = float>
 	struct Quaternion
 	{
 		union
@@ -202,8 +202,8 @@ namespace Wdk
 		Quaternion(T _x, T _y, T _z, T _w);
 		Quaternion(const struct Matrix3<T>& m);
 
-		Quaternion operator * (const Quaternion& q) const;
-		Quaternion operator *= (const Quaternion& q);
+		Quaternion  operator *  (const Quaternion& q) const;
+		Quaternion& operator *= (const Quaternion& q);
 
 		Quaternion& operator = (const Vector4<T>& v);
 		Quaternion& operator = (const Quaternion& q);

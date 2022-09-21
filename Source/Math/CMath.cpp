@@ -323,7 +323,101 @@ INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(double)
 
 // --------------------------------------- Quaternion ---------------------------------------------
 
+template <typename T> Quaternion<T>::Quaternion() : Quaternion<T>(0, 0, 0, 0) { }
+template <typename T> Quaternion<T>::Quaternion(const Vector4<T>& v) : Quaternion<T>(v.x, v.y, v.z, v.w) { }
+template <typename T> Quaternion<T>::Quaternion(T _x, T _y, T _z, T _w) { x = _x; y = _y; z = _z; w = _w; }
 
+template <typename T> Quaternion<T>::Quaternion(const Vector3<T>& v) : Quaternion<T>(v.x, v.y, v.z) { }
+template <typename T> Quaternion<T>::Quaternion(T _x, T _y, T _z)
+{
+	const Vector3F h = Vector3<T>(_x, _y, _z) * 0.5f; // half-rotation vector
+	const Vector3F c(cosf(h.x), cosf(h.y), cosf(h.z));
+	const Vector3F s(sinf(h.x), sinf(h.y), sinf(h.z));
+
+	w = c.x * c.y * c.z + s.x * s.y * s.z;
+	x = s.x * c.y * c.z - c.x * s.y * s.z;
+	y = c.x * s.y * c.z + s.x * c.y * s.z;
+	z = c.x * c.y * s.z - s.x * s.y * c.z;
+}
+
+template <typename T> Quaternion<T>::Quaternion(const struct Matrix3<T>& m)
+{
+	if (m[0][0] + m[1][1] + m[2][2] >= static_cast<T>(0)) // q_w >= 1/2
+	{
+		float f = static_cast<T>(2) * sqrt(1 + m[0][0] + m[1][1] + m[2][2]);
+		w = static_cast<T>(0.25) * f;
+		x = (m[1][2] - m[2][1])  / f;
+		y = (m[2][0] - m[0][2])  / f;
+		z = (m[0][1] - m[1][0])  / f;
+	}
+	else if (m[0][0] - m[1][1] - m[2][2] >= static_cast<T>(0)) // q_x >= 1/2
+	{
+		float f = static_cast<T>(2) * sqrt(1 + m[0][0] - m[1][1] - m[2][2]);
+		w = (m[1][2] - m[2][1])  / f;
+		x = static_cast<T>(0.25) * f;
+		y = (m[1][0] + m[0][1])  / f;
+		z = (m[2][0] + m[0][2])  / f;
+	}
+	else if (-m[0][0] + m[1][1] - m[2][2] >= static_cast<T>(0)) // q_y >= 1/2
+	{
+		float f = static_cast<T>(2) * sqrt(1 - m[0][0] + m[1][1] - m[2][2]);
+		w = (m[2][0] - m[0][2])  / f;
+		x = (m[1][0] + m[0][1])  / f;
+		y = static_cast<T>(0.25) * f;
+		z = (m[1][2] + m[2][1])  / f;
+	}
+	else // (-m[0][0] - m[1][1] + m[2][2] >= 0) => q_z >= 1/2
+	{
+		float f = static_cast<T>(2) * sqrt(1 - m[0][0] - m[1][1] + m[2][2]);
+		w = (m[0][1] - m[1][0])  / f;
+		x = (m[2][0] + m[0][2])  / f;
+		y = (m[1][2] + m[2][1])  / f;
+		z = static_cast<T>(0.25) * f;
+	}
+}
+
+template <typename T> Quaternion<T> Quaternion<T>::operator * (const Quaternion<T> & q) const
+{
+	Quaternion<T> r;
+	r.w = w*q.w - x*q.x - y*q.y - z*q.z;
+	r.x = w*q.x + x*q.w + y*q.z - z*q.y;
+	r.y = w*q.y - x*q.z + y*q.w + z*q.x;
+	r.z = w*q.z + x*q.y - y*q.x + z*q.w;
+	return r;
+}
+
+template <typename T> Quaternion<T>& Quaternion<T>::operator *= (const Quaternion<T>& q)
+{
+	Quaternion<T> r = *this;
+	w = r.w*q.w - r.x*q.x - r.y*q.y - r.z*q.z;
+	x = r.w*q.x + r.x*q.w + r.y*q.z - r.z*q.y;
+	y = r.w*q.y - r.x*q.z + r.y*q.w + r.z*q.x;
+	z = r.w*q.z + r.x*q.y - r.y*q.x + r.z*q.w;
+	return *this;
+}
+
+template <typename T> Quaternion<T>& Quaternion<T>::operator = (const Vector4<T>& v)
+{
+	w = v.w;
+	x = v.x;
+	y = v.y;
+	z = v.z;
+	return *this;
+}
+
+template <typename T> Quaternion<T>& Quaternion<T>::operator = (const Quaternion& q)
+{
+	w = q.w;
+	x = q.x;
+	y = q.y;
+	z = q.z;
+	return *this;
+}
+
+#define INSTANTIATE_QUATERNION_TEMPLATES_FOR_FLOATING_POINT_TYPE(X) \
+    template struct Quaternion<X>;
+
+INSTANTIATE_QUATERNION_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)
 
 // ----------------------------------------- Matrix2 ----------------------------------------------
 
@@ -560,6 +654,31 @@ template <typename T> Matrix4<T>::Matrix4(const Vector4<T>& v0, const Vector4<T>
 }
 template <typename T> Matrix4<T>::Matrix4(const Matrix4<T>& m) : Matrix4<T>(m[0], m[1], m[2], m[3]) { }
 
+template <typename T> Matrix4<T>::Matrix4(const Quaternion<T>& q)
+{
+	float qxx = q.x * q.x;
+	float qxy = q.x * q.y;
+	float qxz = q.x * q.z;
+	float qxw = q.w * q.x;
+	float qyy = q.y * q.y;
+	float qyz = q.y * q.z;
+	float qyw = q.w * q.y;
+	float qzz = q.z * q.z;
+	float qzw = q.w * q.z;
+
+	elements[0][0] = 1.0f - 2.0f * (qyy + qzz);
+	elements[0][1] = 2.0f * (qxy + qzw);
+	elements[0][2] = 2.0f * (qxz - qyw);
+
+	elements[1][0] = 2.0f * (qxy - qzw);
+	elements[1][1] = 1.0f - 2.0f * (qxx + qzz);
+	elements[1][2] = 2.0f * (qyz + qxw);
+
+	elements[2][0] = 2.0f * (qxz + qyw);
+	elements[2][1] = 2.0f * (qyz - qxw);
+	elements[2][2] = 1.0f - 2.0f * (qxx + qyy);
+}
+
 template <typename T> Matrix4<T>& Matrix4<T>::operator = (const Matrix4<T>& m)
 {
 	rows[0] = m.rows[0];
@@ -774,6 +893,27 @@ template <typename T> Matrix4<T> Matrix::Transpose(const Matrix4<T>& m)
 		{ m[0][2], m[1][2], m[2][2], m[3][2] },
 		{ m[0][3], m[1][3], m[2][3], m[3][3] }
 	};
+}
+
+template <typename T> Matrix4<T> Matrix::Translate(const Vector3<T>& v)
+{
+	Matrix4F m(1.0f);
+	m[3] = Vector4F(v, 1.0f);
+	return m;
+}
+
+template <typename T> Matrix4<T> Matrix::Scale(const Vector3<T>& v)
+{
+	Matrix4F m(1.0f);
+	m[0][0] = v.x;
+	m[1][1] = v.y;
+	m[2][2] = v.z;
+	return m;
+}
+
+template <typename T> Matrix4<T> Matrix::Rotate(const Vector3<T>& v)
+{
+	return Matrix4F(Quaternion(v));
 }
 
 // ------------------------- Matrix template/function instantiations ------------------------------
