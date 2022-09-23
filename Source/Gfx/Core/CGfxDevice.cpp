@@ -317,6 +317,12 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 
 VOID CGfxDevice::Uninitialize(VOID)
 {
+	if (m_pIRootSignature != NULL)
+	{
+		m_pIRootSignature->Release();
+		m_pIRootSignature = NULL;
+	}
+
 	if (m_pICommandAllocator != NULL)
 	{
 		m_pICommandAllocator->Release();
