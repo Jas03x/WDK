@@ -73,18 +73,20 @@ public:
 	BOOL Run()
 	{
 		BOOL Status = TRUE;
-
-		BOOL isRunning = TRUE;
 		WinEvent winEvent = {};
 
-		while ((Status == TRUE) && (isRunning == TRUE) && (m_pIWindow->Open()))
+		while ((Status == TRUE) && (m_pIWindow->Open()))
 		{
-			while (m_pIWindow->GetEvent(winEvent) == TRUE)
+			if (m_pIWindow->GetEvent(winEvent) == TRUE)
 			{
 				if (winEvent.msg == WIN_MSG::QUIT)
 				{
-					isRunning = FALSE;
+					break;
 				}
+			}
+			else
+			{
+				// Render
 			}
 		}
 
@@ -94,7 +96,7 @@ public:
 
 INT WdkMain(INT argc, PWCHAR argv)
 {
-	INT Status = 0;
+	INT Status = STATUS::SUCCESS;
 
 	Console::Write(L"Hello Triangle!\n");
 
@@ -102,17 +104,17 @@ INT WdkMain(INT argc, PWCHAR argv)
 
 	if (hello_triangle.Initialize() != TRUE)
 	{
-		Status = -1;
+		Status = STATUS::UNSUCCESSFUL;
 	}
 
-	if (Status == 0)
+	if (Status == STATUS::SUCCESS)
 	{
 		Status = hello_triangle.Run();
 	}
 
 	hello_triangle.Uninitialize();
 
-	if (Status == 0)
+	if (Status == STATUS::SUCCESS)
 	{
 		Console::Write(L"Goodbye Triangle!\n");
 	}
