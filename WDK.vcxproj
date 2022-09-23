@@ -72,9 +72,13 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</OutDir>
+    <IntDir>$(SolutionDir)Build\$(Platform)\$(Configuration)\</IntDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
@@ -154,7 +158,7 @@
     <ClInclude Include="Include\WdkDef.hpp" />
     <ClInclude Include="Include\WdkGfx.hpp" />
     <ClInclude Include="Include\WdkMath.hpp" />
-    <ClInclude Include="Include\WdkSys.hpp" />
+    <ClInclude Include="Include\WdkSystem.hpp" />
     <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp" />
     <ClInclude Include="Source\Math\CMath.hpp" />
     <ClInclude Include="Source\System\CConsole.hpp" />

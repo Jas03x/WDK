@@ -6,7 +6,7 @@
 
 using namespace Wdk;
 
-IWindow* Wdk::CreateWindow(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+IWindow* Wdk::CreateWindow(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	return CWindow::Create(ClassName, WindowName, ClientWidth, ClientHeight);
 }
@@ -16,7 +16,7 @@ VOID Wdk::DestroyWindow(IWindow* pWindow)
 	return CWindow::Destroy(static_cast<CWindow*>(pWindow));
 }
 
-CWindow* CWindow::Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG Width, ULONG Height)
+CWindow* CWindow::Create(PCWCHAR ClassName, PCWCHAR WindowName, ULONG Width, ULONG Height)
 {
 	CWindow* pWindow = new CWindow();
 	
@@ -58,7 +58,7 @@ CWindow::~CWindow(VOID)
 {
 }
 
-BOOL CWindow::Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+BOOL CWindow::Initialize(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	BOOL Status = TRUE;
 

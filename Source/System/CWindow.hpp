@@ -4,7 +4,7 @@
 #include "Windows.h"
 
 #include "Wdk.hpp"
-#include "WdkSys.hpp"
+#include "WdkSystem.hpp"
 
 namespace Wdk
 {
@@ -23,11 +23,11 @@ namespace Wdk
 		CWindow(VOID);
 		virtual ~CWindow(VOID);
 
-		BOOL Initialize(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
+		BOOL Initialize(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 		VOID Uninitialize(VOID);
 
 	public:
-		static CWindow* Create(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
+		static CWindow* Create(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 		static VOID Destroy(CWindow* pWindow);
 
 	public:

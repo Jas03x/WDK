@@ -43,7 +43,7 @@ namespace Wdk
 		virtual BOOL    GetRect(WIN_AREA area, WinRect& rRect) = 0;
 	};
 
-	IWindow* CreateWindow(LPCWSTR ClassName, LPCWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
+	IWindow* CreateWindow(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 	VOID	 DestroyWindow(IWindow* pWindow);
 }
 

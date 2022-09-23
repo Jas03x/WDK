@@ -44,7 +44,7 @@
     <ClInclude Include="Include\WdkMath.hpp">
       <Filter>Include</Filter>
     </ClInclude>
-    <ClInclude Include="Include\WdkSys.hpp">
+    <ClInclude Include="Include\WdkSystem.hpp">
       <Filter>Include</Filter>
     </ClInclude>
     <ClInclude Include="Include\Wdk.hpp">

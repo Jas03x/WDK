@@ -10,8 +10,6 @@
 #include "WdkDef.hpp"
 #include "WdkMath.hpp"
 
-using namespace Wdk;
-
 #define CMP(x0, x1)						\
 	if ((x0) < (x1)) return true;		\
 	else if ((x0) > (x1)) return false;	\
