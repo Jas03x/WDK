@@ -12,11 +12,14 @@ public:
 	CMemory(VOID);
 	~CMemory(VOID);
 
-	BOOL  Initialize(VOID);
-	VOID  Uninitialize(VOID);
+	BOOL Initialize(VOID);
+	VOID Uninitialize(VOID);
 
 	PVOID Allocate(SIZE_T nBytes, BOOL bClear);
 	BOOL  Release(PVOID pMemory);
 };
+
+BOOL InitializeMemoryHeap(VOID);
+VOID UninitializeMemoryHeap(VOID);
 
 #endif // WDK_CMEMORY_HPP

@@ -4,16 +4,14 @@
 
 #undef CreateWindow
 
-using namespace Wdk;
-
-IWindow* Wdk::CreateWindow(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+IWindow* CreateWindow(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	return CWindow::Create(ClassName, WindowName, ClientWidth, ClientHeight);
 }
 
-VOID Wdk::DestroyWindow(IWindow* pWindow)
+VOID DestroyWindow(IWindow* pIWindow)
 {
-	return CWindow::Destroy(static_cast<CWindow*>(pWindow));
+	return CWindow::Destroy(static_cast<CWindow*>(pIWindow));
 }
 
 CWindow* CWindow::Create(PCWCHAR ClassName, PCWCHAR WindowName, ULONG Width, ULONG Height)
@@ -183,7 +181,7 @@ LRESULT CWindow::WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return Result;
 }
 
-BOOL CWindow::GetEvent(WinEvent& rEvent)
+BOOL CWindow::GetEvent(WIN_EVENT& rEvent)
 {
 	BOOL Status = FALSE;
 	MSG msg = { 0 };
@@ -204,7 +202,7 @@ BOOL CWindow::GetEvent(WinEvent& rEvent)
 	return Status;
 }
 
-BOOL CWindow::GetRect(WIN_AREA area, WinRect& rRect)
+BOOL CWindow::GetRect(WIN_AREA area, WIN_RECT& rRect)
 {
 	BOOL Status = TRUE;
 	RECT rect = {};

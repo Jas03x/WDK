@@ -160,14 +160,20 @@
     <ClInclude Include="Include\WdkMath.hpp" />
     <ClInclude Include="Include\WdkSystem.hpp" />
     <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp" />
+    <ClInclude Include="Source\Gfx\Core\CRenderer.hpp" />
     <ClInclude Include="Source\Math\CMath.hpp" />
     <ClInclude Include="Source\System\CConsole.hpp" />
+    <ClInclude Include="Source\System\CFile.hpp" />
     <ClInclude Include="Source\System\CMemory.hpp" />
+    <ClInclude Include="Source\System\CSystem.hpp" />
     <ClInclude Include="Source\System\CWindow.hpp" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Gfx\Core\CGfxDevice.cpp" />
+    <ClCompile Include="Source\Gfx\Core\CRenderer.cpp" />
     <ClCompile Include="Source\Math\CMath.cpp" />
+    <ClCompile Include="Source\System\CFile.cpp" />
+    <ClCompile Include="Source\System\CSystem.cpp" />
     <ClCompile Include="Source\Wdk.cpp" />
     <ClCompile Include="Source\System\CConsole.cpp" />
     <ClCompile Include="Source\System\CMemory.cpp" />

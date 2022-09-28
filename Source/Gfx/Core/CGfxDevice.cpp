@@ -8,16 +8,16 @@
 
 #include "WdkSystem.hpp"
 
-using namespace Wdk;
+#include "CRenderer.hpp"
 
-IGfxDevice* Wdk::CreateDevice(IWindow* pIWindow)
+IGfxDevice* CreateDevice(IWindow* pIWindow)
 {
 	return CGfxDevice::Create(pIWindow);
 }
 
-VOID Wdk::DestroyDevice(IGfxDevice* pDevice)
+VOID DestroyDevice(IGfxDevice* pIDevice)
 {
-	CGfxDevice::Destroy(static_cast<CGfxDevice*>(pDevice));
+	CGfxDevice::Destroy(static_cast<CGfxDevice*>(pIDevice));
 }
 
 CGfxDevice* CGfxDevice::Create(IWindow* pIWindow)
@@ -66,7 +66,7 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pICommandAllocator = NULL;
 	m_pIRootSignature = NULL;
 
-	for (uint32_t i = 0; i < NumBuffers; i++)
+	for (UINT i = 0; i < NUM_BUFFERS; i++)
 	{
 		m_pIRenderBuffers[i] = NULL;
 	}
@@ -183,7 +183,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 
 	if (Status == TRUE)
 	{
-		WinRect rect = {};
+		WIN_RECT rect = {};
 		
 		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, rect) == TRUE)
 		{
@@ -195,7 +195,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 			swapChainDesc.SampleDesc.Count = 1;
 			swapChainDesc.SampleDesc.Quality = 0;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapChainDesc.BufferCount = NumBuffers;
+			swapChainDesc.BufferCount = NUM_BUFFERS;
 			swapChainDesc.Scaling = DXGI_SCALING_NONE;
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 			swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
@@ -226,7 +226,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC descHeap = {};
 		descHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		descHeap.NumDescriptors = NumBuffers;
+		descHeap.NumDescriptors = NUM_BUFFERS;
 		descHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		descHeap.NodeMask = 0;
 
@@ -245,7 +245,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 	{
 		D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandle = m_pIRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-		for (UINT i = 0; (Status == TRUE) && (i < NumBuffers); i++)
+		for (UINT i = 0; (Status == TRUE) && (i < NUM_BUFFERS); i++)
 		{
 			if (m_pISwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&m_pIRenderBuffers[i])) != S_OK)
 			{
@@ -329,7 +329,7 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pICommandAllocator = NULL;
 	}
 
-	for (uint32_t i = 0; i < NumBuffers; i++)
+	for (UINT i = 0; i < NUM_BUFFERS; i++)
 	{
 		if (m_pIRenderBuffers[i] != NULL)
 		{
@@ -563,4 +563,237 @@ BOOL CGfxDevice::PrintAdapterDesc(UINT uIndex, IDXGIAdapter4* pIAdapter)
 	}
 
 	return Status;
+}
+
+IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
+{
+	BOOL Status = TRUE;
+
+	IRenderer* pIRenderer = NULL;
+	ID3D12PipelineState* pIPipelineState = NULL;
+	D3D12_INPUT_ELEMENT_DESC InputElementDescs[MAX_INPUT_ELEMENTS] = {};
+	
+	if (rDesc.InputLayout.NumInputs <= MAX_INPUT_ELEMENTS)
+	{
+		for (UINT i = 0; (Status == TRUE) && (i < rDesc.InputLayout.NumInputs); i++)
+		{
+			switch (rDesc.InputLayout.pInputElements[i].Element)
+			{
+				case INPUT_ELEMENT_POSITION:
+				{
+					InputElementDescs[i].SemanticName = "POSITION";
+					break;
+				}
+				case INPUT_ELEMENT_COLOR:
+				{
+					InputElementDescs[i].SemanticName = "COLOR";
+					break;
+				}
+				default:
+				{
+					Status = FALSE;
+					Console::Write(L"Error: Invalid semantic index %u\n", rDesc.InputLayout.pInputElements[i].Element);
+					break;
+				}
+			}
+
+			if (Status == TRUE)
+			{
+				switch (rDesc.InputLayout.pInputElements[i].ElementFormat)
+				{
+					case INPUT_ELEMENT_FORMAT_RGB_32F:
+					{
+						InputElementDescs[i].Format = DXGI_FORMAT_R32G32B32_FLOAT;
+						break;
+					}
+					case INPUT_ELEMENT_FORMAT_RGBA_32F:
+					{
+						InputElementDescs[i].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
+						break;
+					}
+					default:
+					{
+						Status = FALSE;
+						Console::Write(L"Error: Invalid element format: %u\n", rDesc.InputLayout.pInputElements[i].ElementFormat);
+						break;
+					}
+				}
+			}
+
+			if (Status == TRUE)
+			{
+				switch (rDesc.InputLayout.pInputElements[i].Type)
+				{
+					case INPUT_ELEMENT_TYPE_PER_VERTEX:
+					{
+						InputElementDescs[i].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
+						break;
+					}
+					case INPUT_ELEMENT_TYPE_PER_INSTANCE:
+					{
+						InputElementDescs[i].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
+						break;
+					}
+					default:
+					{
+						Status = FALSE;
+						Console::Write(L"Error: Invalid element type %u\n", rDesc.InputLayout.pInputElements[i].Type);
+						break;
+					}
+				}
+			}
+
+			if (Status == TRUE)
+			{
+				InputElementDescs[i].AlignedByteOffset    = rDesc.InputLayout.pInputElements[i].AlignedByteOffset;
+				InputElementDescs[i].InputSlot            = rDesc.InputLayout.pInputElements[i].InputSlot;
+				InputElementDescs[i].SemanticIndex        = rDesc.InputLayout.pInputElements[i].ElementIndex;
+				InputElementDescs[i].InstanceDataStepRate = rDesc.InputLayout.pInputElements[i].InstanceStep;
+			}
+		}
+	}
+	else
+	{
+		Status = FALSE;
+		Console::Write(L"Error: Too many input elements\n");
+	}
+
+	if (Status == TRUE)
+	{
+		D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
+		
+		ZeroMemory(&Desc, sizeof(Desc));
+
+		// Root Signature
+		Desc.pRootSignature     = m_pIRootSignature;
+
+		// Vertex Shader
+		Desc.VS.pShaderBytecode = rDesc.VertexShader.pCode;
+		Desc.VS.BytecodeLength  = rDesc.VertexShader.Size;
+
+		// Pixel Shader
+		Desc.PS.pShaderBytecode = rDesc.PixelShader.pCode;
+		Desc.PS.BytecodeLength  = rDesc.PixelShader.Size;
+
+		// Domain Shader
+		Desc.DS.pShaderBytecode = NULL;
+		Desc.DS.BytecodeLength  = 0;
+
+		// Hull Shader
+		Desc.HS.pShaderBytecode = NULL;
+		Desc.HS.BytecodeLength  = 0;
+
+		// Geometry Shader
+		Desc.GS.pShaderBytecode = NULL;
+		Desc.GS.BytecodeLength  = 0;
+	
+		// Stream Output
+		Desc.StreamOutput.pSODeclaration   = NULL;
+		Desc.StreamOutput.NumEntries       = 0;
+		Desc.StreamOutput.pBufferStrides   = NULL;
+		Desc.StreamOutput.NumStrides       = 0;
+		Desc.StreamOutput.RasterizedStream = 0;
+
+		// Blend State
+		Desc.BlendState.AlphaToCoverageEnable                     = FALSE;
+		Desc.BlendState.IndependentBlendEnable                    = FALSE;
+		for (unsigned int i = 0; i < 8; i++)
+		{
+			Desc.BlendState.RenderTarget[i].BlendEnable           = FALSE;
+			Desc.BlendState.RenderTarget[i].LogicOpEnable         = FALSE;
+			Desc.BlendState.RenderTarget[i].SrcBlend              = D3D12_BLEND_ONE;
+			Desc.BlendState.RenderTarget[i].DestBlend             = D3D12_BLEND_ZERO;
+			Desc.BlendState.RenderTarget[i].BlendOp               = D3D12_BLEND_OP_ADD;
+			Desc.BlendState.RenderTarget[i].SrcBlendAlpha         = D3D12_BLEND_ONE;
+			Desc.BlendState.RenderTarget[i].DestBlendAlpha        = D3D12_BLEND_ZERO;
+			Desc.BlendState.RenderTarget[i].BlendOpAlpha          = D3D12_BLEND_OP_ADD;
+			Desc.BlendState.RenderTarget[i].LogicOp               = D3D12_LOGIC_OP_NOOP;
+			Desc.BlendState.RenderTarget[i].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+		}
+
+		// Sample Mask
+		Desc.SampleMask = UINT_MAX;
+
+		// Rasterizer State
+		Desc.RasterizerState.FillMode              = D3D12_FILL_MODE_SOLID;
+		Desc.RasterizerState.CullMode              = D3D12_CULL_MODE_BACK;
+		Desc.RasterizerState.FrontCounterClockwise = FALSE;
+		Desc.RasterizerState.DepthBias             = D3D12_DEFAULT_DEPTH_BIAS;
+		Desc.RasterizerState.DepthBiasClamp        = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+		Desc.RasterizerState.SlopeScaledDepthBias  = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+		Desc.RasterizerState.DepthClipEnable       = TRUE;
+		Desc.RasterizerState.MultisampleEnable     = FALSE;
+		Desc.RasterizerState.AntialiasedLineEnable = FALSE;
+		Desc.RasterizerState.ForcedSampleCount     = 0;
+		Desc.RasterizerState.ConservativeRaster    = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+		// Depth Stencil State
+		Desc.DepthStencilState.DepthEnable                  = FALSE;
+		Desc.DepthStencilState.DepthWriteMask               = D3D12_DEPTH_WRITE_MASK_ZERO;
+		Desc.DepthStencilState.DepthFunc                    = static_cast<D3D12_COMPARISON_FUNC>(0);
+		Desc.DepthStencilState.StencilEnable                = FALSE;
+		Desc.DepthStencilState.StencilReadMask              = 0;
+		Desc.DepthStencilState.StencilWriteMask             = 0;
+		Desc.DepthStencilState.FrontFace.StencilFailOp      = static_cast<D3D12_STENCIL_OP>(0);
+		Desc.DepthStencilState.FrontFace.StencilDepthFailOp = static_cast<D3D12_STENCIL_OP>(0);
+		Desc.DepthStencilState.FrontFace.StencilPassOp      = static_cast<D3D12_STENCIL_OP>(0);
+		Desc.DepthStencilState.FrontFace.StencilFunc        = static_cast<D3D12_COMPARISON_FUNC>(0);
+		Desc.DepthStencilState.BackFace.StencilFailOp       = static_cast<D3D12_STENCIL_OP>(0);
+		Desc.DepthStencilState.BackFace.StencilDepthFailOp  = static_cast<D3D12_STENCIL_OP>(0);
+		Desc.DepthStencilState.BackFace.StencilPassOp       = static_cast<D3D12_STENCIL_OP>(0);
+		Desc.DepthStencilState.BackFace.StencilFunc         = static_cast<D3D12_COMPARISON_FUNC>(0);
+
+		// Input Layout
+		Desc.InputLayout.pInputElementDescs  = InputElementDescs;
+		Desc.InputLayout.NumElements         = rDesc.InputLayout.NumInputs;
+
+		// Index Buffer Strip Cut Value
+		Desc.IBStripCutValue                 = D3D12_INDEX_BUFFER_STRIP_CUT_VALUE_DISABLED;
+
+		// Primitive Topology Type
+		Desc.PrimitiveTopologyType           = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+
+		// Num Render Targets
+		Desc.NumRenderTargets                = 1;
+
+		// Render Target Formats
+		Desc.RTVFormats[0]                   = DXGI_FORMAT_R8G8B8A8_UNORM;;
+
+		// Depth Stencil Format
+		Desc.DSVFormat                       = DXGI_FORMAT_UNKNOWN;
+
+		// Sample Desc
+		Desc.SampleDesc.Count                = 1;
+		Desc.SampleDesc.Quality              = DXGI_COLOR_SPACE_RGB_FULL_G22_NONE_P709;
+
+		// Node Mask
+		Desc.NodeMask                        = 0;
+
+		// Cached Pipeline State Object
+		Desc.CachedPSO.pCachedBlob           = NULL;
+		Desc.CachedPSO.CachedBlobSizeInBytes = 0;
+		
+		Desc.Flags                           = D3D12_PIPELINE_STATE_FLAG_NONE;
+
+		if (m_pIDevice->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<VOID**>(&pIPipelineState)) != S_OK)
+		{
+			Status = false;
+			Console::Write(L"Error: Failed to create graphics pipeline state object\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		pIRenderer = CRenderer::Create(pIPipelineState);
+	}
+
+	return pIRenderer;
+}
+
+VOID CGfxDevice::DestroyRenderer(IRenderer* pIRenderer)
+{
+	if (pIRenderer != NULL)
+	{
+		CRenderer::Destroy(static_cast<CRenderer*>(pIRenderer));
+	}
 }

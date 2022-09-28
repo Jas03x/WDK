@@ -21,11 +21,11 @@
     <Filter Include="Source\Gfx\2D">
       <UniqueIdentifier>{1cb1ed9e-515e-499e-bb29-b77442a44ca3}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source\Gfx\3D">
-      <UniqueIdentifier>{ecd431a1-d444-4ebb-9b4f-f614795f5b1e}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source\Gfx\Core">
       <UniqueIdentifier>{ca6edf7e-d6d4-43df-931e-7f5cd3cfdd82}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Gfx\3D">
+      <UniqueIdentifier>{ecd431a1-d444-4ebb-9b4f-f614795f5b1e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -59,6 +59,15 @@
     <ClInclude Include="Source\Math\CMath.hpp">
       <Filter>Source\Math</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CRenderer.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\CFile.hpp">
+      <Filter>Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\System\CSystem.hpp">
+      <Filter>Source\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -78,6 +87,15 @@
     </ClCompile>
     <ClCompile Include="Source\Math\CMath.cpp">
       <Filter>Source\Math</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CRenderer.cpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\CFile.cpp">
+      <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\System\CSystem.cpp">
+      <Filter>Source\System</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

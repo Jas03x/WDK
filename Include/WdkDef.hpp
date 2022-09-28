@@ -34,7 +34,10 @@ typedef unsigned __int64	SIZE_T;
 
 typedef unsigned __int64    UINT64;
 
+typedef unsigned char       BYTE;
+typedef unsigned short      WORD;
 typedef unsigned long		DWORD;
+typedef unsigned long long  QWORD;
 
 typedef float				FLOAT;
 
@@ -53,6 +56,18 @@ typedef struct HWND__*		HWND;
 typedef struct HINSTANCE__* HMODULE;
 typedef struct HINSTANCE__* HINSTANCE;
 typedef void*				PVOID;
+
+typedef struct FILE_PATH
+{
+	PCWCHAR Directory;
+	PCWCHAR FileName;
+
+	inline FILE_PATH(PCWCHAR directory, PCWCHAR filename)
+	{
+		Directory = directory;
+		FileName = filename;
+	}
+} FILE_PATH;
 
 typedef char*				va_list;
 

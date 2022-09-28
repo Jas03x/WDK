@@ -5,12 +5,12 @@
 
 CMemory g_Memory;
 
-BOOL Memory::Initialize(VOID)
+BOOL InitializeMemoryHeap(VOID)
 {
 	return g_Memory.Initialize();
 }
 
-VOID Memory::Uninitialize(VOID)
+VOID UninitializeMemoryHeap(VOID)
 {
 	g_Memory.Uninitialize();
 }

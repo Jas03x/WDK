@@ -3,29 +3,32 @@
 #include <WdkGfx.hpp>
 #include <WdkSystem.hpp>
 
-using namespace Wdk;
+#include <vector>
 
 CONST PCWCHAR WINDOW_CLASS = L"HelloTriangle";
 CONST PCWCHAR WINDOW_TITLE = L"Hello Triangle";
-CONST ULONG WINDOW_HEIGHT = 512;
-CONST ULONG WINDOW_WIDTH  = 512;
+CONST ULONG WINDOW_HEIGHT  = 512;
+CONST ULONG WINDOW_WIDTH   = 512;
 
 class HelloTriangle
 {
 private:
 	IWindow*    m_pIWindow;
 	IGfxDevice* m_pIGfxDevice;
+	IRenderer*  m_pIRenderer;
 
 public:
 	HelloTriangle()
 	{
 		m_pIWindow = NULL;
 		m_pIGfxDevice = NULL;
+		m_pIRenderer = NULL;
 	}
 
 	BOOL Initialize(VOID)
 	{
 		BOOL Status = TRUE;
+		std::vector<WCHAR> module_directory(1024);
 
 		if (Status == TRUE)
 		{
@@ -47,6 +50,38 @@ public:
 			}
 		}
 
+		if (Status == TRUE)
+		{
+			Status = System::GetModuleDirectory(module_directory.data(), static_cast<DWORD>(module_directory.size()));
+		}
+
+		if (Status == TRUE)
+		{
+			RENDERER_DESC desc = {};
+
+			INPUT_ELEMENT_DESC InputElements[] =
+			{
+				{ INPUT_ELEMENT_POSITION, 0, INPUT_ELEMENT_FORMAT_XYZ_32F, 0, sizeof(FLOAT) * 0, INPUT_ELEMENT_TYPE_PER_VERTEX, 0},
+				{ INPUT_ELEMENT_COLOR,    0, INPUT_ELEMENT_FORMAT_RGB_32F, 0, sizeof(FLOAT) * 3, INPUT_ELEMENT_TYPE_PER_VERTEX, 0},
+			};
+
+			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/VertexShader.cso"), desc.VertexShader);
+			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/PixelShader.cso"),  desc.PixelShader);
+
+			desc.InputLayout.pInputElements = InputElements;
+			desc.InputLayout.NumInputs = sizeof(InputElements) / sizeof(INPUT_ELEMENT_DESC);
+
+			m_pIRenderer = m_pIGfxDevice->CreateRenderer(desc);
+			if (m_pIRenderer == NULL)
+			{
+				Status = FALSE;
+				Console::Write(L"Error: Could not initialize renderer\n");
+			}
+
+			ReleaseShaderBytecode(desc.VertexShader);
+			ReleaseShaderBytecode(desc.PixelShader);
+		}
+
 		if (Status == FALSE)
 		{
 			Uninitialize();
@@ -57,6 +92,12 @@ public:
 
 	VOID Uninitialize(VOID)
 	{
+		if (m_pIRenderer != NULL)
+		{
+			m_pIGfxDevice->DestroyRenderer(m_pIRenderer);
+			m_pIRenderer = NULL;
+		}
+
 		if (m_pIGfxDevice != NULL)
 		{
 			DestroyDevice(m_pIGfxDevice);
@@ -73,13 +114,13 @@ public:
 	BOOL Run()
 	{
 		BOOL Status = TRUE;
-		WinEvent winEvent = {};
+		WIN_EVENT WinEvent = {};
 
 		while ((Status == TRUE) && (m_pIWindow->Open()))
 		{
-			if (m_pIWindow->GetEvent(winEvent) == TRUE)
+			if (m_pIWindow->GetEvent(WinEvent) == TRUE)
 			{
-				if (winEvent.msg == WIN_MSG::QUIT)
+				if (WinEvent.msg == WIN_MSG::QUIT)
 				{
 					break;
 				}
@@ -109,7 +150,10 @@ INT WdkMain(INT argc, PWCHAR argv)
 
 	if (Status == STATUS::SUCCESS)
 	{
-		Status = hello_triangle.Run();
+		if (hello_triangle.Run() == FALSE)
+		{
+			Status = STATUS::UNSUCCESSFUL;
+		}
 	}
 
 	hello_triangle.Uninitialize();
@@ -120,7 +164,7 @@ INT WdkMain(INT argc, PWCHAR argv)
 	}
 	else
 	{
-		Console::Write(L"Exit with error %u\n", Status);
+		Console::Write(L"Exit with error 0x%X\n", Status);
 	}
 	
 	return Status;

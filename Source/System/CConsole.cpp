@@ -8,12 +8,12 @@
 
 CConsole g_Console;
 
-BOOL Console::Initialize(VOID)
+BOOL InitializeConsole(VOID)
 {
 	return g_Console.Initialize();
 }
 
-VOID Console::Uninitialize(VOID)
+VOID UninitializeConsole(VOID)
 {
 	g_Console.Uninitialize();
 }

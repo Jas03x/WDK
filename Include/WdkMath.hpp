@@ -26,7 +26,7 @@ template <typename T>
 T Clamp(T val, T min, T max);
 
 // ----------------------------------------- Vector ----------------------------------------------
-	
+
 template <typename T>
 struct Vector2
 {
@@ -43,11 +43,11 @@ struct Vector2
 
 	Vector2<T>& operator = (const Vector2<T>& v);
 
-	T&       operator[] (uint32_t i);
+	T& operator[] (uint32_t i);
 	const T& operator[] (uint32_t i) const;
 
-	Vector2<T> operator + () const;
-	Vector2<T> operator - () const;
+	Vector2<T>  operator + () const;
+	Vector2<T>  operator - () const;
 
 	Vector2<T>  operator +  (const Vector2<T>& v) const;
 	Vector2<T>  operator -  (const Vector2<T>& v) const;
@@ -57,10 +57,10 @@ struct Vector2
 	Vector2<T>  operator *  (T t) const;
 	Vector2<T>& operator *= (T t);
 
-	bool       operator < (const Vector2<T>& v) const;
+	bool        operator < (const Vector2<T>& v) const;
 
-	bool       operator == (const Vector2<T>& v) const;
-	bool       operator != (const Vector2<T>& v) const;
+	bool        operator == (const Vector2<T>& v) const;
+	bool        operator != (const Vector2<T>& v) const;
 };
 
 template <typename T>
@@ -86,8 +86,8 @@ struct Vector3
 	T& operator[] (uint32_t i);
 	const T& operator[] (uint32_t i) const;
 
-	Vector3<T> operator + () const;
-	Vector3<T> operator - () const;
+	Vector3<T>  operator + () const;
+	Vector3<T>  operator - () const;
 
 	Vector3<T>  operator +  (const Vector3<T>& v) const;
 	Vector3<T>  operator -  (const Vector3<T>& v) const;
@@ -97,10 +97,10 @@ struct Vector3
 	Vector3<T>  operator *  (T t) const;
 	Vector3<T>& operator *= (T t);
 
-	bool       operator < (const Vector3<T>& v) const;
+	bool        operator < (const Vector3<T>& v) const;
 
-	bool       operator == (const Vector3<T>& v) const;
-	bool       operator != (const Vector3<T>& v) const;
+	bool        operator == (const Vector3<T>& v) const;
+	bool        operator != (const Vector3<T>& v) const;
 };
 
 template <typename T>
@@ -127,8 +127,8 @@ struct Vector4
 	T& operator[] (uint32_t i);
 	const T& operator[] (uint32_t i) const;
 
-	Vector4<T> operator + () const;
-	Vector4<T> operator - () const;
+	Vector4<T>  operator + () const;
+	Vector4<T>  operator - () const;
 
 	Vector4<T>  operator +  (const Vector4<T>& v) const;
 	Vector4<T>  operator -  (const Vector4<T>& v) const;
@@ -138,10 +138,10 @@ struct Vector4
 	Vector4<T>  operator *  (T t) const;
 	Vector4<T>& operator *= (T t);
 
-	bool       operator < (const Vector4<T>& v) const;
+	bool        operator < (const Vector4<T>& v) const;
 
-	bool       operator == (const Vector4<T>& v) const;
-	bool       operator != (const Vector4<T>& v) const;
+	bool        operator == (const Vector4<T>& v) const;
+	bool        operator != (const Vector4<T>& v) const;
 };
 
 typedef Vector2<float>    Vector2F;
@@ -216,7 +216,7 @@ struct Matrix2
 	{
 		Vector2<T> rows[2];
 		float      elements[2][2];
-		struct   { Vector2<T> v0, v1; };
+		struct { Vector2<T> v0, v1; };
 	};
 
 	Matrix2<T>();
@@ -226,7 +226,7 @@ struct Matrix2
 
 	Matrix2<T>& operator = (const Matrix2<T>& m);
 
-	Vector2<T>&       operator[] (uint32_t i);
+	Vector2<T>& operator[] (uint32_t i);
 	const Vector2<T>& operator[] (uint32_t i) const;
 
 	Matrix2<T>  operator *  (T t) const;
@@ -240,7 +240,7 @@ struct Matrix2
 	Matrix2<T>  operator *  (const Matrix2<T>& m) const;
 	Matrix2<T>& operator *= (const Matrix2<T>& m);
 
-	Vector2<T> operator  * (const Vector2<T>& v) const;
+	Vector2<T>  operator  * (const Vector2<T>& v) const;
 };
 
 template <typename T>
@@ -250,7 +250,7 @@ struct Matrix3
 	{
 		Vector3<T> rows[3];
 		float      elements[3][3];
-		struct   { Vector3<T> v0, v1, v2; };
+		struct { Vector3<T> v0, v1, v2; };
 	};
 
 	Matrix3<T>();
@@ -274,7 +274,7 @@ struct Matrix3
 	Matrix3<T>  operator *  (const Matrix3<T>& m) const;
 	Matrix3<T>& operator *= (const Matrix3<T>& m);
 
-	Vector3<T> operator  * (const Vector3<T>& v) const;
+	Vector3<T>  operator  * (const Vector3<T>& v) const;
 };
 
 template <typename T>
@@ -284,7 +284,7 @@ struct Matrix4
 	{
 		Vector4<T> rows[4];
 		float      elements[4][4];
-		struct   { Vector4<T> v0, v1, v2, v3; };
+		struct { Vector4<T> v0, v1, v2, v3; };
 	};
 
 	Matrix4<T>();
@@ -309,7 +309,7 @@ struct Matrix4
 	Matrix4<T>  operator *  (const Matrix4<T>& m) const;
 	Matrix4<T>& operator *= (const Matrix4<T>& m);
 
-	Vector4<T> operator  * (const Vector4<T>& v) const;
+	Vector4<T>  operator  * (const Vector4<T>& v) const;
 };
 
 typedef Matrix2<float> Matrix2F;

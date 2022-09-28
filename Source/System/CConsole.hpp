@@ -21,4 +21,7 @@ public:
 	BOOL Write(PCWCHAR Msg, va_list Args);
 };
 
+BOOL InitializeConsole(VOID);
+VOID UninitializeConsole(VOID);
+
 #endif // WDK_CCONSOLE_HPP

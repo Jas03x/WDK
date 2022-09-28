@@ -7,37 +7,46 @@ INT WdkMain(INT argc, PWCHAR argv);
 
 void WdkAssert(BOOL b, PCWCHAR error, ...);
 
+// Memory
 class Memory
 {
 public:
-	static BOOL  Initialize(VOID);
-	static VOID  Uninitialize(VOID);
-
 	static PVOID Allocate(SIZE_T nBytes, BOOL bClear);
 	static BOOL  Release(PVOID pMemory);
 };
 
+// Console
 class Console
 {
 public:
-	static BOOL Initialize(VOID);
-	static VOID Uninitialize(VOID);
-
 	static BOOL Write(PCWCHAR Msg, ...);
 	static BOOL Write(PCWCHAR Msg, va_list Args);
 };
 
-namespace Wdk
+// File
+class IFile
 {
-	class Object
+public:
+	enum MODE
 	{
-	public:
-		Object();
-		~Object();
-
-		PVOID operator new(SIZE_T size);
-		VOID  operator delete(PVOID ptr);
+		READ  = 0,
+		WRITE = 1
 	};
+
+	static IFile* Open(PCWCHAR Path);
+	static IFile* Open(const FILE_PATH& Path);
+
+	static VOID Close(IFile* pIFile);
+
+	virtual BOOL Read(BYTE** ppBuffer, DWORD* pSize) = 0;
+};
+
+// System
+namespace System
+{
+	// Path
+	BOOL GetModulePath(PWCHAR pPath, DWORD nSize);
+	BOOL GetModuleDirectory(PWCHAR pPath, DWORD nSize);
 }
 
 #endif // WDK__HPP

@@ -4,9 +4,8 @@
 
 #include "windows.h"
 
-#include "processthreadsapi.h"
-
-using namespace Wdk;
+#include "System/CConsole.hpp"
+#include "System/CMemory.hpp"
 
 BOOL WdkInitialize(INT argc, PWCHAR argv);
 VOID WdkTerminate(VOID);
@@ -48,12 +47,12 @@ BOOL WdkInitialize(INT argc, PWCHAR argv)
 
 	if (Status == TRUE)
 	{
-		Status = Memory::Initialize();
+		Status = InitializeMemoryHeap();
 	}
 
 	if (Status == TRUE)
 	{
-		Status = Console::Initialize();
+		Status = InitializeConsole();
 	}
 
 	return Status;
@@ -61,39 +60,16 @@ BOOL WdkInitialize(INT argc, PWCHAR argv)
 
 VOID WdkTerminate(VOID)
 {
-	Console::Uninitialize();
-	Memory::Uninitialize();
+	UninitializeConsole();
+	UninitializeMemoryHeap();
 }
 
 PVOID operator new(SIZE_T size)
 {
-	Console::Write(L"Error: New operator not supported - use Memory::Allocate instead\n");
-	ExitProcess(STATUS::NOT_IMPLEMENTED);
-	return NULL;
-}
-
-VOID operator delete(PVOID ptr)
-{
-	Console::Write(L"Error: Delete operator not supported - use Memory::Release instead\n");
-	ExitProcess(STATUS::NOT_IMPLEMENTED);
-}
-
-Object::Object(VOID)
-{
-
-}
-
-Object::~Object(VOID)
-{
-
-}
-
-PVOID Object::operator new(SIZE_T size)
-{
 	return Memory::Allocate(size, TRUE);
 }
 
-VOID Object::operator delete(PVOID ptr)
+VOID operator delete(PVOID ptr)
 {
 	Memory::Release(ptr);
 }
