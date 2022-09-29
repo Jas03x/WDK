@@ -19,8 +19,8 @@ protected:
 	VOID Uninitialize(VOID);
 
 public:
-	static CRenderer* Create(ID3D12PipelineState* pIPipelineState);
-	static VOID       Destroy(CRenderer* pRenderer);
+	static CRenderer* CreateInstance(ID3D12PipelineState* pIPipelineState);
+	static VOID       DeleteInstance(CRenderer* pRenderer);
 };
 
 BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc);

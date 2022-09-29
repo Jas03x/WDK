@@ -47,12 +47,12 @@ BOOL WdkInitialize(INT argc, PWCHAR argv)
 
 	if (Status == TRUE)
 	{
-		Status = InitializeMemoryHeap();
+		Status = CMemory::Initialize();
 	}
 
 	if (Status == TRUE)
 	{
-		Status = InitializeConsole();
+		Status = CConsole::Initialize();
 	}
 
 	return Status;
@@ -60,8 +60,8 @@ BOOL WdkInitialize(INT argc, PWCHAR argv)
 
 VOID WdkTerminate(VOID)
 {
-	UninitializeConsole();
-	UninitializeMemoryHeap();
+	CConsole::Uninitialize();
+	CMemory::Uninitialize();
 }
 
 PVOID operator new(SIZE_T size)

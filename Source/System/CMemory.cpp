@@ -3,35 +3,16 @@
 
 #include <windows.h>
 
-CMemory g_Memory;
-
-BOOL InitializeMemoryHeap(VOID)
-{
-	return g_Memory.Initialize();
-}
-
-VOID UninitializeMemoryHeap(VOID)
-{
-	g_Memory.Uninitialize();
-}
+HANDLE CMemory::m_hHeap = NULL;
 
 PVOID Memory::Allocate(SIZE_T nBytes, BOOL bClear)
 {
-	return g_Memory.Allocate(nBytes, bClear);
+	return CMemory::Allocate(nBytes, bClear);
 }
 
 BOOL Memory::Release(PVOID pMemory)
 {
-	return g_Memory.Release(pMemory);
-}
-
-CMemory::CMemory(VOID)
-{
-	m_hHeap = NULL;
-}
-
-CMemory::~CMemory(VOID)
-{
+	return CMemory::Release(pMemory);
 }
 
 BOOL CMemory::Initialize(VOID)

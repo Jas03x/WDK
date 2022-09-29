@@ -6,20 +6,14 @@
 class CMemory
 {
 protected:
-	HANDLE m_hHeap;
+	static HANDLE m_hHeap;
 
 public:
-	CMemory(VOID);
-	~CMemory(VOID);
+	static BOOL Initialize(VOID);
+	static VOID Uninitialize(VOID);
 
-	BOOL Initialize(VOID);
-	VOID Uninitialize(VOID);
-
-	PVOID Allocate(SIZE_T nBytes, BOOL bClear);
-	BOOL  Release(PVOID pMemory);
+	static PVOID Allocate(SIZE_T nBytes, BOOL bClear);
+	static BOOL  Release(PVOID pMemory);
 };
-
-BOOL InitializeMemoryHeap(VOID);
-VOID UninitializeMemoryHeap(VOID);
 
 #endif // WDK_CMEMORY_HPP

@@ -3,10 +3,6 @@
 
 #include "WdkDef.hpp"
 
-#ifdef CreateWindow
-#undef CreateWindow
-#endif
-
 enum WIN_AREA
 {
 	CLIENT = 0,
@@ -39,9 +35,10 @@ public:
 	virtual BOOL	Open(VOID) = 0;
 	virtual BOOL	GetEvent(WIN_EVENT& rEvent) = 0;
 	virtual BOOL    GetRect(WIN_AREA area, WIN_RECT& rRect) = 0;
-};
 
-IWindow* CreateWindow(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
-VOID	 DestroyWindow(IWindow* pIWindow);
+public:
+	static IWindow* CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
+	static VOID	    DeleteInstance(IWindow* pIWindow);
+};
 
 #endif // WDK_SYS__HPP

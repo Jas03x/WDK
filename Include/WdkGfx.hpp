@@ -69,15 +69,25 @@ public:
 BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc);
 VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
 
+// ICommandList
+class __declspec(novtable) ICommandList
+{
+
+};
+
 // IGfxDevice
 class __declspec(novtable) IGfxDevice
 {
 public:
-	virtual IRenderer* CreateRenderer(const RENDERER_DESC& rDesc) = 0;
-	virtual VOID       DestroyRenderer(IRenderer* pIRenderer) = 0;
-};
+	virtual IRenderer*    CreateRenderer(const RENDERER_DESC& rDesc) = 0;
+	virtual VOID          DestroyRenderer(IRenderer* pIRenderer) = 0;
 
-IGfxDevice* CreateDevice(IWindow* pIWindow);
-VOID        DestroyDevice(IGfxDevice* pIDevice);
+	virtual ICommandList* CreateCommandList(VOID) = 0;
+	virtual VOID          DestroyCommandList(ICommandList* pICommandList) = 0;
+
+public:
+	static IGfxDevice* CreateInstance(IWindow* pIWindow);
+	static VOID        DeleteInstance(IGfxDevice* pIDevice);
+};
 
 #endif // WDK_GFX__HPP

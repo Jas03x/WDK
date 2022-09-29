@@ -79,7 +79,7 @@ VOID CRenderer::Uninitialize(VOID)
 	}
 }
 
-CRenderer* CRenderer::Create(ID3D12PipelineState* pIPipelineState)
+CRenderer* CRenderer::CreateInstance(ID3D12PipelineState* pIPipelineState)
 {
 	CRenderer* pRenderer = new CRenderer();
 
@@ -87,7 +87,7 @@ CRenderer* CRenderer::Create(ID3D12PipelineState* pIPipelineState)
 	{
 		if (pRenderer->Initialize(pIPipelineState) == FALSE)
 		{
-			Destroy(pRenderer);
+			DeleteInstance(pRenderer);
 			pRenderer = NULL;
 		}
 	}
@@ -95,7 +95,7 @@ CRenderer* CRenderer::Create(ID3D12PipelineState* pIPipelineState)
 	return pRenderer;
 }
 
-VOID CRenderer::Destroy(CRenderer* pRenderer)
+VOID CRenderer::DeleteInstance(CRenderer* pRenderer)
 {
 	if (pRenderer != NULL)
 	{

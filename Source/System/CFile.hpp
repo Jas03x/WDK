@@ -18,7 +18,7 @@ public:
 	static VOID Close(CFile* pCFile);
 
 public:
-	virtual BOOL Read(BYTE** ppBuffer, DWORD* pSize) override;
+	virtual BOOL Read(BYTE** ppBuffer, DWORD* pSize);
 };
 
 #endif // WDK_CFILE_HPP

@@ -8,19 +8,20 @@
 
 #include "WdkSystem.hpp"
 
+#include "CCommandList.hpp"
 #include "CRenderer.hpp"
 
-IGfxDevice* CreateDevice(IWindow* pIWindow)
+IGfxDevice* IGfxDevice::CreateInstance(IWindow* pIWindow)
 {
-	return CGfxDevice::Create(pIWindow);
+	return CGfxDevice::CreateInstance(pIWindow);
 }
 
-VOID DestroyDevice(IGfxDevice* pIDevice)
+VOID IGfxDevice::DeleteInstance(IGfxDevice* pIDevice)
 {
-	CGfxDevice::Destroy(static_cast<CGfxDevice*>(pIDevice));
+	CGfxDevice::DeleteInstance(static_cast<CGfxDevice*>(pIDevice));
 }
 
-CGfxDevice* CGfxDevice::Create(IWindow* pIWindow)
+CGfxDevice* CGfxDevice::CreateInstance(IWindow* pIWindow)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
@@ -28,7 +29,7 @@ CGfxDevice* CGfxDevice::Create(IWindow* pIWindow)
 	{
 		if (pDevice->Initialize(pIWindow) == FALSE)
 		{
-			DestroyDevice(pDevice);
+			DeleteInstance(pDevice);
 			pDevice = NULL;
 		}
 	}
@@ -36,7 +37,7 @@ CGfxDevice* CGfxDevice::Create(IWindow* pIWindow)
 	return pDevice;
 }
 
-VOID CGfxDevice::Destroy(CGfxDevice* pDevice)
+VOID CGfxDevice::DeleteInstance(CGfxDevice* pDevice)
 {
 	if (pDevice != NULL)
 	{
@@ -60,7 +61,7 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pIDxgiAdapter = NULL;
 	m_pISwapChain = NULL;
 
-	m_pIDevice = NULL;
+	m_pInterface = NULL;
 	m_pICommandQueue = NULL;
 	m_pIRtvDescriptorHeap = NULL;
 	m_pICommandAllocator = NULL;
@@ -157,9 +158,9 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 
 	if (Status == TRUE)
 	{
-		D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), reinterpret_cast<VOID**>(&m_pIDevice));
+		D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), reinterpret_cast<VOID**>(&m_pInterface));
 
-		if (m_pIDevice == NULL)
+		if (m_pInterface == NULL)
 		{
 			Status = FALSE;
 			Console::Write(L"Error: Could not create a DX12 device\n");
@@ -174,7 +175,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		cmdQueueDesc.NodeMask = 0;
 
-		if (m_pIDevice->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pICommandQueue)) != S_OK)
+		if (m_pInterface->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pICommandQueue)) != S_OK)
 		{
 			Status = FALSE;
 			Console::Write(L"Error: Failed to create command queue\n");
@@ -230,9 +231,9 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 		descHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		descHeap.NodeMask = 0;
 
-		if (m_pIDevice->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pIRtvDescriptorHeap)) == S_OK)
+		if (m_pInterface->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pIRtvDescriptorHeap)) == S_OK)
 		{
-			m_RtvDescriptorIncrement = m_pIDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			m_RtvDescriptorIncrement = m_pInterface->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 		}
 		else
 		{
@@ -253,7 +254,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 				Status = FALSE;
 			}
 
-			m_pIDevice->CreateRenderTargetView(m_pIRenderBuffers[i], NULL, cpuDescHandle);
+			m_pInterface->CreateRenderTargetView(m_pIRenderBuffers[i], NULL, cpuDescHandle);
 
 			cpuDescHandle.ptr += m_RtvDescriptorIncrement;
 		}
@@ -261,7 +262,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 
 	if (Status == TRUE)
 	{
-		if (m_pIDevice->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&m_pICommandAllocator)) != S_OK)
+		if (m_pInterface->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&m_pICommandAllocator)) != S_OK)
 		{
 			Console::Write(L"Error: Could not create command allocator\n");
 			Status = FALSE;
@@ -282,7 +283,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow)
 
 		if (D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignature, &pError) == S_OK)
 		{
-			if (m_pIDevice->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&m_pIRootSignature)) != S_OK)
+			if (m_pInterface->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&m_pIRootSignature)) != S_OK)
 			{
 				Console::Write(L"Error: Could not create root signature\n");
 				Status = FALSE;
@@ -356,10 +357,10 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pICommandQueue = NULL;
 	}
 
-	if (m_pIDevice != NULL)
+	if (m_pInterface != NULL)
 	{
-		m_pIDevice->Release();
-		m_pIDevice = NULL;
+		m_pInterface->Release();
+		m_pInterface = NULL;
 	}
 
 	if (m_pIDxgiAdapter != NULL)
@@ -775,7 +776,7 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 		
 		Desc.Flags                           = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-		if (m_pIDevice->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<VOID**>(&pIPipelineState)) != S_OK)
+		if (m_pInterface->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<VOID**>(&pIPipelineState)) != S_OK)
 		{
 			Status = false;
 			Console::Write(L"Error: Failed to create graphics pipeline state object\n");
@@ -784,7 +785,7 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 
 	if (Status == TRUE)
 	{
-		pIRenderer = CRenderer::Create(pIPipelineState);
+		pIRenderer = CRenderer::CreateInstance(pIPipelineState);
 	}
 
 	return pIRenderer;
@@ -794,6 +795,28 @@ VOID CGfxDevice::DestroyRenderer(IRenderer* pIRenderer)
 {
 	if (pIRenderer != NULL)
 	{
-		CRenderer::Destroy(static_cast<CRenderer*>(pIRenderer));
+		CRenderer::DeleteInstance(static_cast<CRenderer*>(pIRenderer));
+	}
+}
+
+ICommandList* CGfxDevice::CreateCommandList(VOID)
+{
+	ICommandList* pICommandList = NULL;
+	ID3D12GraphicsCommandList* pInterface;
+
+	if (m_pInterface->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pICommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<VOID**>(&pInterface)) != S_OK)
+	{
+		pICommandList = CCommandList::CreateInstance(pInterface);
+	}
+
+	return pICommandList;
+}
+
+VOID CGfxDevice::DestroyCommandList(ICommandList* pICommandList)
+{
+	if (pICommandList != NULL)
+	{
+		CCommandList::DeleteInstance(static_cast<CCommandList*>(pICommandList));
+		pICommandList = NULL;
 	}
 }

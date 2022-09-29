@@ -68,6 +68,9 @@
     <ClInclude Include="Source\System\CSystem.hpp">
       <Filter>Source\System</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CCommandList.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -96,6 +99,9 @@
     </ClCompile>
     <ClCompile Include="Source\System\CSystem.cpp">
       <Filter>Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CCommandList.cpp">
+      <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

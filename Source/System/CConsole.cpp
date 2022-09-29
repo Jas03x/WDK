@@ -6,17 +6,8 @@
 #include <windows.h>
 #include <strsafe.h>
 
-CConsole g_Console;
-
-BOOL InitializeConsole(VOID)
-{
-	return g_Console.Initialize();
-}
-
-VOID UninitializeConsole(VOID)
-{
-	g_Console.Uninitialize();
-}
+HANDLE CConsole::m_hStdOut = NULL;
+PWCHAR CConsole::m_pBuffer = NULL;
 
 BOOL Console::Write(PCWCHAR Msg, ...)
 {
@@ -25,7 +16,7 @@ BOOL Console::Write(PCWCHAR Msg, ...)
 	va_list Args;
 	va_start(Args, Msg);
 
-	Status = g_Console.Write(Msg, Args);
+	Status = CConsole::Write(Msg, Args);
 
 	va_end(Args);
 
@@ -36,24 +27,14 @@ BOOL Console::Write(PCWCHAR Msg, va_list Args)
 {
 	BOOL Status = TRUE;
 
-	Status = g_Console.Write(Msg, Args);
+	Status = CConsole::Write(Msg, Args);
 
 	return Status;
 }
 
-CConsole::CConsole(VOID)
-{
-	m_hStdOut = NULL;;
-	m_pBuffer = NULL;
-}
-
-CConsole::~CConsole(VOID)
-{
-}
-
 BOOL CConsole::Initialize(VOID)
 {
-	BOOL  Status = TRUE;
+	BOOL Status = TRUE;
 
 	m_hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 

@@ -4,12 +4,12 @@
 
 #undef CreateWindow
 
-IWindow* CreateWindow(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+IWindow* IWindow::CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	return CWindow::Create(ClassName, WindowName, ClientWidth, ClientHeight);
 }
 
-VOID DestroyWindow(IWindow* pIWindow)
+VOID IWindow::DeleteInstance(IWindow* pIWindow)
 {
 	return CWindow::Destroy(static_cast<CWindow*>(pIWindow));
 }

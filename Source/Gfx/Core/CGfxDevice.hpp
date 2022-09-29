@@ -35,7 +35,7 @@ private:
 	IDXGIAdapter4*			m_pIDxgiAdapter;
 	IDXGISwapChain4*		m_pISwapChain;
 
-	ID3D12Device*			m_pIDevice;
+	ID3D12Device*			m_pInterface;
 	ID3D12CommandQueue*		m_pICommandQueue;
 	ID3D12DescriptorHeap*	m_pIRtvDescriptorHeap;
 	ID3D12CommandAllocator* m_pICommandAllocator;
@@ -57,12 +57,15 @@ private:
 	BOOL PrintAdapterDesc(UINT uIndex, IDXGIAdapter4* pIAdapter);		
 
 public:
-	static CGfxDevice* Create(IWindow* pIWindow);
-	static VOID        Destroy(CGfxDevice* pDevice);
+	static CGfxDevice* CreateInstance(IWindow* pIWindow);
+	static VOID        DeleteInstance(CGfxDevice* pDevice);
 
 public:
 	virtual IRenderer* CreateRenderer(const RENDERER_DESC& rDesc);
 	virtual VOID       DestroyRenderer(IRenderer* pIRenderer);
+
+	virtual ICommandList* CreateCommandList(VOID);
+	virtual VOID          DestroyCommandList(ICommandList* pICommandList);
 };
 
 #endif // WDK_CGFX_DEVICE_HPP
