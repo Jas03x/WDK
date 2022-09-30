@@ -71,6 +71,9 @@
     <ClInclude Include="Source\Gfx\Core\CCommandList.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CFence.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -101,6 +104,9 @@
       <Filter>Source\System</Filter>
     </ClCompile>
     <ClCompile Include="Source\Gfx\Core\CCommandList.cpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CFence.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>

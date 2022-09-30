@@ -160,6 +160,7 @@
     <ClInclude Include="Include\WdkMath.hpp" />
     <ClInclude Include="Include\WdkSystem.hpp" />
     <ClInclude Include="Source\Gfx\Core\CCommandList.hpp" />
+    <ClInclude Include="Source\Gfx\Core\CFence.hpp" />
     <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp" />
     <ClInclude Include="Source\Gfx\Core\CRenderer.hpp" />
     <ClInclude Include="Source\Math\CMath.hpp" />
@@ -171,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Gfx\Core\CCommandList.cpp" />
+    <ClCompile Include="Source\Gfx\Core\CFence.cpp" />
     <ClCompile Include="Source\Gfx\Core\CGfxDevice.cpp" />
     <ClCompile Include="Source\Gfx\Core\CRenderer.cpp" />
     <ClCompile Include="Source\Math\CMath.cpp" />

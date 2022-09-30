@@ -75,6 +75,12 @@ class __declspec(novtable) ICommandList
 
 };
 
+// IFence
+class __declspec(novtable) IFence
+{
+
+};
+
 // IGfxDevice
 class __declspec(novtable) IGfxDevice
 {
@@ -84,6 +90,9 @@ public:
 
 	virtual ICommandList* CreateCommandList(VOID) = 0;
 	virtual VOID          DestroyCommandList(ICommandList* pICommandList) = 0;
+
+	virtual IFence*       CreateFence(VOID) = 0;
+	virtual VOID          DestroyFence(IFence* pIFence) = 0;
 
 public:
 	static IGfxDevice* CreateInstance(IWindow* pIWindow);

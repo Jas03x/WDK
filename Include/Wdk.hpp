@@ -36,9 +36,9 @@ public:
 	static IFile* Open(PCWCHAR Path);
 	static IFile* Open(const FILE_PATH& Path);
 
-	static VOID Close(IFile* pIFile);
+	static VOID   Close(IFile* pIFile);
 
-	virtual BOOL Read(BYTE** ppBuffer, DWORD* pSize) = 0;
+	virtual BOOL  Read(BYTE** ppBuffer, DWORD* pSize) = 0;
 };
 
 // System

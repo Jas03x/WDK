@@ -50,22 +50,25 @@ private:
 	CGfxDevice(VOID);
 	virtual ~CGfxDevice(VOID);
 
-	BOOL Initialize(IWindow* pIWindow);
-	VOID Uninitialize(VOID);
+	BOOL				  Initialize(IWindow* pIWindow);
+	VOID				  Uninitialize(VOID);
 
-	BOOL EnumerateDxgiAdapters(VOID);
-	BOOL PrintAdapterDesc(UINT uIndex, IDXGIAdapter4* pIAdapter);		
-
-public:
-	static CGfxDevice* CreateInstance(IWindow* pIWindow);
-	static VOID        DeleteInstance(CGfxDevice* pDevice);
+	BOOL				  EnumerateDxgiAdapters(VOID);
+	BOOL				  PrintAdapterDesc(UINT uIndex, IDXGIAdapter4* pIAdapter);		
 
 public:
-	virtual IRenderer* CreateRenderer(const RENDERER_DESC& rDesc);
-	virtual VOID       DestroyRenderer(IRenderer* pIRenderer);
+	static CGfxDevice*	  CreateInstance(IWindow* pIWindow);
+	static VOID			  DeleteInstance(CGfxDevice* pDevice);
+
+public:
+	virtual IRenderer*	  CreateRenderer(const RENDERER_DESC& rDesc);
+	virtual VOID		  DestroyRenderer(IRenderer* pIRenderer);
 
 	virtual ICommandList* CreateCommandList(VOID);
 	virtual VOID          DestroyCommandList(ICommandList* pICommandList);
+
+	virtual IFence*		  CreateFence(VOID);
+	virtual VOID          DestroyFence(IFence* pIFence);
 };
 
 #endif // WDK_CGFX_DEVICE_HPP

@@ -9,6 +9,7 @@
 #include "WdkSystem.hpp"
 
 #include "CCommandList.hpp"
+#include "CFence.hpp"
 #include "CRenderer.hpp"
 
 IGfxDevice* IGfxDevice::CreateInstance(IWindow* pIWindow)
@@ -818,5 +819,27 @@ VOID CGfxDevice::DestroyCommandList(ICommandList* pICommandList)
 	{
 		CCommandList::DeleteInstance(static_cast<CCommandList*>(pICommandList));
 		pICommandList = NULL;
+	}
+}
+
+IFence* CGfxDevice::CreateFence(VOID)
+{
+	IFence* pIFence = NULL;
+	ID3D12Fence* pInterface = NULL;
+
+	if (m_pInterface->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&pInterface)) == S_OK)
+	{
+		pIFence = CFence::CreateInstance(pInterface);
+	}
+
+	return pIFence;
+}
+
+VOID CGfxDevice::DestroyFence(IFence* pIFence)
+{
+	if (pIFence != NULL)
+	{
+		CFence::DeleteInstance(static_cast<CFence*>(pIFence));
+		pIFence = NULL;
 	}
 }
