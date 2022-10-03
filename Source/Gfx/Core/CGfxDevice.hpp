@@ -53,7 +53,7 @@ private:
 	CGfxDevice(VOID);
 	virtual ~CGfxDevice(VOID);
 
-	BOOL				  Initialize(IGfxDevice::Desc& rDesc);
+	BOOL				  Initialize(IGfxDevice::Descriptor& rDesc);
 	VOID				  Uninitialize(VOID);
 
 	BOOL				  EnumerateDxgiAdapters(VOID);
@@ -62,7 +62,7 @@ private:
 	BOOL				  PrintDeviceProperties(VOID);
 
 public:
-	static CGfxDevice*	  CreateInstance(IGfxDevice::Desc& rDesc);
+	static CGfxDevice*	  CreateInstance(IGfxDevice::Descriptor& rDesc);
 	static VOID			  DestroyInstance(CGfxDevice* pDevice);
 
 public:

@@ -42,7 +42,7 @@ public:
 
 		if (Status == TRUE)
 		{
-			IGfxDevice::Desc GfxDeviceDesc = {};
+			IGfxDevice::Descriptor GfxDeviceDesc = {};
 			GfxDeviceDesc.pIWindow = m_pIWindow;
 
 			m_pIGfxDevice = IGfxDevice::CreateInstance(GfxDeviceDesc);

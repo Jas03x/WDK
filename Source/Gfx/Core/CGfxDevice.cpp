@@ -12,7 +12,7 @@
 #include "CFence.hpp"
 #include "CRenderer.hpp"
 
-IGfxDevice* IGfxDevice::CreateInstance(IGfxDevice::Desc& rDesc)
+IGfxDevice* IGfxDevice::CreateInstance(IGfxDevice::Descriptor& rDesc)
 {
 	return CGfxDevice::CreateInstance(rDesc);
 }
@@ -22,7 +22,7 @@ VOID IGfxDevice::DestroyInstance(IGfxDevice* pIDevice)
 	CGfxDevice::DestroyInstance(static_cast<CGfxDevice*>(pIDevice));
 }
 
-CGfxDevice* CGfxDevice::CreateInstance(IGfxDevice::Desc& rDesc)
+CGfxDevice* CGfxDevice::CreateInstance(IGfxDevice::Descriptor& rDesc)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
@@ -82,7 +82,7 @@ CGfxDevice::~CGfxDevice(VOID)
 
 }
 
-BOOL CGfxDevice::Initialize(Desc& rDesc)
+BOOL CGfxDevice::Initialize(IGfxDevice::Descriptor& rDesc)
 {
 	BOOL Status = TRUE;
 

@@ -85,7 +85,7 @@ class __declspec(novtable) IFence
 class __declspec(novtable) IGfxDevice
 {
 public:
-	struct Desc
+	struct Descriptor
 	{
 		IWindow* pIWindow;
 
@@ -103,7 +103,7 @@ public:
 	virtual VOID          DestroyFence(IFence* pIFence) = 0;
 
 public:
-	static IGfxDevice* CreateInstance(Desc& rDesc);
+	static IGfxDevice* CreateInstance(Descriptor& rDesc);
 	static VOID        DestroyInstance(IGfxDevice* pIDevice);
 };
 
