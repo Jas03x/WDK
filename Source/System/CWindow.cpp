@@ -9,7 +9,7 @@ IWindow* IWindow::CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG Cl
 	return CWindow::Create(ClassName, WindowName, ClientWidth, ClientHeight);
 }
 
-VOID IWindow::DeleteInstance(IWindow* pIWindow)
+VOID IWindow::DestroyInstance(IWindow* pIWindow)
 {
 	return CWindow::Destroy(static_cast<CWindow*>(pIWindow));
 }

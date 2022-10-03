@@ -38,7 +38,7 @@ public:
 
 public:
 	static IWindow* CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
-	static VOID	    DeleteInstance(IWindow* pIWindow);
+	static VOID	    DestroyInstance(IWindow* pIWindow);
 };
 
 #endif // WDK_SYS__HPP

@@ -12,7 +12,7 @@ CCommandList* CCommandList::CreateInstance(ID3D12GraphicsCommandList* pInterface
 	{
 		if (!pCommandList->Initialize(pInterface))
 		{
-			DeleteInstance(pCommandList);
+			DestroyInstance(pCommandList);
 			pCommandList = NULL;
 		}
 	}
@@ -20,7 +20,7 @@ CCommandList* CCommandList::CreateInstance(ID3D12GraphicsCommandList* pInterface
 	return pCommandList;
 }
 
-VOID CCommandList::DeleteInstance(CCommandList* pCommandList)
+VOID CCommandList::DestroyInstance(CCommandList* pCommandList)
 {
 	if (pCommandList != NULL)
 	{
@@ -31,7 +31,7 @@ VOID CCommandList::DeleteInstance(CCommandList* pCommandList)
 
 CCommandList::CCommandList(VOID)
 {
-	m_pInterface = NULL;
+	m_pID3D12GraphicsCommandList = NULL;
 }
 
 CCommandList::~CCommandList(VOID)
@@ -45,7 +45,7 @@ BOOL CCommandList::Initialize(ID3D12GraphicsCommandList* pInterface)
 
 	if (pInterface != NULL)
 	{
-		m_pInterface = pInterface;
+		m_pID3D12GraphicsCommandList = pInterface;
 	}
 	else
 	{
@@ -58,9 +58,9 @@ BOOL CCommandList::Initialize(ID3D12GraphicsCommandList* pInterface)
 
 VOID CCommandList::Uninitialize(VOID)
 {
-	if (m_pInterface != NULL)
+	if (m_pID3D12GraphicsCommandList != NULL)
 	{
-		m_pInterface->Release();
-		m_pInterface = NULL;
+		m_pID3D12GraphicsCommandList->Release();
+		m_pID3D12GraphicsCommandList = NULL;
 	}
 }

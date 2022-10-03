@@ -46,7 +46,7 @@ VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc)
 
 CRenderer::CRenderer(VOID)
 {
-	m_pIPipelineState = NULL;
+	m_pID3D12PipelineState = NULL;
 }
 
 CRenderer::~CRenderer(VOID)
@@ -59,7 +59,7 @@ BOOL CRenderer::Initialize(ID3D12PipelineState* pIPipelineState)
 
 	if (pIPipelineState != NULL)
 	{
-		m_pIPipelineState = pIPipelineState;
+		m_pID3D12PipelineState = pIPipelineState;
 	}
 	else
 	{
@@ -72,10 +72,10 @@ BOOL CRenderer::Initialize(ID3D12PipelineState* pIPipelineState)
 
 VOID CRenderer::Uninitialize(VOID)
 {
-	if (m_pIPipelineState != NULL)
+	if (m_pID3D12PipelineState != NULL)
 	{
-		m_pIPipelineState->Release();
-		m_pIPipelineState = NULL;
+		m_pID3D12PipelineState->Release();
+		m_pID3D12PipelineState = NULL;
 	}
 }
 
@@ -87,7 +87,7 @@ CRenderer* CRenderer::CreateInstance(ID3D12PipelineState* pIPipelineState)
 	{
 		if (pRenderer->Initialize(pIPipelineState) == FALSE)
 		{
-			DeleteInstance(pRenderer);
+			DestroyInstance(pRenderer);
 			pRenderer = NULL;
 		}
 	}
@@ -95,7 +95,7 @@ CRenderer* CRenderer::CreateInstance(ID3D12PipelineState* pIPipelineState)
 	return pRenderer;
 }
 
-VOID CRenderer::DeleteInstance(CRenderer* pRenderer)
+VOID CRenderer::DestroyInstance(CRenderer* pRenderer)
 {
 	if (pRenderer != NULL)
 	{

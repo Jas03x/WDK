@@ -8,7 +8,7 @@ struct ID3D12GraphicsCommandList;
 class CCommandList : public ICommandList
 {
 private:
-	ID3D12GraphicsCommandList* m_pInterface;
+	ID3D12GraphicsCommandList* m_pID3D12GraphicsCommandList;
 
 private:
 	CCommandList(VOID);
@@ -19,7 +19,7 @@ private:
 
 public:
 	static CCommandList* CreateInstance(ID3D12GraphicsCommandList* pInterface);
-	static VOID          DeleteInstance(CCommandList* pCommandList);
+	static VOID          DestroyInstance(CCommandList* pCommandList);
 };
 
 #endif //WDK_CCOMMAND_LIST_HPP

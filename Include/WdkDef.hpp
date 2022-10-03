@@ -57,6 +57,15 @@ typedef struct HINSTANCE__* HMODULE;
 typedef struct HINSTANCE__* HINSTANCE;
 typedef void*				PVOID;
 
+typedef char*				va_list;
+
+enum STATUS
+{
+	SUCCESS = 0x00000000L,
+	UNSUCCESSFUL = 0xC0000001L,
+	NOT_IMPLEMENTED = 0xC0000002L
+};
+
 typedef struct FILE_PATH
 {
 	PCWCHAR Directory;
@@ -69,13 +78,11 @@ typedef struct FILE_PATH
 	}
 } FILE_PATH;
 
-typedef char*				va_list;
-
-enum STATUS
+enum
 {
-	SUCCESS         = 0x00000000L,
-	UNSUCCESSFUL    = 0xC0000001L,
-	NOT_IMPLEMENTED = 0xC0000002L
+	KB = 1024 * sizeof(BYTE),
+	MB = 1024 * KB,
+	GB = 1024 * MB
 };
 
 #endif // WDK_DEF__HPP

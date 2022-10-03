@@ -85,6 +85,14 @@ class __declspec(novtable) IFence
 class __declspec(novtable) IGfxDevice
 {
 public:
+	struct Desc
+	{
+		IWindow* pIWindow;
+
+		UINT64 UploadHeapSize;
+		UINT64 PrimaryHeapSize;
+	};
+
 	virtual IRenderer*    CreateRenderer(const RENDERER_DESC& rDesc) = 0;
 	virtual VOID          DestroyRenderer(IRenderer* pIRenderer) = 0;
 
@@ -95,8 +103,8 @@ public:
 	virtual VOID          DestroyFence(IFence* pIFence) = 0;
 
 public:
-	static IGfxDevice* CreateInstance(IWindow* pIWindow);
-	static VOID        DeleteInstance(IGfxDevice* pIDevice);
+	static IGfxDevice* CreateInstance(Desc& rDesc);
+	static VOID        DestroyInstance(IGfxDevice* pIDevice);
 };
 
 #endif // WDK_GFX__HPP

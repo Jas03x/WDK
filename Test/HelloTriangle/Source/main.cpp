@@ -42,7 +42,10 @@ public:
 
 		if (Status == TRUE)
 		{
-			m_pIGfxDevice = IGfxDevice::CreateInstance(m_pIWindow);
+			IGfxDevice::Desc GfxDeviceDesc = {};
+			GfxDeviceDesc.pIWindow = m_pIWindow;
+
+			m_pIGfxDevice = IGfxDevice::CreateInstance(GfxDeviceDesc);
 			if (m_pIGfxDevice == NULL)
 			{
 				Status = FALSE;
@@ -100,13 +103,13 @@ public:
 
 		if (m_pIGfxDevice != NULL)
 		{
-			IGfxDevice::DeleteInstance(m_pIGfxDevice);
+			IGfxDevice::DestroyInstance(m_pIGfxDevice);
 			m_pIGfxDevice = NULL;
 		}
 
 		if (m_pIWindow != NULL)
 		{
-			IWindow::DeleteInstance(m_pIWindow);
+			IWindow::DestroyInstance(m_pIWindow);
 			m_pIWindow = NULL;
 		}
 	}

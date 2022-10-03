@@ -12,7 +12,7 @@ CFence* CFence::CreateInstance(ID3D12Fence* pInterface)
 	{
 		if (!pFence->Initialize(pInterface))
 		{
-			DeleteInstance(pFence);
+			DestroyInstance(pFence);
 			pFence = NULL;
 		}
 	}
@@ -20,7 +20,7 @@ CFence* CFence::CreateInstance(ID3D12Fence* pInterface)
 	return pFence;
 }
 
-VOID CFence::DeleteInstance(CFence* pFence)
+VOID CFence::DestroyInstance(CFence* pFence)
 {
 	if (pFence != NULL)
 	{
@@ -31,7 +31,7 @@ VOID CFence::DeleteInstance(CFence* pFence)
 
 CFence::CFence(VOID)
 {
-	m_pInterface = NULL;
+	m_pID3D12Fence = NULL;
 	m_hFenceEvent = NULL;
 }
 
@@ -45,7 +45,7 @@ BOOL CFence::Initialize(ID3D12Fence* pInterface)
 
 	if (pInterface != NULL)
 	{
-		m_pInterface = pInterface;
+		m_pID3D12Fence = pInterface;
 	}
 	else
 	{
@@ -75,9 +75,9 @@ VOID CFence::Uninitialize(VOID)
 		m_hFenceEvent = NULL;
 	}
 
-	if (m_pInterface != NULL)
+	if (m_pID3D12Fence != NULL)
 	{
-		m_pInterface->Release();
-		m_pInterface = NULL;
+		m_pID3D12Fence->Release();
+		m_pID3D12Fence = NULL;
 	}
 }

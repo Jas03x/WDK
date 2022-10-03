@@ -16,10 +16,12 @@ struct ID3D12DescriptorHeap;
 struct ID3D12CommandAllocator;
 struct ID3D12RootSignature;
 struct ID3D12Resource;
+struct ID3D12Heap;
 
 class CGfxDevice : public IGfxDevice
 {
 private:
+	enum : UINT { ADAPTER_INDEX__INVALID = 0xFFFFFFFF };
 	enum : UINT { NUM_BUFFERS = 2 };
 	enum : UINT { MAX_INPUT_ELEMENTS = 32 };
 
@@ -33,15 +35,16 @@ private:
 
 	IDXGIFactory7*			m_pIDxgiFactory;
 	IDXGIAdapter4*			m_pIDxgiAdapter;
-	IDXGISwapChain4*		m_pISwapChain;
+	IDXGISwapChain4*		m_pIDxgiSwapChain;
 
-	ID3D12Device*			m_pInterface;
-	ID3D12CommandQueue*		m_pICommandQueue;
-	ID3D12DescriptorHeap*	m_pIRtvDescriptorHeap;
-	ID3D12CommandAllocator* m_pICommandAllocator;
-	ID3D12RootSignature*	m_pIRootSignature;
+	ID3D12Device*			m_pID3D12Device;
+	ID3D12CommandQueue*		m_pID3D12CommandQueue;
+	ID3D12DescriptorHeap*	m_pID3D12RtvDescriptorHeap;
+	ID3D12CommandAllocator* m_pID3D12CommandAllocator;
+	ID3D12RootSignature*	m_pID3D12RootSignature;
+	ID3D12Heap*				m_pID3D12UploadHeap;
 
-	ID3D12Resource*			m_pIRenderBuffers[NUM_BUFFERS];
+	ID3D12Resource*			m_pID3D12RenderBuffers[NUM_BUFFERS];
 
 	UINT					m_FrameIndex;
 	UINT					m_RtvDescriptorIncrement;
@@ -50,15 +53,17 @@ private:
 	CGfxDevice(VOID);
 	virtual ~CGfxDevice(VOID);
 
-	BOOL				  Initialize(IWindow* pIWindow);
+	BOOL				  Initialize(IGfxDevice::Desc& rDesc);
 	VOID				  Uninitialize(VOID);
 
 	BOOL				  EnumerateDxgiAdapters(VOID);
-	BOOL				  PrintAdapterDesc(UINT uIndex, IDXGIAdapter4* pIAdapter);		
+	BOOL				  PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter);
+
+	BOOL				  PrintDeviceProperties(VOID);
 
 public:
-	static CGfxDevice*	  CreateInstance(IWindow* pIWindow);
-	static VOID			  DeleteInstance(CGfxDevice* pDevice);
+	static CGfxDevice*	  CreateInstance(IGfxDevice::Desc& rDesc);
+	static VOID			  DestroyInstance(CGfxDevice* pDevice);
 
 public:
 	virtual IRenderer*	  CreateRenderer(const RENDERER_DESC& rDesc);
