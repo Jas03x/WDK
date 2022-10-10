@@ -44,6 +44,8 @@ public:
 		{
 			IGfxDevice::Descriptor GfxDeviceDesc = {};
 			GfxDeviceDesc.pIWindow = m_pIWindow;
+			GfxDeviceDesc.UploadHeapSize = 64 * MB;
+			GfxDeviceDesc.PrimaryHeapSize = 64 * MB;
 
 			m_pIGfxDevice = IGfxDevice::CreateInstance(GfxDeviceDesc);
 			if (m_pIGfxDevice == NULL)

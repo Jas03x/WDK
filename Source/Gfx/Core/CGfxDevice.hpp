@@ -43,6 +43,7 @@ private:
 	ID3D12CommandAllocator* m_pID3D12CommandAllocator;
 	ID3D12RootSignature*	m_pID3D12RootSignature;
 	ID3D12Heap*				m_pID3D12UploadHeap;
+	ID3D12Heap*				m_pID3D12PrimaryHeap;
 
 	ID3D12Resource*			m_pID3D12RenderBuffers[NUM_BUFFERS];
 

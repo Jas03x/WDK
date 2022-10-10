@@ -323,7 +323,7 @@ BOOL CGfxDevice::Initialize(IGfxDevice::Descriptor& rDesc)
 		D3D12_RESOURCE_DESC UploadHeapResourceDesc = { };
 		UploadHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		UploadHeapResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-		UploadHeapResourceDesc.Width = 6400;
+		UploadHeapResourceDesc.Width = rDesc.UploadHeapSize;
 		UploadHeapResourceDesc.Height = 1;
 		UploadHeapResourceDesc.DepthOrArraySize = 1;
 		UploadHeapResourceDesc.MipLevels = 1;
@@ -350,11 +350,49 @@ BOOL CGfxDevice::Initialize(IGfxDevice::Descriptor& rDesc)
 		}
 	}
 
+	if (Status == TRUE)
+	{
+		D3D12_RESOURCE_DESC PrimaryHeapResourceDesc = { };
+		PrimaryHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		PrimaryHeapResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+		PrimaryHeapResourceDesc.Width = rDesc.PrimaryHeapSize;
+		PrimaryHeapResourceDesc.Height = 1;
+		PrimaryHeapResourceDesc.DepthOrArraySize = 1;
+		PrimaryHeapResourceDesc.MipLevels = 1;
+		PrimaryHeapResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+		PrimaryHeapResourceDesc.SampleDesc.Count = 1;
+		PrimaryHeapResourceDesc.SampleDesc.Quality = 0;
+		PrimaryHeapResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		PrimaryHeapResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		D3D12_RESOURCE_ALLOCATION_INFO PrimaryHeapAllocationInfo = m_pID3D12Device->GetResourceAllocationInfo(0, 1, &PrimaryHeapResourceDesc);
+
+		D3D12_HEAP_DESC PrimaryHeapDesc = { };
+		PrimaryHeapDesc.SizeInBytes = PrimaryHeapAllocationInfo.SizeInBytes;
+		PrimaryHeapDesc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+		PrimaryHeapDesc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		PrimaryHeapDesc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		PrimaryHeapDesc.Properties.CreationNodeMask = 1;
+		PrimaryHeapDesc.Properties.VisibleNodeMask = 1;
+
+		if (m_pID3D12Device->CreateHeap(&PrimaryHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<VOID**>(&m_pID3D12PrimaryHeap)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create upload heap\n");
+		}
+	}
+
 	return Status;
 }
 
 VOID CGfxDevice::Uninitialize(VOID)
 {
+	if (m_pID3D12PrimaryHeap != NULL)
+	{
+		m_pID3D12PrimaryHeap->Release();
+		m_pID3D12PrimaryHeap = NULL;
+	}
+
 	if (m_pID3D12UploadHeap != NULL)
 	{
 		m_pID3D12UploadHeap->Release();
