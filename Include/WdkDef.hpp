@@ -32,6 +32,7 @@ typedef long long           LONGLONG;
 typedef unsigned long long  ULONGLONG;
 typedef unsigned __int64	SIZE_T;
 
+typedef signed __int64      INT64;
 typedef unsigned __int64    UINT64;
 
 typedef unsigned char       BYTE;

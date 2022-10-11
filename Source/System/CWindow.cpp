@@ -4,25 +4,15 @@
 
 #undef CreateWindow
 
-IWindow* IWindow::CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
-{
-	return CWindow::Create(ClassName, WindowName, ClientWidth, ClientHeight);
-}
-
-VOID IWindow::DestroyInstance(IWindow* pIWindow)
-{
-	return CWindow::Destroy(static_cast<CWindow*>(pIWindow));
-}
-
-CWindow* CWindow::Create(PCWCHAR ClassName, PCWCHAR WindowName, ULONG Width, ULONG Height)
+IWindow* WindowFactory::CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	CWindow* pWindow = new CWindow();
-	
+
 	if (pWindow != NULL)
 	{
-		if (pWindow->Initialize(ClassName, WindowName, Width, Height) == FALSE)
+		if (pWindow->Initialize(ClassName, WindowName, ClientWidth, ClientHeight) == FALSE)
 		{
-			CWindow::Destroy(pWindow);
+			WindowFactory::DestroyInstance(pWindow);
 			pWindow = NULL;
 		}
 	}
@@ -30,8 +20,9 @@ CWindow* CWindow::Create(PCWCHAR ClassName, PCWCHAR WindowName, ULONG Width, ULO
 	return pWindow;
 }
 
-VOID CWindow::Destroy(CWindow* pWindow)
+VOID WindowFactory::DestroyInstance(IWindow* pIWindow)
 {
+	CWindow* pWindow = static_cast<CWindow*>(pIWindow);
 	if (pWindow != NULL)
 	{
 		pWindow->Uninitialize();

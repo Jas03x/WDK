@@ -13,7 +13,7 @@ private:
 
 public:
 	static BOOL Initialize(VOID);
-	static VOID Uninitialize(VOID);
+	static BOOL Uninitialize(VOID);
 
 	static BOOL Write(PCWCHAR Msg, va_list Args);
 };

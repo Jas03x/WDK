@@ -74,6 +74,9 @@
     <ClInclude Include="Source\Gfx\Core\CFence.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gfx\3D\CMesh.hpp">
+      <Filter>Source\Gfx\3D</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -108,6 +111,9 @@
     </ClCompile>
     <ClCompile Include="Source\Gfx\Core\CFence.cpp">
       <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\3D\CMesh.cpp">
+      <Filter>Source\Gfx\3D</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

@@ -24,7 +24,7 @@ public:
 };
 
 // File
-class IFile
+class File
 {
 public:
 	enum MODE
@@ -33,10 +33,10 @@ public:
 		WRITE = 1
 	};
 
-	static IFile* Open(PCWCHAR Path);
-	static IFile* Open(const FILE_PATH& Path);
+	static File* Open(PCWCHAR Path);
+	static File* Open(const FILE_PATH& Path);
 
-	static VOID   Close(IFile* pIFile);
+	static VOID   Close(File* pIFile);
 
 	virtual BOOL  Read(BYTE** ppBuffer, DWORD* pSize) = 0;
 };

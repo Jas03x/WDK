@@ -8,8 +8,8 @@ BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc)
 {
 	BOOL Status = TRUE;
 
-	IFile* pIFile = IFile::Open(Path);
-	if (pIFile == NULL)
+	File* pFile = File::Open(Path);
+	if (pFile == NULL)
 	{
 		Status = FALSE;
 		Console::Write(L"Error: Failed to open shader file %s for reading\n", Path.FileName);
@@ -17,17 +17,17 @@ BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc)
 
 	if (Status == TRUE)
 	{
-		if (pIFile->Read(&rDesc.pCode, &rDesc.Size) != TRUE)
+		if (pFile->Read(&rDesc.pCode, &rDesc.Size) != TRUE)
 		{
 			Status = FALSE;
 			Console::Write(L"Error: Failed to read shader file %s\n", Path.FileName);
 		}
 	}
 
-	if (pIFile != NULL)
+	if (pFile != NULL)
 	{
-		IFile::Close(pIFile);
-		pIFile = NULL;
+		File::Close(pFile);
+		pFile = NULL;
 	}
 
 	return Status;
@@ -79,27 +79,3 @@ VOID CRenderer::Uninitialize(VOID)
 	}
 }
 
-CRenderer* CRenderer::CreateInstance(ID3D12PipelineState* pIPipelineState)
-{
-	CRenderer* pRenderer = new CRenderer();
-
-	if (pRenderer != NULL)
-	{
-		if (pRenderer->Initialize(pIPipelineState) == FALSE)
-		{
-			DestroyInstance(pRenderer);
-			pRenderer = NULL;
-		}
-	}
-
-	return pRenderer;
-}
-
-VOID CRenderer::DestroyInstance(CRenderer* pRenderer)
-{
-	if (pRenderer != NULL)
-	{
-		pRenderer->Uninitialize();
-		delete pRenderer;
-	}
-}

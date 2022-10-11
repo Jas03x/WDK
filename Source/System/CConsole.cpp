@@ -51,8 +51,10 @@ BOOL CConsole::Initialize(VOID)
 	return Status;
 }
 
-VOID CConsole::Uninitialize(VOID)
+BOOL CConsole::Uninitialize(VOID)
 {
+	BOOL Status = TRUE;
+
 	m_hStdOut = NULL;
 
 	if (m_pBuffer != NULL)
@@ -60,6 +62,8 @@ VOID CConsole::Uninitialize(VOID)
 		Memory::Release(m_pBuffer);
 		m_pBuffer = NULL;
 	}
+
+	return Status;
 }
 
 BOOL CConsole::Write(PCWCHAR Msg, va_list Args)

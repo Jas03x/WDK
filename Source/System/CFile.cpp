@@ -3,15 +3,15 @@
 #include <strsafe.h>
 #include <windows.h>
 
-IFile* IFile::Open(PCWCHAR Path)
+File* File::Open(PCWCHAR Path)
 {
-	return static_cast<IFile*>(CFile::Open(Path));
+	return static_cast<File*>(CFile::Open(Path));
 }
 
-IFile* IFile::Open(const FILE_PATH& Path)
+File* File::Open(const FILE_PATH& Path)
 {
 	BOOL Status = TRUE;
-	IFile* pIFile = NULL;
+	File* pFile = NULL;
 	WCHAR Buffer[1024] = {0};
 
 	if (StringCchCatEx(Buffer, _countof(Buffer), Path.Directory, NULL, NULL, 0) == S_OK)
@@ -25,13 +25,13 @@ IFile* IFile::Open(const FILE_PATH& Path)
 
 	if (Status == TRUE)
 	{
-		pIFile = IFile::Open(Buffer);
+		pFile = File::Open(Buffer);
 	}
 
-	return pIFile;
+	return pFile;
 }
 
-VOID IFile::Close(IFile* pIFile)
+VOID File::Close(File* pIFile)
 {
 	return CFile::Close(static_cast<CFile*>(pIFile));
 }
@@ -43,7 +43,6 @@ CFile::CFile()
 
 CFile::~CFile()
 {
-	Close(this);
 }
 
 CFile* CFile::Open(PCWCHAR Path)
@@ -70,6 +69,8 @@ VOID CFile::Close(CFile* pCFile)
 		CloseHandle(pCFile->hFile);
 		pCFile->hFile = NULL;
 	}
+
+	delete pCFile;
 }
 
 BOOL CFile::Read(BYTE** ppBuffer, DWORD* pSize)

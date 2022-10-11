@@ -4,31 +4,6 @@
 
 #include "Wdk.hpp"
 
-CCommandList* CCommandList::CreateInstance(ID3D12GraphicsCommandList* pInterface)
-{
-	CCommandList* pCommandList = new CCommandList();
-
-	if (pCommandList != NULL)
-	{
-		if (!pCommandList->Initialize(pInterface))
-		{
-			DestroyInstance(pCommandList);
-			pCommandList = NULL;
-		}
-	}
-
-	return pCommandList;
-}
-
-VOID CCommandList::DestroyInstance(CCommandList* pCommandList)
-{
-	if (pCommandList != NULL)
-	{
-		pCommandList->Uninitialize();
-		delete pCommandList;
-	}
-}
-
 CCommandList::CCommandList(VOID)
 {
 	m_pID3D12GraphicsCommandList = NULL;

@@ -12,17 +12,7 @@
 #include "CFence.hpp"
 #include "CRenderer.hpp"
 
-IGfxDevice* IGfxDevice::CreateInstance(IGfxDevice::Descriptor& rDesc)
-{
-	return CGfxDevice::CreateInstance(rDesc);
-}
-
-VOID IGfxDevice::DestroyInstance(IGfxDevice* pIDevice)
-{
-	CGfxDevice::DestroyInstance(static_cast<CGfxDevice*>(pIDevice));
-}
-
-CGfxDevice* CGfxDevice::CreateInstance(IGfxDevice::Descriptor& rDesc)
+IGfxDevice* DeviceFactory::CreateInstance(DeviceFactory::Descriptor& rDesc)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
@@ -30,7 +20,7 @@ CGfxDevice* CGfxDevice::CreateInstance(IGfxDevice::Descriptor& rDesc)
 	{
 		if (pDevice->Initialize(rDesc) == FALSE)
 		{
-			DestroyInstance(pDevice);
+			DeviceFactory::DestroyInstance(pDevice);
 			pDevice = NULL;
 		}
 	}
@@ -38,14 +28,14 @@ CGfxDevice* CGfxDevice::CreateInstance(IGfxDevice::Descriptor& rDesc)
 	return pDevice;
 }
 
-VOID CGfxDevice::DestroyInstance(CGfxDevice* pDevice)
+VOID DeviceFactory::DestroyInstance(IGfxDevice* pIDevice)
 {
+	CGfxDevice* pDevice = static_cast<CGfxDevice*>(pIDevice);
+
 	if (pDevice != NULL)
 	{
 		pDevice->Uninitialize();
-
 		delete pDevice;
-		pDevice = NULL;
 	}
 }
 
@@ -67,6 +57,8 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pID3D12RtvDescriptorHeap = NULL;
 	m_pID3D12CommandAllocator = NULL;
 	m_pID3D12RootSignature = NULL;
+	m_pID3D12UploadHeap = NULL;
+	m_pID3D12PrimaryHeap = NULL;
 
 	for (UINT i = 0; i < NUM_BUFFERS; i++)
 	{
@@ -82,7 +74,7 @@ CGfxDevice::~CGfxDevice(VOID)
 
 }
 
-BOOL CGfxDevice::Initialize(IGfxDevice::Descriptor& rDesc)
+BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 {
 	BOOL Status = TRUE;
 
@@ -929,7 +921,19 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 
 	if (Status == TRUE)
 	{
-		pIRenderer = CRenderer::CreateInstance(pIPipelineState);
+		pIRenderer = new CRenderer();
+		if (pIRenderer != NULL)
+		{
+			if (static_cast<CRenderer*>(pIRenderer)->Initialize(pIPipelineState) == FALSE)
+			{
+				DestroyRenderer(pIRenderer);
+				pIRenderer = NULL;
+			}
+		}
+		else
+		{
+			pIPipelineState->Release();
+		}
 	}
 
 	return pIRenderer;
@@ -937,9 +941,11 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 
 VOID CGfxDevice::DestroyRenderer(IRenderer* pIRenderer)
 {
-	if (pIRenderer != NULL)
+	CRenderer* pRenderer = static_cast<CRenderer*>(pIRenderer);
+	if (pRenderer != NULL)
 	{
-		CRenderer::DestroyInstance(static_cast<CRenderer*>(pIRenderer));
+		pRenderer->Uninitialize();
+		delete pRenderer;
 	}
 }
 
@@ -950,7 +956,15 @@ ICommandList* CGfxDevice::CreateCommandList(VOID)
 
 	if (m_pID3D12Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pID3D12CommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<VOID**>(&pInterface)) != S_OK)
 	{
-		pICommandList = CCommandList::CreateInstance(pInterface);
+		pICommandList = new CCommandList();
+		if (pICommandList != NULL)
+		{
+			if (static_cast<CCommandList*>(pICommandList)->Initialize(pInterface) == FALSE)
+			{
+				DestroyCommandList(pICommandList);
+				pICommandList = NULL;
+			}
+		}
 	}
 
 	return pICommandList;
@@ -958,10 +972,11 @@ ICommandList* CGfxDevice::CreateCommandList(VOID)
 
 VOID CGfxDevice::DestroyCommandList(ICommandList* pICommandList)
 {
-	if (pICommandList != NULL)
+	CCommandList* pCommandList = static_cast<CCommandList*>(pICommandList);
+	if (pCommandList != NULL)
 	{
-		CCommandList::DestroyInstance(static_cast<CCommandList*>(pICommandList));
-		pICommandList = NULL;
+		pCommandList->Uninitialize();
+		delete pCommandList;
 	}
 }
 
@@ -972,7 +987,15 @@ IFence* CGfxDevice::CreateFence(VOID)
 
 	if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&pInterface)) == S_OK)
 	{
-		pIFence = CFence::CreateInstance(pInterface);
+		pIFence = new CFence();
+		if (pIFence != NULL)
+		{
+			if (static_cast<CFence*>(pIFence)->Initialize(pInterface) == FALSE)
+			{
+				DestroyFence(pIFence);
+				pIFence = NULL;
+			}
+		}
 	}
 
 	return pIFence;
@@ -980,9 +1003,10 @@ IFence* CGfxDevice::CreateFence(VOID)
 
 VOID CGfxDevice::DestroyFence(IFence* pIFence)
 {
-	if (pIFence != NULL)
+	CFence* pFence = static_cast<CFence*>(pIFence);
+	if (pFence != NULL)
 	{
-		CFence::DestroyInstance(static_cast<CFence*>(pIFence));
-		pIFence = NULL;
+		pFence->Uninitialize();
+		delete pFence;
 	}
 }

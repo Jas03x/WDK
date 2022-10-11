@@ -32,7 +32,7 @@ public:
 
 		if (Status == TRUE)
 		{
-			m_pIWindow = IWindow::CreateInstance(WINDOW_CLASS, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
+			m_pIWindow = WindowFactory::CreateInstance(WINDOW_CLASS, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 			if (m_pIWindow == NULL)
 			{
 				Status = FALSE;
@@ -42,19 +42,19 @@ public:
 
 		if (Status == TRUE)
 		{
-			IGfxDevice::Descriptor GfxDeviceDesc = {};
+			DeviceFactory::Descriptor GfxDeviceDesc = {};
 			GfxDeviceDesc.pIWindow = m_pIWindow;
 			GfxDeviceDesc.UploadHeapSize = 64 * MB;
 			GfxDeviceDesc.PrimaryHeapSize = 64 * MB;
 
-			m_pIGfxDevice = IGfxDevice::CreateInstance(GfxDeviceDesc);
+			m_pIGfxDevice = DeviceFactory::CreateInstance(GfxDeviceDesc);
 			if (m_pIGfxDevice == NULL)
 			{
 				Status = FALSE;
 				Console::Write(L"Error: Could not initialize graphics device\n");
 			}
 		}
-
+		
 		if (Status == TRUE)
 		{
 			Status = System::GetModuleDirectory(module_directory.data(), static_cast<DWORD>(module_directory.size()));
@@ -105,13 +105,13 @@ public:
 
 		if (m_pIGfxDevice != NULL)
 		{
-			IGfxDevice::DestroyInstance(m_pIGfxDevice);
+			DeviceFactory::DestroyInstance(m_pIGfxDevice);
 			m_pIGfxDevice = NULL;
 		}
 
 		if (m_pIWindow != NULL)
 		{
-			IWindow::DestroyInstance(m_pIWindow);
+			WindowFactory::DestroyInstance(m_pIWindow);
 			m_pIWindow = NULL;
 		}
 	}

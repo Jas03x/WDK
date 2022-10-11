@@ -4,31 +4,6 @@
 
 #include "Wdk.hpp"
 
-CFence* CFence::CreateInstance(ID3D12Fence* pInterface)
-{
-	CFence* pFence = new CFence();
-
-	if (pFence != NULL)
-	{
-		if (!pFence->Initialize(pInterface))
-		{
-			DestroyInstance(pFence);
-			pFence = NULL;
-		}
-	}
-
-	return pFence;
-}
-
-VOID CFence::DestroyInstance(CFence* pFence)
-{
-	if (pFence != NULL)
-	{
-		pFence->Uninitialize();
-		delete pFence;
-	}
-}
-
 CFence::CFence(VOID)
 {
 	m_pID3D12Fence = NULL;

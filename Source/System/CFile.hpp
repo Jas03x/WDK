@@ -4,7 +4,7 @@
 #include "Wdk.hpp"
 #include "WdkDef.hpp"
 
-class CFile : public IFile
+class CFile : public File
 {
 private:
 	HANDLE hFile;

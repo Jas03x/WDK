@@ -17,16 +17,12 @@ private:
 
 	static LRESULT WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
-private:
+public:
 	CWindow(VOID);
 	virtual ~CWindow(VOID);
 
 	BOOL Initialize(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 	VOID Uninitialize(VOID);
-
-public:
-	static CWindow* Create(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
-	static VOID Destroy(CWindow* pWindow);
 
 public:
 	virtual HWND GetHandle(VOID);

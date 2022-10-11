@@ -50,21 +50,18 @@ private:
 	UINT					m_FrameIndex;
 	UINT					m_RtvDescriptorIncrement;
 
-private:
+public:
 	CGfxDevice(VOID);
 	virtual ~CGfxDevice(VOID);
 
-	BOOL				  Initialize(IGfxDevice::Descriptor& rDesc);
+	BOOL				  Initialize(DeviceFactory::Descriptor& rDesc);
 	VOID				  Uninitialize(VOID);
 
+private:
 	BOOL				  EnumerateDxgiAdapters(VOID);
 	BOOL				  PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter);
 
 	BOOL				  PrintDeviceProperties(VOID);
-
-public:
-	static CGfxDevice*	  CreateInstance(IGfxDevice::Descriptor& rDesc);
-	static VOID			  DestroyInstance(CGfxDevice* pDevice);
 
 public:
 	virtual IRenderer*	  CreateRenderer(const RENDERER_DESC& rDesc);

@@ -81,8 +81,28 @@ class __declspec(novtable) IFence
 
 };
 
+// IMesh
+class __declspec(novtable) IMesh
+{
+
+};
+
 // IGfxDevice
 class __declspec(novtable) IGfxDevice
+{
+public:
+	virtual IRenderer*    CreateRenderer(const RENDERER_DESC& rDesc) = 0;
+	virtual VOID          DestroyRenderer(IRenderer* pIRenderer) = 0;
+
+	virtual ICommandList* CreateCommandList(VOID) = 0;
+	virtual VOID          DestroyCommandList(ICommandList* pICommandList) = 0;
+
+	virtual IFence*       CreateFence(VOID) = 0;
+	virtual VOID          DestroyFence(IFence* pIFence) = 0;
+};
+
+// Device Factory
+class __declspec(novtable) DeviceFactory
 {
 public:
 	struct Descriptor
@@ -93,16 +113,6 @@ public:
 		UINT64 PrimaryHeapSize;
 	};
 
-	virtual IRenderer*    CreateRenderer(const RENDERER_DESC& rDesc) = 0;
-	virtual VOID          DestroyRenderer(IRenderer* pIRenderer) = 0;
-
-	virtual ICommandList* CreateCommandList(VOID) = 0;
-	virtual VOID          DestroyCommandList(ICommandList* pICommandList) = 0;
-
-	virtual IFence*       CreateFence(VOID) = 0;
-	virtual VOID          DestroyFence(IFence* pIFence) = 0;
-
-public:
 	static IGfxDevice* CreateInstance(Descriptor& rDesc);
 	static VOID        DestroyInstance(IGfxDevice* pIDevice);
 };

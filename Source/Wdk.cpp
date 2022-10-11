@@ -8,7 +8,7 @@
 #include "System/CMemory.hpp"
 
 BOOL WdkInitialize(INT argc, PWCHAR argv);
-VOID WdkTerminate(VOID);
+BOOL WdkTerminate(VOID);
 
 void WdkAssert(BOOL b, PCWCHAR error, ...)
 {
@@ -36,7 +36,13 @@ INT main(INT argc, PWCHAR argv)
 		Status = STATUS::UNSUCCESSFUL;
 	}
 
-	WdkTerminate();
+	if (WdkTerminate() == FALSE)
+	{
+		if (Status == STATUS::SUCCESS)
+		{
+			Status = STATUS::UNSUCCESSFUL;
+		}
+	}
 
 	return Status;
 }
@@ -58,10 +64,21 @@ BOOL WdkInitialize(INT argc, PWCHAR argv)
 	return Status;
 }
 
-VOID WdkTerminate(VOID)
+BOOL WdkTerminate(VOID)
 {
-	CConsole::Uninitialize();
-	CMemory::Uninitialize();
+	BOOL Status = TRUE;
+
+	if (CConsole::Uninitialize() != TRUE)
+	{
+		Status = FALSE;
+	}
+	
+	if (CMemory::Uninitialize() != TRUE)
+	{
+		Status = FALSE;
+	}
+
+	return Status;
 }
 
 PVOID operator new(SIZE_T size)

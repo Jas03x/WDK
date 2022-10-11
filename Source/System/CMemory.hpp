@@ -7,10 +7,11 @@ class CMemory
 {
 protected:
 	static HANDLE m_hHeap;
+	static INT64  m_nBytesAllocated;
 
 public:
 	static BOOL Initialize(VOID);
-	static VOID Uninitialize(VOID);
+	static BOOL Uninitialize(VOID);
 
 	static PVOID Allocate(SIZE_T nBytes, BOOL bClear);
 	static BOOL  Release(PVOID pMemory);
