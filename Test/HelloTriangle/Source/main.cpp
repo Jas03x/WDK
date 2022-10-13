@@ -114,6 +114,12 @@ public:
 			};
 
 			m_pIMesh = m_pIGfxDevice->CreateMesh(reinterpret_cast<CONST VOID*>(Vertices), sizeof(Vertices), sizeof(Vertex));
+
+			if (m_pIMesh == NULL)
+			{
+				Status = FALSE;
+				Console::Write(L"Error: could not create mesh\n");
+			}
 		}
 
 		if (Status == FALSE)

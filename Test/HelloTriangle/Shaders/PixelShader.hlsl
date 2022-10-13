@@ -1,6 +1,7 @@
 
 struct PS_Input
 {
+    float4 vertex : SV_POSITION;
     float3 color  : COLOR;
 };
 
