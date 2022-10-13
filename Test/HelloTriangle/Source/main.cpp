@@ -132,6 +132,12 @@ public:
 
 	VOID Uninitialize(VOID)
 	{
+		if (m_pIMesh != NULL)
+		{
+			m_pIGfxDevice->DestroyMesh(m_pIMesh);
+			m_pIMesh = NULL;
+		}
+
 		if (m_pIRenderer != NULL)
 		{
 			m_pIGfxDevice->DestroyRenderer(m_pIRenderer);

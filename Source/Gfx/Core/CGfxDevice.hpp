@@ -41,8 +41,10 @@ private:
 
 	ID3D12Device*			   m_pID3D12Device;
 
-	ID3D12CommandQueue*		   m_pID3D12CommandQueue;
+	ID3D12CommandQueue*		   m_pID3D12CopyCommandQueue;
 	ID3D12CommandAllocator*    m_pID3D12CopyCommandAllocator;
+
+	ID3D12CommandQueue*        m_pID3D12DirectCommandQueue;
 	ID3D12CommandAllocator*    m_pID3D12DirectCommandAllocator;
 
 	ID3D12RootSignature*       m_pID3D12RootSignature;
@@ -75,7 +77,7 @@ private:
 
 	BOOL				       PrintDeviceProperties(VOID);
 
-	BOOL                       WaitForCommandQueue(VOID);
+	BOOL                       WaitForCommandQueue(ID3D12CommandQueue* pID3D12CommandQueue);
 
 public:
 	virtual IRenderer*	       CreateRenderer(const RENDERER_DESC& rDesc);

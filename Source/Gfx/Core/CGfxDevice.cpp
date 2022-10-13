@@ -54,7 +54,8 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pIDxgiSwapChain = NULL;
 
 	m_pID3D12Device = NULL;
-	m_pID3D12CommandQueue = NULL;
+	m_pID3D12CopyCommandQueue = NULL;
+	m_pID3D12DirectCommandQueue = NULL;
 	m_pID3D12RtvDescriptorHeap = NULL;
 	m_pID3D12CopyCommandAllocator = NULL;
 	m_pID3D12DirectCommandAllocator = NULL;
@@ -175,15 +176,30 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 	if (Status == TRUE)
 	{
 		D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = { };
+		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
+		cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		cmdQueueDesc.NodeMask = 0;
+
+		if (m_pID3D12Device->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pID3D12CopyCommandQueue)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create copy command queue\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = { };
 		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
 		cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
 		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		cmdQueueDesc.NodeMask = 0;
 
-		if (m_pID3D12Device->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pID3D12CommandQueue)) != S_OK)
+		if (m_pID3D12Device->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pID3D12DirectCommandQueue)) != S_OK)
 		{
 			Status = FALSE;
-			Console::Write(L"Error: Failed to create command queue\n");
+			Console::Write(L"Error: Failed to create direct command queue\n");
 		}
 	}
 
@@ -209,7 +225,7 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 
 			IDXGISwapChain1* pISwapChain1 = NULL;
 
-			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pID3D12CommandQueue, m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
+			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pID3D12DirectCommandQueue, m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
 			{
 				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<VOID**>(&m_pIDxgiSwapChain));
 				pISwapChain1->Release();
@@ -499,10 +515,16 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pIDxgiSwapChain = NULL;
 	}
 
-	if (m_pID3D12CommandQueue != NULL)
+	if (m_pID3D12CopyCommandQueue != NULL)
 	{
-		m_pID3D12CommandQueue->Release();
-		m_pID3D12CommandQueue = NULL;
+		m_pID3D12CopyCommandQueue->Release();
+		m_pID3D12CopyCommandQueue = NULL;
+	}
+
+	if (m_pID3D12DirectCommandQueue != NULL)
+	{
+		m_pID3D12DirectCommandQueue->Release();
+		m_pID3D12DirectCommandQueue = NULL;
 	}
 
 	if (m_pID3D12Device != NULL)
@@ -1108,7 +1130,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 		Barrier.Transition.pResource = VertexBuffer;
 		Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON; // Resources decay to the common state when accessed from a copy queue in commmand lists
 
 		ID3D12GraphicsCommandList* pICommandList = reinterpret_cast<ID3D12GraphicsCommandList*>(m_pICopyCommandBuffer->GetHandle());
 		
@@ -1125,9 +1147,9 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 	{
 		ID3D12CommandList* pICommandLists[] = { reinterpret_cast<ID3D12GraphicsCommandList*>(m_pICopyCommandBuffer->GetHandle()) };
 		
-		m_pID3D12CommandQueue->ExecuteCommandLists(1, pICommandLists);
+		m_pID3D12CopyCommandQueue->ExecuteCommandLists(1, pICommandLists);
 		
-		Status = WaitForCommandQueue();
+		Status = WaitForCommandQueue(m_pID3D12CopyCommandQueue);
 	}
 
 	if (Status == TRUE)
@@ -1173,11 +1195,11 @@ VOID CGfxDevice::DestroyMesh(IMesh* pIMesh)
 	}
 }
 
-BOOL CGfxDevice::WaitForCommandQueue(VOID)
+BOOL CGfxDevice::WaitForCommandQueue(ID3D12CommandQueue* pID3D12CommandQueue)
 {
 	BOOL Status = TRUE;
 
-	if (m_pID3D12CommandQueue->Signal(m_pID3D12Fence, m_FenceValue) != S_OK)
+	if (pID3D12CommandQueue->Signal(m_pID3D12Fence, m_FenceValue) != S_OK)
 	{
 		Status = FALSE;
 		Console::Write(L"Error: Failed to signal fence from command queue\n");
