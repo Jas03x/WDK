@@ -8,9 +8,10 @@
 
 #include "WdkSystem.hpp"
 
-#include "CCommandList.hpp"
-#include "CFence.hpp"
+#include "CCommandBuffer.hpp"
+#include "CMesh.hpp"
 #include "CRenderer.hpp"
+#include "EnumTranslator.hpp"
 
 IGfxDevice* DeviceFactory::CreateInstance(DeviceFactory::Descriptor& rDesc)
 {
@@ -59,12 +60,16 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pID3D12RootSignature = NULL;
 	m_pID3D12UploadHeap = NULL;
 	m_pID3D12PrimaryHeap = NULL;
+	m_pID3D12Fence = NULL;
 
 	for (UINT i = 0; i < NUM_BUFFERS; i++)
 	{
 		m_pID3D12RenderBuffers[i] = NULL;
 	}
 
+	m_pICopyCommandBuffer = NULL;
+
+	m_FenceValue = 0;
 	m_FrameIndex = 0;
 	m_RtvDescriptorIncrement = 0;
 }
@@ -374,11 +379,63 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 		}
 	}
 
+	if (Status == TRUE)
+	{
+		if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&m_pID3D12Fence)) == S_OK)
+		{
+			m_hFenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+
+			if (m_hFenceEvent != NULL)
+			{
+				m_FenceValue = 1;
+			}
+			else
+			{
+				Status = FALSE;
+				Console::Write(L"Error: could not initialize fence event handle\n");
+			}
+		}
+		else
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create fence\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		m_pICopyCommandBuffer = CreateCommandBuffer(COMMAND_BUFFER_TYPE_COPY);
+
+		if (m_pICopyCommandBuffer == NULL)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create copy command buffer\n");
+		}
+	}
+
 	return Status;
 }
 
 VOID CGfxDevice::Uninitialize(VOID)
 {
+	if (m_pICopyCommandBuffer != NULL)
+	{
+		DestroyCommandBuffer(m_pICopyCommandBuffer);
+		m_pICopyCommandBuffer = NULL;
+	}
+
+	if (m_hFenceEvent != NULL)
+	{
+		CloseHandle(m_hFenceEvent);
+		m_hFenceEvent = NULL;
+	}
+
+	if (m_pID3D12Fence != NULL)
+	{
+		m_pID3D12Fence->Release();
+		m_pID3D12Fence = NULL;
+	}
+
 	if (m_pID3D12PrimaryHeap != NULL)
 	{
 		m_pID3D12PrimaryHeap->Release();
@@ -714,70 +771,19 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 	{
 		for (UINT i = 0; (Status == TRUE) && (i < rDesc.InputLayout.NumInputs); i++)
 		{
-			switch (rDesc.InputLayout.pInputElements[i].Element)
+			if (Status == TRUE)
 			{
-				case INPUT_ELEMENT_POSITION:
-				{
-					InputElementDescs[i].SemanticName = "POSITION";
-					break;
-				}
-				case INPUT_ELEMENT_COLOR:
-				{
-					InputElementDescs[i].SemanticName = "COLOR";
-					break;
-				}
-				default:
-				{
-					Status = FALSE;
-					Console::Write(L"Error: Invalid semantic index %u\n", rDesc.InputLayout.pInputElements[i].Element);
-					break;
-				}
+				Status = EnumTranslator::InputElement_To_SemanticName(rDesc.InputLayout.pInputElements[i].Element, InputElementDescs[i].SemanticName);
 			}
 
 			if (Status == TRUE)
 			{
-				switch (rDesc.InputLayout.pInputElements[i].ElementFormat)
-				{
-					case INPUT_ELEMENT_FORMAT_RGB_32F:
-					{
-						InputElementDescs[i].Format = DXGI_FORMAT_R32G32B32_FLOAT;
-						break;
-					}
-					case INPUT_ELEMENT_FORMAT_RGBA_32F:
-					{
-						InputElementDescs[i].Format = DXGI_FORMAT_R32G32B32A32_FLOAT;
-						break;
-					}
-					default:
-					{
-						Status = FALSE;
-						Console::Write(L"Error: Invalid element format: %u\n", rDesc.InputLayout.pInputElements[i].ElementFormat);
-						break;
-					}
-				}
+				Status = EnumTranslator::InputElementFormat_To_DxgiFormat(rDesc.InputLayout.pInputElements[i].ElementFormat, InputElementDescs[i].Format);
 			}
 
 			if (Status == TRUE)
 			{
-				switch (rDesc.InputLayout.pInputElements[i].Type)
-				{
-					case INPUT_ELEMENT_TYPE_PER_VERTEX:
-					{
-						InputElementDescs[i].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA;
-						break;
-					}
-					case INPUT_ELEMENT_TYPE_PER_INSTANCE:
-					{
-						InputElementDescs[i].InputSlotClass = D3D12_INPUT_CLASSIFICATION_PER_INSTANCE_DATA;
-						break;
-					}
-					default:
-					{
-						Status = FALSE;
-						Console::Write(L"Error: Invalid element type %u\n", rDesc.InputLayout.pInputElements[i].Type);
-						break;
-					}
-				}
+				Status = EnumTranslator::InputElementType_To_InputSlotClass(rDesc.InputLayout.pInputElements[i].Type, InputElementDescs[i].InputSlotClass);
 			}
 
 			if (Status == TRUE)
@@ -894,7 +900,7 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 		Desc.NumRenderTargets                = 1;
 
 		// Render Target Formats
-		Desc.RTVFormats[0]                   = DXGI_FORMAT_R8G8B8A8_UNORM;;
+		Desc.RTVFormats[0]                   = DXGI_FORMAT_R8G8B8A8_UNORM;
 
 		// Depth Stencil Format
 		Desc.DSVFormat                       = DXGI_FORMAT_UNKNOWN;
@@ -949,64 +955,238 @@ VOID CGfxDevice::DestroyRenderer(IRenderer* pIRenderer)
 	}
 }
 
-ICommandList* CGfxDevice::CreateCommandList(VOID)
+ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 {
-	ICommandList* pICommandList = NULL;
-	ID3D12GraphicsCommandList* pInterface;
+	BOOL Status = TRUE;
+	ICommandBuffer* pICommandBuffer = NULL;
+	D3D12_COMMAND_LIST_TYPE CommandListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	ID3D12GraphicsCommandList* pID3D12GraphicsCommandList = NULL;
 
-	if (m_pID3D12Device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, m_pID3D12CommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<VOID**>(&pInterface)) != S_OK)
+	if (Status == TRUE)
 	{
-		pICommandList = new CCommandList();
-		if (pICommandList != NULL)
+		Status = EnumTranslator::CommandBufferType_To_CommandListType(Type, CommandListType);
+	}
+
+	if (Status == TRUE)
+	{
+		if (m_pID3D12Device->CreateCommandList(0, CommandListType, m_pID3D12CommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<VOID**>(&pID3D12GraphicsCommandList)) != S_OK)
 		{
-			if (static_cast<CCommandList*>(pICommandList)->Initialize(pInterface) == FALSE)
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create command list\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		pICommandBuffer = new CCommandBuffer();
+		if (pICommandBuffer != NULL)
+		{
+			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(pID3D12GraphicsCommandList) == FALSE)
 			{
-				DestroyCommandList(pICommandList);
-				pICommandList = NULL;
+				DestroyCommandBuffer(pICommandBuffer);
+				pICommandBuffer = NULL;
 			}
 		}
 	}
 
-	return pICommandList;
+	if ((Status == FALSE) && (pID3D12GraphicsCommandList != NULL))
+	{
+		pID3D12GraphicsCommandList->Release();
+		pID3D12GraphicsCommandList = NULL;
+	}
+
+	return pICommandBuffer;
 }
 
-VOID CGfxDevice::DestroyCommandList(ICommandList* pICommandList)
+VOID CGfxDevice::DestroyCommandBuffer(ICommandBuffer* pICommandBuffer)
 {
-	CCommandList* pCommandList = static_cast<CCommandList*>(pICommandList);
-	if (pCommandList != NULL)
+	CCommandBuffer* pCommandBuffer = static_cast<CCommandBuffer*>(pICommandBuffer);
+	if (pCommandBuffer != NULL)
 	{
-		pCommandList->Uninitialize();
-		delete pCommandList;
+		pCommandBuffer->Uninitialize();
+		delete pCommandBuffer;
 	}
 }
 
-IFence* CGfxDevice::CreateFence(VOID)
+IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT StrideInBytes)
 {
-	IFence* pIFence = NULL;
-	ID3D12Fence* pInterface = NULL;
+	BOOL Status = TRUE;
+	IMesh* pIMesh = NULL;
+	ID3D12Resource* VertexBuffer = NULL;
+	ID3D12Resource* VertexDataUploadBuffer = NULL;
 
-	if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&pInterface)) == S_OK)
+	if (Status == TRUE)
 	{
-		pIFence = new CFence();
-		if (pIFence != NULL)
+		D3D12_RESOURCE_DESC VertexBufferDesc = {};
+		VertexBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		VertexBufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+		VertexBufferDesc.Width = SizeInBytes;
+		VertexBufferDesc.Height = 1;
+		VertexBufferDesc.DepthOrArraySize = 1;
+		VertexBufferDesc.MipLevels = 1;
+		VertexBufferDesc.Format = DXGI_FORMAT_UNKNOWN;
+		VertexBufferDesc.SampleDesc.Count = 1;
+		VertexBufferDesc.SampleDesc.Quality = 0;
+		VertexBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		VertexBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12PrimaryHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&VertexBuffer)) != S_OK)
 		{
-			if (static_cast<CFence*>(pIFence)->Initialize(pInterface) == FALSE)
+			Status = FALSE;
+		}
+
+		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12UploadHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&VertexDataUploadBuffer)) != S_OK)
+		{
+			Status = FALSE;
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		BYTE* VertexBufferCpuVa = NULL;
+
+		D3D12_RANGE CpuReadRange = {};
+		CpuReadRange.Begin = 0;
+		CpuReadRange.End = 0;
+
+		if (VertexDataUploadBuffer->Map(0, &CpuReadRange, reinterpret_cast<VOID**>(&VertexBufferCpuVa)) == S_OK)
+		{
+			CopyMemory(VertexBufferCpuVa, pVertexData, SizeInBytes);
+			VertexDataUploadBuffer->Unmap(0, NULL);
+		}
+		else
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to map vertex buffer allocation\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		D3D12_RESOURCE_BARRIER Barrier = {};
+		Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		Barrier.Transition.pResource = VertexBuffer;
+		Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+		Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+
+		ID3D12GraphicsCommandList* pICommandList = reinterpret_cast<ID3D12GraphicsCommandList*>(m_pICopyCommandBuffer->GetHandle());
+		
+		pICommandList->CopyResource(VertexBuffer, VertexDataUploadBuffer);
+		pICommandList->ResourceBarrier(1, &Barrier);
+		if (pICommandList->Close() != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Could not finalize command buffer\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		ID3D12CommandList* pICommandLists[] = { reinterpret_cast<ID3D12GraphicsCommandList*>(m_pICopyCommandBuffer->GetHandle()) };
+		
+		m_pID3D12CommandQueue->ExecuteCommandLists(1, pICommandLists);
+		
+		Status = WaitForCommandQueue();
+	}
+
+	if (Status == TRUE)
+	{
+		pIMesh = new CMesh();
+		if (pIMesh != NULL)
+		{
+			if (static_cast<CMesh*>(pIMesh)->Initialize(VertexBuffer, SizeInBytes, StrideInBytes) == FALSE)
 			{
-				DestroyFence(pIFence);
-				pIFence = NULL;
+				Status = FALSE;
+				DestroyMesh(pIMesh);
+				pIMesh = NULL;
+			}
+		}
+		else
+		{
+			Status = FALSE;
+		}
+	}
+
+	if (VertexDataUploadBuffer != NULL)
+	{
+		VertexDataUploadBuffer->Release();
+		VertexDataUploadBuffer = NULL;
+	}
+
+	if ((Status == FALSE) && (VertexBuffer != NULL))
+	{
+		VertexBuffer->Release();
+		VertexBuffer = NULL;
+	}
+
+	return pIMesh;
+}
+
+VOID CGfxDevice::DestroyMesh(IMesh* pIMesh)
+{
+	CMesh* pMesh = static_cast<CMesh*>(pIMesh);
+	if (pMesh != NULL)
+	{
+		pMesh->Uninitialize();
+		delete pMesh;
+	}
+}
+
+BOOL CGfxDevice::WaitForCommandQueue(VOID)
+{
+	BOOL Status = TRUE;
+
+	if (m_pID3D12CommandQueue->Signal(m_pID3D12Fence, m_FenceValue) != S_OK)
+	{
+		Status = FALSE;
+		Console::Write(L"Error: Failed to signal fence from command queue\n");
+	}
+
+	if (Status == TRUE)
+	{
+		if (m_pID3D12Fence->GetCompletedValue() < m_FenceValue)
+		{
+			if (m_pID3D12Fence->SetEventOnCompletion(m_FenceValue, m_hFenceEvent) == S_OK)
+			{
+				DWORD Result = WaitForSingleObject(m_hFenceEvent, COMMAND_QUEUE_TIMEOUT);
+
+				switch (Result)
+				{
+					case WAIT_OBJECT_0:
+					{
+						break;
+					}
+					case WAIT_TIMEOUT:
+					{
+						Status = FALSE;
+						Console::Write(L"Error: command queue submission timed out\n");
+						break;
+					}
+					case WAIT_FAILED:
+					{
+						Status = FALSE;
+						Console::Write(L"Error: failed to wait for command queue submission\n");
+						break;
+					}
+					default:
+					{
+						Status = FALSE;
+						Console::Write(L"Error: unknown error occurred while waiting for command queue submission\n");
+						break;
+					}
+				}
+			}
+			else
+			{
+				Status = FALSE;
+				Console::Write(L"Error: failed to set fence event on completition\n");
 			}
 		}
 	}
 
-	return pIFence;
-}
+	m_FenceValue++;
 
-VOID CGfxDevice::DestroyFence(IFence* pIFence)
-{
-	CFence* pFence = static_cast<CFence*>(pIFence);
-	if (pFence != NULL)
-	{
-		pFence->Uninitialize();
-		delete pFence;
-	}
+	return Status;
 }

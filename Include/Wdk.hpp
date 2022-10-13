@@ -42,11 +42,12 @@ public:
 };
 
 // System
-namespace System
+class System
 {
+public:
 	// Path
-	BOOL GetModulePath(PWCHAR pPath, DWORD nSize);
-	BOOL GetModuleDirectory(PWCHAR pPath, DWORD nSize);
-}
+	static BOOL GetModulePath(PWCHAR pPath, DWORD nSize);
+	static BOOL GetModuleDirectory(PWCHAR pPath, DWORD nSize);
+};
 
 #endif // WDK__HPP

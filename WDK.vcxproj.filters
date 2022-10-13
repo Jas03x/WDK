@@ -68,14 +68,14 @@
     <ClInclude Include="Source\System\CSystem.hpp">
       <Filter>Source\System</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Gfx\Core\CCommandList.hpp">
-      <Filter>Source\Gfx\Core</Filter>
-    </ClInclude>
-    <ClInclude Include="Source\Gfx\Core\CFence.hpp">
+    <ClInclude Include="Source\Gfx\Core\CCommandBuffer.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
     <ClInclude Include="Source\Gfx\3D\CMesh.hpp">
       <Filter>Source\Gfx\3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\EnumTranslator.hpp">
+      <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -106,14 +106,14 @@
     <ClCompile Include="Source\System\CSystem.cpp">
       <Filter>Source\System</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Gfx\Core\CCommandList.cpp">
-      <Filter>Source\Gfx\Core</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\Gfx\Core\CFence.cpp">
+    <ClCompile Include="Source\Gfx\Core\CCommandBuffer.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
     <ClCompile Include="Source\Gfx\3D\CMesh.cpp">
       <Filter>Source\Gfx\3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\EnumTranslator.cpp">
+      <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

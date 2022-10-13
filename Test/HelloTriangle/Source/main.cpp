@@ -16,6 +16,7 @@ private:
 	IWindow*    m_pIWindow;
 	IGfxDevice* m_pIGfxDevice;
 	IRenderer*  m_pIRenderer;
+	IMesh*      m_pIMesh;
 
 public:
 	HelloTriangle()
@@ -23,6 +24,7 @@ public:
 		m_pIWindow = NULL;
 		m_pIGfxDevice = NULL;
 		m_pIRenderer = NULL;
+		m_pIMesh = NULL;
 	}
 
 	BOOL Initialize(VOID)
@@ -44,8 +46,8 @@ public:
 		{
 			DeviceFactory::Descriptor GfxDeviceDesc = {};
 			GfxDeviceDesc.pIWindow = m_pIWindow;
-			GfxDeviceDesc.UploadHeapSize = 64 * MB;
-			GfxDeviceDesc.PrimaryHeapSize = 64 * MB;
+			GfxDeviceDesc.UploadHeapSize = static_cast<UINT64>(64U * MB);
+			GfxDeviceDesc.PrimaryHeapSize = static_cast<UINT64>(64U * MB);
 
 			m_pIGfxDevice = DeviceFactory::CreateInstance(GfxDeviceDesc);
 			if (m_pIGfxDevice == NULL)
@@ -66,8 +68,8 @@ public:
 
 			INPUT_ELEMENT_DESC InputElements[] =
 			{
-				{ INPUT_ELEMENT_POSITION, 0, INPUT_ELEMENT_FORMAT_XYZ_32F, 0, sizeof(FLOAT) * 0, INPUT_ELEMENT_TYPE_PER_VERTEX, 0},
-				{ INPUT_ELEMENT_COLOR,    0, INPUT_ELEMENT_FORMAT_RGB_32F, 0, sizeof(FLOAT) * 3, INPUT_ELEMENT_TYPE_PER_VERTEX, 0},
+				{ INPUT_ELEMENT_POSITION, 0, INPUT_ELEMENT_FORMAT_XYZ_32F, 0, sizeof(FLOAT) * 0, INPUT_ELEMENT_TYPE_PER_VERTEX, 0 },
+				{ INPUT_ELEMENT_COLOR,    0, INPUT_ELEMENT_FORMAT_RGB_32F, 0, sizeof(FLOAT) * 3, INPUT_ELEMENT_TYPE_PER_VERTEX, 0 },
 			};
 
 			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/VertexShader.cso"), desc.VertexShader);
@@ -85,6 +87,33 @@ public:
 
 			ReleaseShaderBytecode(desc.VertexShader);
 			ReleaseShaderBytecode(desc.PixelShader);
+		}
+
+		if (Status == TRUE)
+		{
+			struct Vertex
+			{
+				float vertex[3];
+				float colour[3];
+			};
+
+			static const Vertex Vertices[] =
+			{
+				{
+					{ 0.5f, 1.0f, 0.0f }, // top
+					{ 1.0f, 0.0f, 0.0f }  // red
+				},
+				{
+					{ 0.0f, 0.0f, 0.0f }, // left
+					{ 0.0f, 0.0f, 1.0f }  // blue
+				},
+				{
+					{ 1.0f, 0.0f, 0.0f }, // right
+					{ 0.0f, 1.0f, 0.0f }  // green
+				}
+			};
+
+			m_pIMesh = m_pIGfxDevice->CreateMesh(reinterpret_cast<CONST VOID*>(Vertices), sizeof(Vertices), sizeof(Vertex));
 		}
 
 		if (Status == FALSE)

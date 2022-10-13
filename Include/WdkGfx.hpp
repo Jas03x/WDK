@@ -21,11 +21,11 @@ enum INPUT_ELEMENT
 
 enum INPUT_ELEMENT_FORMAT
 {
-	INPUT_ELEMENT_FORMAT_INVALID = 0,
-	INPUT_ELEMENT_FORMAT_XYZ_8F = 1, INPUT_ELEMENT_FORMAT_RGB_8F = 1,
-	INPUT_ELEMENT_FORMAT_XYZ_16F = 2, INPUT_ELEMENT_FORMAT_RGB_16F = 2,
-	INPUT_ELEMENT_FORMAT_XYZ_32F = 3, INPUT_ELEMENT_FORMAT_RGB_32F = 3,
-	INPUT_ELEMENT_FORMAT_XYZW_8F = 4, INPUT_ELEMENT_FORMAT_RGBA_8F = 4,
+	INPUT_ELEMENT_FORMAT_INVALID  = 0,
+	INPUT_ELEMENT_FORMAT_XYZ_8F   = 1, INPUT_ELEMENT_FORMAT_RGB_8F   = 1,
+	INPUT_ELEMENT_FORMAT_XYZ_16F  = 2, INPUT_ELEMENT_FORMAT_RGB_16F  = 2,
+	INPUT_ELEMENT_FORMAT_XYZ_32F  = 3, INPUT_ELEMENT_FORMAT_RGB_32F  = 3,
+	INPUT_ELEMENT_FORMAT_XYZW_8F  = 4, INPUT_ELEMENT_FORMAT_RGBA_8F  = 4,
 	INPUT_ELEMENT_FORMAT_XYZW_16F = 5, INPUT_ELEMENT_FORMAT_RGBA_16F = 5,
 	INPUT_ELEMENT_FORMAT_XYZW_32F = 6, INPUT_ELEMENT_FORMAT_RGBA_32F = 6,
 };
@@ -69,10 +69,20 @@ public:
 BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc);
 VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
 
-// ICommandList
-class __declspec(novtable) ICommandList
+// ICommandBuffer
+enum COMMAND_BUFFER_TYPE
 {
+	COMMAND_BUFFER_TYPE_INVALID = 0,
+	COMMAND_BUFFER_TYPE_DIRECT = 1,
+	COMMAND_BUFFER_TYPE_GRAPHICS = 1,
+	COMMAND_BUFFER_TYPE_COMPUTE = 2,
+	COMMAND_BUFFER_TYPE_COPY = 3
+};
 
+class __declspec(novtable) ICommandBuffer
+{
+public:
+	virtual HANDLE GetHandle() = 0;
 };
 
 // IFence
@@ -91,14 +101,14 @@ class __declspec(novtable) IMesh
 class __declspec(novtable) IGfxDevice
 {
 public:
-	virtual IRenderer*    CreateRenderer(const RENDERER_DESC& rDesc) = 0;
-	virtual VOID          DestroyRenderer(IRenderer* pIRenderer) = 0;
+	virtual IRenderer*      CreateRenderer(const RENDERER_DESC& rDesc) = 0;
+	virtual VOID            DestroyRenderer(IRenderer* pIRenderer) = 0;
 
-	virtual ICommandList* CreateCommandList(VOID) = 0;
-	virtual VOID          DestroyCommandList(ICommandList* pICommandList) = 0;
+	virtual ICommandBuffer* CreateCommandBuffer(COMMAND_BUFFER_TYPE Type) = 0;
+	virtual VOID            DestroyCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
 
-	virtual IFence*       CreateFence(VOID) = 0;
-	virtual VOID          DestroyFence(IFence* pIFence) = 0;
+	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT StrideInBytes) = 0;
+	virtual VOID            DestroyMesh(IMesh* pIMesh) = 0;
 };
 
 // Device Factory
