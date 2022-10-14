@@ -77,6 +77,9 @@
     <ClInclude Include="Source\Gfx\Core\EnumTranslator.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CCommandQueue.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -113,6 +116,9 @@
       <Filter>Source\Gfx\3D</Filter>
     </ClCompile>
     <ClCompile Include="Source\Gfx\Core\EnumTranslator.cpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CCommandQueue.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>

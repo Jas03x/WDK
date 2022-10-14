@@ -37,6 +37,39 @@ BOOL EnumTranslator::CommandBufferType_To_CommandListType(COMMAND_BUFFER_TYPE Cm
 	return Status;
 }
 
+BOOL EnumTranslator::CommandQueueType_To_CommandListType(COMMAND_QUEUE_TYPE CmdQueueType, D3D12_COMMAND_LIST_TYPE& rCmdListType)
+{
+	BOOL Status = TRUE;
+
+	switch (CmdQueueType)
+	{
+	case COMMAND_QUEUE_TYPE_DIRECT:
+	{
+		rCmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+		break;
+	}
+	case COMMAND_QUEUE_TYPE_COMPUTE:
+	{
+		rCmdListType = D3D12_COMMAND_LIST_TYPE_COMPUTE;
+		break;
+	}
+	case COMMAND_QUEUE_TYPE_COPY:
+	{
+		rCmdListType = D3D12_COMMAND_LIST_TYPE_COPY;
+		break;
+	}
+	default:
+	{
+		Status = FALSE;
+		Console::Write(L"Error: Invalid command queue type %u\n", CmdQueueType);
+		rCmdListType = static_cast<D3D12_COMMAND_LIST_TYPE>(-1);
+		break;
+	}
+	}
+
+	return Status;
+}
+
 BOOL EnumTranslator::InputElement_To_SemanticName(INPUT_ELEMENT Element, PCCHAR& rSemanticName)
 {
 	BOOL Status = TRUE;

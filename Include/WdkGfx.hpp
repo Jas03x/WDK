@@ -85,27 +85,36 @@ public:
 	virtual HANDLE GetHandle() = 0;
 };
 
-// IFence
-class __declspec(novtable) IFence
-{
-
-};
-
 // IMesh
 class __declspec(novtable) IMesh
 {
+public:
+};
 
+// class IQueue
+enum COMMAND_QUEUE_TYPE
+{
+	COMMAND_QUEUE_TYPE_INVALID = 0,
+	COMMAND_QUEUE_TYPE_DIRECT = 1,
+	COMMAND_QUEUE_TYPE_GRAPHICS = 1,
+	COMMAND_QUEUE_TYPE_COMPUTE = 2,
+	COMMAND_QUEUE_TYPE_COPY = 3
+};
+
+class __declspec(novtable) ICommandQueue
+{
+public:
 };
 
 // IGfxDevice
 class __declspec(novtable) IGfxDevice
 {
 public:
-	virtual IRenderer*      CreateRenderer(const RENDERER_DESC& rDesc) = 0;
-	virtual VOID            DestroyRenderer(IRenderer* pIRenderer) = 0;
-
 	virtual ICommandBuffer* CreateCommandBuffer(COMMAND_BUFFER_TYPE Type) = 0;
 	virtual VOID            DestroyCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
+
+	virtual IRenderer*      CreateRenderer(const RENDERER_DESC& rDesc) = 0;
+	virtual VOID            DestroyRenderer(IRenderer* pIRenderer) = 0;
 
 	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT StrideInBytes) = 0;
 	virtual VOID            DestroyMesh(IMesh* pIMesh) = 0;

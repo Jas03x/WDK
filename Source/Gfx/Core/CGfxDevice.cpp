@@ -9,6 +9,7 @@
 #include "WdkSystem.hpp"
 
 #include "CCommandBuffer.hpp"
+#include "CCommandQueue.hpp"
 #include "CMesh.hpp"
 #include "CRenderer.hpp"
 #include "EnumTranslator.hpp"
@@ -54,26 +55,21 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pIDxgiSwapChain = NULL;
 
 	m_pID3D12Device = NULL;
-	m_pID3D12CopyCommandQueue = NULL;
-	m_pID3D12DirectCommandQueue = NULL;
 	m_pID3D12RtvDescriptorHeap = NULL;
-	m_pID3D12CopyCommandAllocator = NULL;
-	m_pID3D12DirectCommandAllocator = NULL;
 	m_pID3D12RootSignature = NULL;
 	m_pID3D12UploadHeap = NULL;
 	m_pID3D12PrimaryHeap = NULL;
-	m_pID3D12Fence = NULL;
 
 	for (UINT i = 0; i < NUM_BUFFERS; i++)
 	{
 		m_pID3D12RenderBuffers[i] = NULL;
 	}
 
-	m_hFenceEvent = NULL;
+	m_pCopyQueue = NULL;
+	m_pGraphicsQueue = NULL;
 
 	m_pICopyCommandBuffer = NULL;
 
-	m_FenceValue = 0;
 	m_FrameIndex = 0;
 	m_RtvDescriptorIncrement = 0;
 }
@@ -175,13 +171,9 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 
 	if (Status == TRUE)
 	{
-		D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = { };
-		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_COPY;
-		cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		cmdQueueDesc.NodeMask = 0;
+		m_pCopyQueue = static_cast<CCommandQueue*>(CreateCommandQueue(COMMAND_QUEUE_TYPE_COPY));
 
-		if (m_pID3D12Device->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pID3D12CopyCommandQueue)) != S_OK)
+		if (m_pCopyQueue == NULL)
 		{
 			Status = FALSE;
 			Console::Write(L"Error: Failed to create copy command queue\n");
@@ -190,16 +182,12 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 
 	if (Status == TRUE)
 	{
-		D3D12_COMMAND_QUEUE_DESC cmdQueueDesc = { };
-		cmdQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-		cmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-		cmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-		cmdQueueDesc.NodeMask = 0;
+		m_pGraphicsQueue = static_cast<CCommandQueue*>(CreateCommandQueue(COMMAND_QUEUE_TYPE_GRAPHICS));
 
-		if (m_pID3D12Device->CreateCommandQueue(&cmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&m_pID3D12DirectCommandQueue)) != S_OK)
+		if (m_pGraphicsQueue == NULL)
 		{
 			Status = FALSE;
-			Console::Write(L"Error: Failed to create direct command queue\n");
+			Console::Write(L"Error: Failed to create graphics command queue\n");
 		}
 	}
 
@@ -225,7 +213,7 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 
 			IDXGISwapChain1* pISwapChain1 = NULL;
 
-			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pID3D12DirectCommandQueue, m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
+			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pGraphicsQueue->GetD3D12CommandQueue(), m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
 			{
 				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<VOID**>(&m_pIDxgiSwapChain));
 				pISwapChain1->Release();
@@ -278,24 +266,6 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 			m_pID3D12Device->CreateRenderTargetView(m_pID3D12RenderBuffers[i], NULL, cpuDescHandle);
 
 			cpuDescHandle.ptr += m_RtvDescriptorIncrement;
-		}
-	}
-
-	if (Status == TRUE)
-	{
-		if (m_pID3D12Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_COPY, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&m_pID3D12CopyCommandAllocator)) != S_OK)
-		{
-			Console::Write(L"Error: Could not create command allocator\n");
-			Status = FALSE;
-		}
-	}
-
-	if (Status == TRUE)
-	{
-		if (m_pID3D12Device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&m_pID3D12DirectCommandAllocator)) != S_OK)
-		{
-			Console::Write(L"Error: Could not create command allocator\n");
-			Status = FALSE;
 		}
 	}
 
@@ -409,29 +379,6 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 
 	if (Status == TRUE)
 	{
-		if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&m_pID3D12Fence)) == S_OK)
-		{
-			m_hFenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-
-			if (m_hFenceEvent != NULL)
-			{
-				m_FenceValue = 1;
-			}
-			else
-			{
-				Status = FALSE;
-				Console::Write(L"Error: could not initialize fence event handle\n");
-			}
-		}
-		else
-		{
-			Status = FALSE;
-			Console::Write(L"Error: Failed to create fence\n");
-		}
-	}
-
-	if (Status == TRUE)
-	{
 		m_pICopyCommandBuffer = CreateCommandBuffer(COMMAND_BUFFER_TYPE_COPY);
 
 		if (m_pICopyCommandBuffer == NULL)
@@ -452,18 +399,6 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pICopyCommandBuffer = NULL;
 	}
 
-	if (m_hFenceEvent != NULL)
-	{
-		CloseHandle(m_hFenceEvent);
-		m_hFenceEvent = NULL;
-	}
-
-	if (m_pID3D12Fence != NULL)
-	{
-		m_pID3D12Fence->Release();
-		m_pID3D12Fence = NULL;
-	}
-
 	if (m_pID3D12PrimaryHeap != NULL)
 	{
 		m_pID3D12PrimaryHeap->Release();
@@ -480,18 +415,6 @@ VOID CGfxDevice::Uninitialize(VOID)
 	{
 		m_pID3D12RootSignature->Release();
 		m_pID3D12RootSignature = NULL;
-	}
-
-	if (m_pID3D12CopyCommandAllocator != NULL)
-	{
-		m_pID3D12CopyCommandAllocator->Release();
-		m_pID3D12CopyCommandAllocator = NULL;
-	}
-
-	if (m_pID3D12DirectCommandAllocator != NULL)
-	{
-		m_pID3D12DirectCommandAllocator->Release();
-		m_pID3D12DirectCommandAllocator = NULL;
 	}
 
 	for (UINT i = 0; i < NUM_BUFFERS; i++)
@@ -515,16 +438,16 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pIDxgiSwapChain = NULL;
 	}
 
-	if (m_pID3D12CopyCommandQueue != NULL)
+	if (m_pCopyQueue != NULL)
 	{
-		m_pID3D12CopyCommandQueue->Release();
-		m_pID3D12CopyCommandQueue = NULL;
+		DestroyCommandQueue(m_pCopyQueue);
+		m_pCopyQueue = NULL;
 	}
 
-	if (m_pID3D12DirectCommandQueue != NULL)
+	if (m_pGraphicsQueue != NULL)
 	{
-		m_pID3D12DirectCommandQueue->Release();
-		m_pID3D12DirectCommandQueue = NULL;
+		DestroyCommandQueue(m_pGraphicsQueue);
+		m_pGraphicsQueue = NULL;
 	}
 
 	if (m_pID3D12Device != NULL)
@@ -799,6 +722,97 @@ BOOL CGfxDevice::PrintDeviceProperties(VOID)
 	return Status;
 }
 
+ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
+{
+	BOOL Status = TRUE;
+	D3D12_COMMAND_LIST_TYPE CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	ICommandQueue* pICommandQueue = NULL;
+	ID3D12Fence* pID3D12Fence = NULL;
+	ID3D12CommandQueue* pID3D12CommandQueue = NULL;
+	ID3D12CommandAllocator* pID3D12CommandAllocator = NULL;
+
+	Status = EnumTranslator::CommandQueueType_To_CommandListType(Type, CmdListType);
+
+	if (Status == TRUE)
+	{
+		D3D12_COMMAND_QUEUE_DESC CmdQueueDesc = { };
+		CmdQueueDesc.Type = CmdListType;
+		CmdQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+		CmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+		CmdQueueDesc.NodeMask = 0;
+
+		if (m_pID3D12Device->CreateCommandQueue(&CmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&pID3D12CommandQueue)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create d3d12 command queue\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		if (m_pID3D12Device->CreateCommandAllocator(CmdListType, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&pID3D12CommandAllocator)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Could not create d3d12 command allocator\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&pID3D12Fence)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create d3d12 fence\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		pICommandQueue = new CCommandQueue();
+		if (pICommandQueue != NULL)
+		{
+			if (static_cast<CCommandQueue*>(pICommandQueue)->Initialize(pID3D12CommandQueue, pID3D12CommandAllocator, pID3D12Fence) != TRUE)
+			{
+				DestroyCommandQueue(pICommandQueue);
+				pICommandQueue = NULL;
+			}
+		}
+	}
+
+	if (Status != TRUE)
+	{
+		if (pID3D12CommandQueue != NULL)
+		{
+			pID3D12CommandQueue->Release();
+			pID3D12CommandQueue = NULL;
+		}
+
+		if (pID3D12CommandAllocator != NULL)
+		{
+			pID3D12CommandAllocator->Release();
+			pID3D12CommandAllocator = NULL;
+		}
+
+		if (pID3D12Fence != NULL)
+		{
+			pID3D12Fence->Release();
+			pID3D12Fence = NULL;
+		}
+	}
+
+	return pICommandQueue;
+}
+
+VOID CGfxDevice::DestroyCommandQueue(ICommandQueue* pICommandQueue)
+{
+	CCommandQueue* pCommandQueue = static_cast<CCommandQueue*>(pICommandQueue);
+	if (pCommandQueue != NULL)
+	{
+		pCommandQueue->Uninitialize();
+		delete pCommandQueue;
+	}
+}
+
 IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 {
 	BOOL Status = TRUE;
@@ -1011,12 +1025,12 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 		{
 			case D3D12_COMMAND_LIST_TYPE_COPY:
 			{
-				pID3D12CommandAllocator = m_pID3D12CopyCommandAllocator;
+				pID3D12CommandAllocator = m_pCopyQueue->GetD3D12CommandAllocator();
 				break;
 			}
 			case D3D12_COMMAND_LIST_TYPE_DIRECT:
 			{
-				pID3D12CommandAllocator = m_pID3D12DirectCommandAllocator;
+				pID3D12CommandAllocator = m_pGraphicsQueue->GetD3D12CommandAllocator();
 				break;
 			}
 			default:
@@ -1147,9 +1161,9 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 	{
 		ID3D12CommandList* pICommandLists[] = { reinterpret_cast<ID3D12GraphicsCommandList*>(m_pICopyCommandBuffer->GetHandle()) };
 		
-		m_pID3D12CopyCommandQueue->ExecuteCommandLists(1, pICommandLists);
+		m_pCopyQueue->GetD3D12CommandQueue()->ExecuteCommandLists(1, pICommandLists);
 		
-		Status = WaitForCommandQueue(m_pID3D12CopyCommandQueue);
+		Status = m_pCopyQueue->Wait();
 	}
 
 	if (Status == TRUE)
@@ -1193,61 +1207,4 @@ VOID CGfxDevice::DestroyMesh(IMesh* pIMesh)
 		pMesh->Uninitialize();
 		delete pMesh;
 	}
-}
-
-BOOL CGfxDevice::WaitForCommandQueue(ID3D12CommandQueue* pID3D12CommandQueue)
-{
-	BOOL Status = TRUE;
-
-	if (pID3D12CommandQueue->Signal(m_pID3D12Fence, m_FenceValue) != S_OK)
-	{
-		Status = FALSE;
-		Console::Write(L"Error: Failed to signal fence from command queue\n");
-	}
-
-	if (Status == TRUE)
-	{
-		if (m_pID3D12Fence->GetCompletedValue() < m_FenceValue)
-		{
-			if (m_pID3D12Fence->SetEventOnCompletion(m_FenceValue, m_hFenceEvent) == S_OK)
-			{
-				DWORD Result = WaitForSingleObject(m_hFenceEvent, COMMAND_QUEUE_TIMEOUT);
-
-				switch (Result)
-				{
-					case WAIT_OBJECT_0:
-					{
-						break;
-					}
-					case WAIT_TIMEOUT:
-					{
-						Status = FALSE;
-						Console::Write(L"Error: command queue submission timed out\n");
-						break;
-					}
-					case WAIT_FAILED:
-					{
-						Status = FALSE;
-						Console::Write(L"Error: failed to wait for command queue submission\n");
-						break;
-					}
-					default:
-					{
-						Status = FALSE;
-						Console::Write(L"Error: unknown error occurred while waiting for command queue submission\n");
-						break;
-					}
-				}
-			}
-			else
-			{
-				Status = FALSE;
-				Console::Write(L"Error: failed to set fence event on completition\n");
-			}
-		}
-	}
-
-	m_FenceValue++;
-
-	return Status;
 }
