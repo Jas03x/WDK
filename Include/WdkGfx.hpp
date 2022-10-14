@@ -82,7 +82,6 @@ enum COMMAND_BUFFER_TYPE
 class __declspec(novtable) ICommandBuffer
 {
 public:
-	virtual HANDLE GetHandle() = 0;
 };
 
 // IMesh

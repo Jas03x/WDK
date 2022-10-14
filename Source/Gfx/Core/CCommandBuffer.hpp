@@ -17,7 +17,7 @@ public:
 	BOOL Initialize(ID3D12GraphicsCommandList* pID3D12GraphicsCommandList);
 	VOID Uninitialize(VOID);
 
-	virtual HANDLE GetHandle();
+	virtual ID3D12GraphicsCommandList* GetD3D12GraphicsCommandList();
 };
 
 #endif // WDK_CCOMMAND_BUFFER_HPP

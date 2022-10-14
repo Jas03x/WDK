@@ -69,6 +69,7 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pGraphicsQueue = NULL;
 
 	m_pICopyCommandBuffer = NULL;
+	m_pIGraphicsCommandBuffer = NULL;
 
 	m_FrameIndex = 0;
 	m_RtvDescriptorIncrement = 0;
@@ -388,6 +389,17 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 		}
 	}
 
+	if (Status == TRUE)
+	{
+		m_pIGraphicsCommandBuffer = CreateCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
+
+		if (m_pIGraphicsCommandBuffer == NULL)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create graphics command buffer\n");
+		}
+	}
+
 	return Status;
 }
 
@@ -397,6 +409,12 @@ VOID CGfxDevice::Uninitialize(VOID)
 	{
 		DestroyCommandBuffer(m_pICopyCommandBuffer);
 		m_pICopyCommandBuffer = NULL;
+	}
+
+	if (m_pIGraphicsCommandBuffer != NULL)
+	{
+		DestroyCommandBuffer(m_pIGraphicsCommandBuffer);
+		m_pIGraphicsCommandBuffer = NULL;
 	}
 
 	if (m_pID3D12PrimaryHeap != NULL)
@@ -1089,6 +1107,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 	IMesh* pIMesh = NULL;
 	ID3D12Resource* VertexBuffer = NULL;
 	ID3D12Resource* VertexDataUploadBuffer = NULL;
+	ID3D12GraphicsCommandList* pICommandList = static_cast<CCommandBuffer*>(m_pICopyCommandBuffer)->GetD3D12GraphicsCommandList();
 
 	if (Status == TRUE)
 	{
@@ -1145,8 +1164,6 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 		Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
 		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON; // Resources decay to the common state when accessed from a copy queue in commmand lists
-
-		ID3D12GraphicsCommandList* pICommandList = reinterpret_cast<ID3D12GraphicsCommandList*>(m_pICopyCommandBuffer->GetHandle());
 		
 		pICommandList->CopyResource(VertexBuffer, VertexDataUploadBuffer);
 		pICommandList->ResourceBarrier(1, &Barrier);
@@ -1159,7 +1176,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 
 	if (Status == TRUE)
 	{
-		ID3D12CommandList* pICommandLists[] = { reinterpret_cast<ID3D12GraphicsCommandList*>(m_pICopyCommandBuffer->GetHandle()) };
+		ID3D12CommandList* pICommandLists[] = { pICommandList };
 		
 		m_pCopyQueue->GetD3D12CommandQueue()->ExecuteCommandLists(1, pICommandLists);
 		

@@ -40,7 +40,7 @@ VOID CCommandBuffer::Uninitialize(VOID)
 	}
 }
 
-HANDLE CCommandBuffer::GetHandle()
+ID3D12GraphicsCommandList* CCommandBuffer::GetD3D12GraphicsCommandList()
 {
 	return m_pID3D12GraphicsCommandList;
 }

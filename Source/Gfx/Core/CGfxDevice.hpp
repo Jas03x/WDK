@@ -51,6 +51,7 @@ private:
 	CCommandQueue*             m_pGraphicsQueue;
 
 	ICommandBuffer*            m_pICopyCommandBuffer;
+	ICommandBuffer*            m_pIGraphicsCommandBuffer;
 
 	UINT32  				   m_FrameIndex;
 	UINT32  				   m_RtvDescriptorIncrement;
