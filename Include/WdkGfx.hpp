@@ -82,12 +82,7 @@ enum COMMAND_BUFFER_TYPE
 class __declspec(novtable) ICommandBuffer
 {
 public:
-};
-
-// IMesh
-class __declspec(novtable) IMesh
-{
-public:
+	virtual BOOL Reset(VOID) = 0;
 };
 
 // class IQueue
@@ -101,6 +96,12 @@ enum COMMAND_QUEUE_TYPE
 };
 
 class __declspec(novtable) ICommandQueue
+{
+public:
+};
+
+// IMesh
+class __declspec(novtable) IMesh
 {
 public:
 };

@@ -7,7 +7,6 @@
 CCommandQueue::CCommandQueue(VOID)
 {
 	m_pID3D12CommandQueue = NULL;
-	m_pID3D12CommandAllocator = NULL;
 	m_pID3D12Fence = NULL;
 
 	m_hFenceEvent = NULL;
@@ -18,7 +17,7 @@ CCommandQueue::~CCommandQueue(VOID)
 {
 }
 
-BOOL CCommandQueue::Initialize(ID3D12CommandQueue* pID3D12CommandQueue, ID3D12CommandAllocator* pID3D12CommandAllocator, ID3D12Fence* pID3D12Fence)
+BOOL CCommandQueue::Initialize(ID3D12CommandQueue* pID3D12CommandQueue, ID3D12Fence* pID3D12Fence)
 {
 	BOOL Status = TRUE;
 
@@ -36,10 +35,9 @@ BOOL CCommandQueue::Initialize(ID3D12CommandQueue* pID3D12CommandQueue, ID3D12Co
 
 	if (Status == TRUE)
 	{
-		if ((pID3D12CommandQueue != NULL) && (pID3D12CommandAllocator != NULL) && (pID3D12Fence != NULL))
+		if ((pID3D12CommandQueue != NULL) && (pID3D12Fence != NULL))
 		{
 			m_pID3D12CommandQueue = pID3D12CommandQueue;
-			m_pID3D12CommandAllocator = pID3D12CommandAllocator;
 			m_pID3D12Fence = pID3D12Fence;
 		}
 		else
@@ -60,12 +58,6 @@ VOID CCommandQueue::Uninitialize(VOID)
 		m_pID3D12CommandQueue = NULL;
 	}
 
-	if (m_pID3D12CommandAllocator != NULL)
-	{
-		m_pID3D12CommandAllocator->Release();
-		m_pID3D12CommandAllocator = NULL;
-	}
-
 	if (m_pID3D12Fence != NULL)
 	{
 		m_pID3D12Fence->Release();
@@ -82,11 +74,6 @@ VOID CCommandQueue::Uninitialize(VOID)
 ID3D12CommandQueue* CCommandQueue::GetD3D12CommandQueue(VOID)
 {
 	return m_pID3D12CommandQueue;
-}
-
-ID3D12CommandAllocator* CCommandQueue::GetD3D12CommandAllocator(VOID)
-{
-	return m_pID3D12CommandAllocator;
 }
 
 BOOL CCommandQueue::Wait(VOID)

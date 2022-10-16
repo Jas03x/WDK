@@ -747,7 +747,6 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 	ICommandQueue* pICommandQueue = NULL;
 	ID3D12Fence* pID3D12Fence = NULL;
 	ID3D12CommandQueue* pID3D12CommandQueue = NULL;
-	ID3D12CommandAllocator* pID3D12CommandAllocator = NULL;
 
 	Status = EnumTranslator::CommandQueueType_To_CommandListType(Type, CmdListType);
 
@@ -768,15 +767,6 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 
 	if (Status == TRUE)
 	{
-		if (m_pID3D12Device->CreateCommandAllocator(CmdListType, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&pID3D12CommandAllocator)) != S_OK)
-		{
-			Status = FALSE;
-			Console::Write(L"Error: Could not create d3d12 command allocator\n");
-		}
-	}
-
-	if (Status == TRUE)
-	{
 		if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&pID3D12Fence)) != S_OK)
 		{
 			Status = FALSE;
@@ -789,7 +779,7 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 		pICommandQueue = new CCommandQueue();
 		if (pICommandQueue != NULL)
 		{
-			if (static_cast<CCommandQueue*>(pICommandQueue)->Initialize(pID3D12CommandQueue, pID3D12CommandAllocator, pID3D12Fence) != TRUE)
+			if (static_cast<CCommandQueue*>(pICommandQueue)->Initialize(pID3D12CommandQueue, pID3D12Fence) != TRUE)
 			{
 				DestroyCommandQueue(pICommandQueue);
 				pICommandQueue = NULL;
@@ -803,12 +793,6 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 		{
 			pID3D12CommandQueue->Release();
 			pID3D12CommandQueue = NULL;
-		}
-
-		if (pID3D12CommandAllocator != NULL)
-		{
-			pID3D12CommandAllocator->Release();
-			pID3D12CommandAllocator = NULL;
 		}
 
 		if (pID3D12Fence != NULL)
@@ -1039,24 +1023,10 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 
 	if (Status == TRUE)
 	{
-		switch (CommandListType)
+		if (m_pID3D12Device->CreateCommandAllocator(CommandListType, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&pID3D12CommandAllocator)) != S_OK)
 		{
-			case D3D12_COMMAND_LIST_TYPE_COPY:
-			{
-				pID3D12CommandAllocator = m_pCopyQueue->GetD3D12CommandAllocator();
-				break;
-			}
-			case D3D12_COMMAND_LIST_TYPE_DIRECT:
-			{
-				pID3D12CommandAllocator = m_pGraphicsQueue->GetD3D12CommandAllocator();
-				break;
-			}
-			default:
-			{
-				Status = FALSE;
-				Console::Write(L"Error: could not get command allocator\n");
-				break;
-			}
+			Status = FALSE;
+			Console::Write(L"Error: Could not create d3d12 command allocator\n");
 		}
 	}
 
@@ -1074,7 +1044,7 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 		pICommandBuffer = new CCommandBuffer();
 		if (pICommandBuffer != NULL)
 		{
-			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(pID3D12GraphicsCommandList) == FALSE)
+			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(pID3D12CommandAllocator, pID3D12GraphicsCommandList) == FALSE)
 			{
 				DestroyCommandBuffer(pICommandBuffer);
 				pICommandBuffer = NULL;
@@ -1082,10 +1052,19 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 		}
 	}
 
-	if ((Status == FALSE) && (pID3D12GraphicsCommandList != NULL))
+	if (Status == FALSE)
 	{
-		pID3D12GraphicsCommandList->Release();
-		pID3D12GraphicsCommandList = NULL;
+		if (pID3D12GraphicsCommandList == NULL)
+		{
+			pID3D12GraphicsCommandList->Release();
+			pID3D12GraphicsCommandList = NULL;
+		}
+
+		if (pID3D12CommandAllocator == NULL)
+		{
+			pID3D12CommandAllocator->Release();
+			pID3D12CommandAllocator = NULL;
+		}
 	}
 
 	return pICommandBuffer;

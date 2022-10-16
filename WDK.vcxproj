@@ -97,6 +97,7 @@
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Workspace\WDK\Include\;C:\Workspace\WDK\Source\Gfx\Core;C:\Workspace\WDK\Source\Gfx\3D;C:\Workspace\WDK\Source\Math;C:\Workspace\WDK\Source\System;C:\Workspace\WDK\Source</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -112,6 +113,7 @@
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Workspace\WDK\Include\;C:\Workspace\WDK\Source\Gfx\Core;C:\Workspace\WDK\Source\Gfx\3D;C:\Workspace\WDK\Source\Math;C:\Workspace\WDK\Source\System;C:\Workspace\WDK\Source</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,7 +129,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Workspace\WDK\Include\;C:\Workspace\WDK\Source\Gfx\Core;C:\Workspace\WDK\Source\Gfx\3D;C:\Workspace\WDK\Source\Math;C:\Workspace\WDK\Source\System;C:\Workspace\WDK\Source</AdditionalIncludeDirectories>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +149,7 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Workspace\WDK\Include\;C:\Workspace\WDK\Source\Gfx\Core;C:\Workspace\WDK\Source\Gfx\3D;C:\Workspace\WDK\Source\Math;C:\Workspace\WDK\Source\System;C:\Workspace\WDK\Source</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
