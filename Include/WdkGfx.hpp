@@ -5,6 +5,9 @@
 
 class IWindow;
 
+const FLOAT MIN_DEPTH = 0.0f;
+const FLOAT MAX_DEPTH = 1.0f;
+
 // IRenderer
 struct SHADER_BYTECODE
 {
@@ -83,6 +86,8 @@ class __declspec(novtable) ICommandBuffer
 {
 public:
 	virtual BOOL Reset(VOID) = 0;
+	virtual BOOL SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth) = 0;
+	virtual BOOL SetRenderer(IRenderer* pIRenderer) = 0;
 };
 
 // class IQueue

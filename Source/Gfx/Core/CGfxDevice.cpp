@@ -56,7 +56,6 @@ CGfxDevice::CGfxDevice(VOID)
 
 	m_pID3D12Device = NULL;
 	m_pID3D12RtvDescriptorHeap = NULL;
-	m_pID3D12RootSignature = NULL;
 	m_pID3D12UploadHeap = NULL;
 	m_pID3D12PrimaryHeap = NULL;
 
@@ -69,7 +68,6 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pGraphicsQueue = NULL;
 
 	m_pICopyCommandBuffer = NULL;
-	m_pIGraphicsCommandBuffer = NULL;
 
 	m_FrameIndex = 0;
 	m_RtvDescriptorIncrement = 0;
@@ -272,50 +270,6 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 
 	if (Status == TRUE)
 	{
-		D3D12_ROOT_SIGNATURE_DESC desc = { };
-		desc.NumParameters = 0;
-		desc.pParameters = NULL;
-		desc.NumStaticSamplers = 0;
-		desc.pStaticSamplers = NULL;
-		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-
-		ID3DBlob* pSignature = NULL;
-		ID3DBlob* pError = NULL;
-
-		if (D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignature, &pError) == S_OK)
-		{
-			if (m_pID3D12Device->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&m_pID3D12RootSignature)) != S_OK)
-			{
-				Console::Write(L"Error: Could not create root signature\n");
-				Status = FALSE;
-			}
-		}
-		else
-		{
-			Console::Write(L"Error: Could not initialize root signature\n");
-			Status = FALSE;
-
-			if (pError != NULL)
-			{
-				Console::Write(L"Error Info: %s\n", pError->GetBufferPointer());
-			}
-		}
-
-		if (pSignature != NULL)
-		{
-			pSignature->Release();
-			pSignature = NULL;
-		}
-
-		if (pError != NULL)
-		{
-			pError->Release();
-			pError = NULL;
-		}
-	}
-
-	if (Status == TRUE)
-	{
 		D3D12_RESOURCE_DESC UploadHeapResourceDesc = { };
 		UploadHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		UploadHeapResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
@@ -389,17 +343,6 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 		}
 	}
 
-	if (Status == TRUE)
-	{
-		m_pIGraphicsCommandBuffer = CreateCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
-
-		if (m_pIGraphicsCommandBuffer == NULL)
-		{
-			Status = FALSE;
-			Console::Write(L"Error: Failed to create graphics command buffer\n");
-		}
-	}
-
 	return Status;
 }
 
@@ -409,12 +352,6 @@ VOID CGfxDevice::Uninitialize(VOID)
 	{
 		DestroyCommandBuffer(m_pICopyCommandBuffer);
 		m_pICopyCommandBuffer = NULL;
-	}
-
-	if (m_pIGraphicsCommandBuffer != NULL)
-	{
-		DestroyCommandBuffer(m_pIGraphicsCommandBuffer);
-		m_pIGraphicsCommandBuffer = NULL;
 	}
 
 	if (m_pID3D12PrimaryHeap != NULL)
@@ -427,12 +364,6 @@ VOID CGfxDevice::Uninitialize(VOID)
 	{
 		m_pID3D12UploadHeap->Release();
 		m_pID3D12UploadHeap = NULL;
-	}
-
-	if (m_pID3D12RootSignature != NULL)
-	{
-		m_pID3D12RootSignature->Release();
-		m_pID3D12RootSignature = NULL;
 	}
 
 	for (UINT i = 0; i < NUM_BUFFERS; i++)
@@ -583,9 +514,9 @@ BOOL CGfxDevice::PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter)
 		Console::Write(L"\tDeviceId: %X\n", Desc.DeviceId);
 		Console::Write(L"\tsubSysId: %X\n", Desc.SubSysId);
 		Console::Write(L"\tRevision: %X\n", Desc.Revision);
-		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedVideoMemory) / GB));
-		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedSystemMemory) / GB));
-		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.SharedSystemMemory) / GB));
+		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedVideoMemory) / static_cast<float>(GB)));
+		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedSystemMemory) / static_cast<float>(GB)));
+		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.SharedSystemMemory) / static_cast<float>(GB)));
 
 		if (Desc.Flags != DXGI_ADAPTER_FLAG3_NONE)
 		{
@@ -821,6 +752,7 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 
 	IRenderer* pIRenderer = NULL;
 	ID3D12PipelineState* pIPipelineState = NULL;
+	ID3D12RootSignature* pIRootSignature = NULL;
 	D3D12_INPUT_ELEMENT_DESC InputElementDescs[MAX_INPUT_ELEMENTS] = {};
 	
 	if (rDesc.InputLayout.NumInputs <= MAX_INPUT_ELEMENTS)
@@ -859,12 +791,56 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 
 	if (Status == TRUE)
 	{
+		D3D12_ROOT_SIGNATURE_DESC desc = { };
+		desc.NumParameters = 0;
+		desc.pParameters = NULL;
+		desc.NumStaticSamplers = 0;
+		desc.pStaticSamplers = NULL;
+		desc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
+
+		ID3DBlob* pSignature = NULL;
+		ID3DBlob* pError = NULL;
+
+		if (D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignature, &pError) == S_OK)
+		{
+			if (m_pID3D12Device->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&pIRootSignature)) != S_OK)
+			{
+				Console::Write(L"Error: Could not create root signature\n");
+				Status = FALSE;
+			}
+		}
+		else
+		{
+			Console::Write(L"Error: Could not initialize root signature\n");
+			Status = FALSE;
+
+			if (pError != NULL)
+			{
+				Console::Write(L"Error Info: %s\n", pError->GetBufferPointer());
+			}
+		}
+
+		if (pSignature != NULL)
+		{
+			pSignature->Release();
+			pSignature = NULL;
+		}
+
+		if (pError != NULL)
+		{
+			pError->Release();
+			pError = NULL;
+		}
+	}
+
+	if (Status == TRUE)
+	{
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
 		
 		ZeroMemory(&Desc, sizeof(Desc));
 
 		// Root Signature
-		Desc.pRootSignature     = m_pID3D12RootSignature;
+		Desc.pRootSignature     = pIRootSignature;
 
 		// Vertex Shader
 		Desc.VS.pShaderBytecode = rDesc.VertexShader.pCode;
@@ -986,7 +962,7 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 		pIRenderer = new CRenderer();
 		if (pIRenderer != NULL)
 		{
-			if (static_cast<CRenderer*>(pIRenderer)->Initialize(pIPipelineState) == FALSE)
+			if (static_cast<CRenderer*>(pIRenderer)->Initialize(pIRootSignature, pIPipelineState) == FALSE)
 			{
 				DestroyRenderer(pIRenderer);
 				pIRenderer = NULL;
@@ -995,6 +971,7 @@ IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
 		else
 		{
 			pIPipelineState->Release();
+			pIRootSignature->Release();
 		}
 	}
 

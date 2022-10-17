@@ -200,11 +200,11 @@ BOOL CWindow::GetRect(WIN_AREA area, WIN_RECT& rRect)
 
 	if (area == WIN_AREA::CLIENT)
 	{
-		Status = (GetClientRect(m_hWnd, &rect) != TRUE) ? FALSE : TRUE;
+		Status = GetClientRect(m_hWnd, &rect);
 	}
 	else
 	{
-		Status = (GetWindowRect(m_hWnd, &rect) != TRUE) ? FALSE : TRUE;
+		Status = GetWindowRect(m_hWnd, &rect);
 	}
 
 	if (Status == TRUE)

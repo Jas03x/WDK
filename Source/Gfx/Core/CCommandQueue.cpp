@@ -17,7 +17,7 @@ CCommandQueue::~CCommandQueue(VOID)
 {
 }
 
-BOOL CCommandQueue::Initialize(ID3D12CommandQueue* pID3D12CommandQueue, ID3D12Fence* pID3D12Fence)
+BOOL CCommandQueue::Initialize(ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence)
 {
 	BOOL Status = TRUE;
 
@@ -35,10 +35,10 @@ BOOL CCommandQueue::Initialize(ID3D12CommandQueue* pID3D12CommandQueue, ID3D12Fe
 
 	if (Status == TRUE)
 	{
-		if ((pID3D12CommandQueue != NULL) && (pID3D12Fence != NULL))
+		if ((pICommandQueue != NULL) && (pIFence != NULL))
 		{
-			m_pID3D12CommandQueue = pID3D12CommandQueue;
-			m_pID3D12Fence = pID3D12Fence;
+			m_pID3D12CommandQueue = pICommandQueue;
+			m_pID3D12Fence = pIFence;
 		}
 		else
 		{

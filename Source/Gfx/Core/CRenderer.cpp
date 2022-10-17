@@ -47,19 +47,21 @@ VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc)
 CRenderer::CRenderer(VOID)
 {
 	m_pID3D12PipelineState = NULL;
+	m_pID3D12RootSignature = NULL;
 }
 
 CRenderer::~CRenderer(VOID)
 {
 }
 
-BOOL CRenderer::Initialize(ID3D12PipelineState* pIPipelineState)
+BOOL CRenderer::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState)
 {
 	BOOL Status = TRUE;
 
-	if (pIPipelineState != NULL)
+	if ((pIRootSignature != NULL) && (pIPipelineState != NULL))
 	{
 		m_pID3D12PipelineState = pIPipelineState;
+		m_pID3D12RootSignature = pIRootSignature;
 	}
 	else
 	{
@@ -77,5 +79,20 @@ VOID CRenderer::Uninitialize(VOID)
 		m_pID3D12PipelineState->Release();
 		m_pID3D12PipelineState = NULL;
 	}
+
+	if (m_pID3D12RootSignature != NULL)
+	{
+		m_pID3D12RootSignature->Release();
+		m_pID3D12RootSignature = NULL;
+	}
 }
 
+ID3D12PipelineState* CRenderer::GetD3D12PipelineState(VOID)
+{
+	return m_pID3D12PipelineState;
+}
+
+ID3D12RootSignature* CRenderer::GetD3D12RootSignature(VOID)
+{
+	return m_pID3D12RootSignature;
+}

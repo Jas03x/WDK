@@ -12,7 +12,6 @@ struct IDXGISwapChain4;
 struct ID3D12Debug;
 struct ID3D12Device;
 struct ID3D12DescriptorHeap;
-struct ID3D12RootSignature;
 struct ID3D12Resource;
 struct ID3D12Heap;
 
@@ -38,8 +37,6 @@ private:
 	IDXGISwapChain4*		   m_pIDxgiSwapChain;
 
 	ID3D12Device*			   m_pID3D12Device;
-
-	ID3D12RootSignature*       m_pID3D12RootSignature;
 	
 	ID3D12Heap*				   m_pID3D12UploadHeap;
 	ID3D12Heap*				   m_pID3D12PrimaryHeap;
@@ -51,7 +48,6 @@ private:
 	CCommandQueue*             m_pGraphicsQueue;
 
 	ICommandBuffer*            m_pICopyCommandBuffer;
-	ICommandBuffer*            m_pIGraphicsCommandBuffer;
 
 	UINT32  				   m_FrameIndex;
 	UINT32  				   m_RtvDescriptorIncrement;

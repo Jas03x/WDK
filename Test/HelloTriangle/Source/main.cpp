@@ -13,10 +13,11 @@ CONST ULONG WINDOW_WIDTH   = 512;
 class HelloTriangle
 {
 private:
-	IWindow*    m_pIWindow;
-	IGfxDevice* m_pIGfxDevice;
-	IRenderer*  m_pIRenderer;
-	IMesh*      m_pIMesh;
+	IWindow*        m_pIWindow;
+	IGfxDevice*     m_pIGfxDevice;
+	IRenderer*      m_pIRenderer;
+	IMesh*          m_pIMesh;
+	ICommandBuffer* m_pIGraphicsCommandBuffer;
 
 public:
 	HelloTriangle()
@@ -25,6 +26,7 @@ public:
 		m_pIGfxDevice = NULL;
 		m_pIRenderer = NULL;
 		m_pIMesh = NULL;
+		m_pIGraphicsCommandBuffer = NULL;
 	}
 
 	BOOL Initialize(VOID)
@@ -91,6 +93,17 @@ public:
 
 		if (Status == TRUE)
 		{
+			m_pIGraphicsCommandBuffer = m_pIGfxDevice->CreateCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
+
+			if (m_pIGraphicsCommandBuffer == NULL)
+			{
+				Status = FALSE;
+				Console::Write(L"Error: could not create graphics command buffer\n");
+			}
+		}
+
+		if (Status == TRUE)
+		{
 			struct Vertex
 			{
 				float vertex[3];
@@ -138,6 +151,12 @@ public:
 			m_pIMesh = NULL;
 		}
 
+		if (m_pIGraphicsCommandBuffer != NULL)
+		{
+			m_pIGfxDevice->DestroyCommandBuffer(m_pIGraphicsCommandBuffer);
+			m_pIGraphicsCommandBuffer = NULL;
+		}
+
 		if (m_pIRenderer != NULL)
 		{
 			m_pIGfxDevice->DestroyRenderer(m_pIRenderer);
@@ -157,6 +176,34 @@ public:
 		}
 	}
 
+private:
+	BOOL Render(VOID)
+	{
+		BOOL Status = TRUE;
+
+		Status = m_pIGraphicsCommandBuffer->Reset();
+
+		if (Status == TRUE)
+		{
+			Status = m_pIGraphicsCommandBuffer->SetRenderer(m_pIRenderer);
+		}
+
+		if (Status == TRUE)
+		{
+			Status = m_pIGraphicsCommandBuffer->SetViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, MIN_DEPTH, MAX_DEPTH);
+		}
+
+		/*
+		if (Status == TRUE)
+		{
+			Status = m_pIGraphicsCommandBuffer->SetRenderTarget();
+		}
+		*/
+
+		return Status;
+	}
+
+public:
 	BOOL Run()
 	{
 		BOOL Status = TRUE;
@@ -173,7 +220,7 @@ public:
 			}
 			else
 			{
-				// Render
+				Status = Render();
 			}
 		}
 

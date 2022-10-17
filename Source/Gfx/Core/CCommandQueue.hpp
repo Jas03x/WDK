@@ -23,7 +23,7 @@ public:
 	CCommandQueue(VOID);
 	~CCommandQueue(VOID);
 
-	BOOL Initialize(ID3D12CommandQueue* pID3D12CommandQueue, ID3D12Fence* pID3D12Fence);
+	BOOL Initialize(ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence);
 	VOID Uninitialize(VOID);
 
 	BOOL                    Wait(VOID);
