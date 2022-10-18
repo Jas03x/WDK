@@ -1,5 +1,8 @@
 #include "CWindow.hpp"
 
+#include <d3d12.h>
+#include <dxgi1_6.h>
+
 #include <strsafe.h>
 
 #undef CreateWindow
@@ -36,11 +39,18 @@ CWindow::CWindow(VOID)
 {
 	m_hCID = 0;
 	m_bOpen = FALSE;
-
 	m_hWnd = NULL;
 	m_hInstance = NULL;
+	m_FrameIndex = 0;
 	
 	ZeroMemory(m_ClassName, sizeof(m_ClassName));
+
+	m_pIDxgiSwapChain = NULL;
+
+	for (UINT i = 0; i < NUM_BUFFERS; i++)
+	{
+		m_pID3D12RenderBuffers[i] = NULL;
+	}
 }
 
 CWindow::~CWindow(VOID)
@@ -124,6 +134,21 @@ BOOL CWindow::Initialize(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidt
 
 VOID CWindow::Uninitialize(VOID)
 {
+	for (UINT32 i = 0; i < NUM_BUFFERS; i++)
+	{
+		if (m_pID3D12RenderBuffers[i] != NULL)
+		{
+			m_pID3D12RenderBuffers[i]->Release();
+			m_pID3D12RenderBuffers[i] = NULL;
+		}
+	}
+
+	if (m_pIDxgiSwapChain != NULL)
+	{
+		m_pIDxgiSwapChain->Release();
+		m_pIDxgiSwapChain = NULL;
+	}
+
 	if (m_hWnd != NULL)
 	{
 		DestroyWindow(m_hWnd);
@@ -216,4 +241,34 @@ BOOL CWindow::GetRect(WIN_AREA area, WIN_RECT& rRect)
 	}
 
 	return Status;
+}
+
+UINT CWindow::GetNumBuffers(VOID)
+{
+	return NUM_BUFFERS;
+}
+
+BOOL CWindow::InitializeSwapChain(IDXGISwapChain4* pIDxgiSwapChain)
+{
+	BOOL Status = TRUE;
+
+	m_pIDxgiSwapChain = pIDxgiSwapChain;
+
+	m_FrameIndex = m_pIDxgiSwapChain->GetCurrentBackBufferIndex();
+
+	return Status;
+}
+
+VOID CWindow::SetRenderBuffer(UINT index, ID3D12Resource* pIRenderBuffer)
+{
+	m_pID3D12RenderBuffers[index] = pIRenderBuffer;
+}
+
+VOID CWindow::ReleaseSwapChain(VOID)
+{
+	if (m_pIDxgiSwapChain != NULL)
+	{
+		m_pIDxgiSwapChain->Release();
+		m_pIDxgiSwapChain = NULL;
+	}
 }

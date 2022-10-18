@@ -131,13 +131,11 @@ class __declspec(novtable) DeviceFactory
 public:
 	struct Descriptor
 	{
-		IWindow* pIWindow;
-
 		UINT64 UploadHeapSize;
 		UINT64 PrimaryHeapSize;
 	};
 
-	static IGfxDevice* CreateInstance(Descriptor& rDesc);
+	static IGfxDevice* CreateInstance(IWindow* pIWindow, Descriptor& rDesc);
 	static VOID        DestroyInstance(IGfxDevice* pIDevice);
 };
 

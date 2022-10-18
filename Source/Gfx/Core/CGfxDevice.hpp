@@ -21,10 +21,10 @@ class CGfxDevice : public IGfxDevice
 {
 private:
 	enum : UINT { ADAPTER_INDEX__INVALID = 0xFFFFFFFF };
-	enum : UINT { NUM_BUFFERS = 2 };
 	enum : UINT { MAX_INPUT_ELEMENTS = 32 };
 
-	IWindow*				   m_pIWindow;
+	IWindow*                   m_pIWindow;
+
 #if _DEBUG
 	HMODULE					   m_hDxgiDebugModule;
 
@@ -34,7 +34,6 @@ private:
 
 	IDXGIFactory7*			   m_pIDxgiFactory;
 	IDXGIAdapter4*			   m_pIDxgiAdapter;
-	IDXGISwapChain4*		   m_pIDxgiSwapChain;
 
 	ID3D12Device*			   m_pID3D12Device;
 	
@@ -42,28 +41,27 @@ private:
 	ID3D12Heap*				   m_pID3D12PrimaryHeap;
 	ID3D12DescriptorHeap*      m_pID3D12RtvDescriptorHeap;
 
-	ID3D12Resource*			   m_pID3D12RenderBuffers[NUM_BUFFERS];
-
 	CCommandQueue*             m_pCopyQueue;
 	CCommandQueue*             m_pGraphicsQueue;
 
 	ICommandBuffer*            m_pICopyCommandBuffer;
 
-	UINT32  				   m_FrameIndex;
 	UINT32  				   m_RtvDescriptorIncrement;
 
 public:
 	CGfxDevice(VOID);
 	virtual ~CGfxDevice(VOID);
 
-	BOOL				       Initialize(DeviceFactory::Descriptor& rDesc);
+	BOOL				       Initialize(IWindow* pIWindow, DeviceFactory::Descriptor& rDesc);
 	VOID				       Uninitialize(VOID);
 
 private:
 	BOOL				       EnumerateDxgiAdapters(VOID);
 	BOOL				       PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter);
-
 	BOOL				       PrintDeviceProperties(VOID);
+
+	BOOL                       InitializeHeaps(DeviceFactory::Descriptor& rDesc);
+	BOOL                       InitializeSwapChain(VOID);
 
 	virtual ICommandQueue*     CreateCommandQueue(COMMAND_QUEUE_TYPE Type);
 	virtual VOID               DestroyCommandQueue(ICommandQueue* pICommandQueue);

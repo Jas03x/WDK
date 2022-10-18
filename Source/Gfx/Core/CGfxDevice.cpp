@@ -12,15 +12,16 @@
 #include "CCommandQueue.hpp"
 #include "CMesh.hpp"
 #include "CRenderer.hpp"
+#include "CWindow.hpp"
 #include "EnumTranslator.hpp"
 
-IGfxDevice* DeviceFactory::CreateInstance(DeviceFactory::Descriptor& rDesc)
+IGfxDevice* DeviceFactory::CreateInstance(IWindow* pIWindow, DeviceFactory::Descriptor& rDesc)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
 	if (pDevice != NULL)
 	{
-		if (pDevice->Initialize(rDesc) == FALSE)
+		if (pDevice->Initialize(pIWindow, rDesc) == FALSE)
 		{
 			DeviceFactory::DestroyInstance(pDevice);
 			pDevice = NULL;
@@ -43,8 +44,6 @@ VOID DeviceFactory::DestroyInstance(IGfxDevice* pIDevice)
 
 CGfxDevice::CGfxDevice(VOID)
 {
-	m_pIWindow = NULL;
-
 	m_hDxgiDebugModule = NULL;
 
 	m_pIDxgiDebugInterface = NULL;
@@ -52,24 +51,17 @@ CGfxDevice::CGfxDevice(VOID)
 
 	m_pIDxgiFactory = NULL;
 	m_pIDxgiAdapter = NULL;
-	m_pIDxgiSwapChain = NULL;
 
 	m_pID3D12Device = NULL;
 	m_pID3D12RtvDescriptorHeap = NULL;
 	m_pID3D12UploadHeap = NULL;
 	m_pID3D12PrimaryHeap = NULL;
 
-	for (UINT i = 0; i < NUM_BUFFERS; i++)
-	{
-		m_pID3D12RenderBuffers[i] = NULL;
-	}
-
 	m_pCopyQueue = NULL;
 	m_pGraphicsQueue = NULL;
 
 	m_pICopyCommandBuffer = NULL;
 
-	m_FrameIndex = 0;
 	m_RtvDescriptorIncrement = 0;
 }
 
@@ -78,21 +70,31 @@ CGfxDevice::~CGfxDevice(VOID)
 
 }
 
-BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
+BOOL CGfxDevice::Initialize(IWindow* pIWindow, DeviceFactory::Descriptor& rDesc)
 {
 	BOOL Status = TRUE;
 
-	m_pIWindow = rDesc.pIWindow;
-
-#if _DEBUG
-	if (D3D12GetDebugInterface(__uuidof(ID3D12Debug), reinterpret_cast<VOID**>(&m_pID3D12DebugInterface)) == S_OK)
+	if (pIWindow != NULL)
 	{
-		m_pID3D12DebugInterface->EnableDebugLayer();
+		m_pIWindow = pIWindow;
 	}
 	else
 	{
 		Status = FALSE;
-		Console::Write(L"Error: Failed to get dx12 debug interface\n");
+	}
+
+#if _DEBUG
+	if (Status == TRUE)
+	{
+		if (D3D12GetDebugInterface(__uuidof(ID3D12Debug), reinterpret_cast<VOID**>(&m_pID3D12DebugInterface)) == S_OK)
+		{
+			m_pID3D12DebugInterface->EnableDebugLayer();
+		}
+		else
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to get dx12 debug interface\n");
+		}
 	}
 
 	if (Status == TRUE)
@@ -192,144 +194,12 @@ BOOL CGfxDevice::Initialize(DeviceFactory::Descriptor& rDesc)
 
 	if (Status == TRUE)
 	{
-		WIN_RECT rect = {};
-		
-		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, rect) == TRUE)
-		{
-			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { };
-			swapChainDesc.Width = rect.width;
-			swapChainDesc.Height = rect.height;
-			swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			swapChainDesc.Stereo = FALSE;
-			swapChainDesc.SampleDesc.Count = 1;
-			swapChainDesc.SampleDesc.Quality = 0;
-			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapChainDesc.BufferCount = NUM_BUFFERS;
-			swapChainDesc.Scaling = DXGI_SCALING_NONE;
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-			swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-			swapChainDesc.Flags = 0;
-
-			IDXGISwapChain1* pISwapChain1 = NULL;
-
-			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pGraphicsQueue->GetD3D12CommandQueue(), m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
-			{
-				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<VOID**>(&m_pIDxgiSwapChain));
-				pISwapChain1->Release();
-
-				m_FrameIndex = m_pIDxgiSwapChain->GetCurrentBackBufferIndex();
-			}
-			else
-			{
-				Status = FALSE;
-				Console::Write(L"Error: Failed to create swap chain\n");
-			}
-		}
-		else
-		{
-			Status = FALSE;
-		}
+		Status = InitializeSwapChain();
 	}
 
 	if (Status == TRUE)
 	{
-		D3D12_DESCRIPTOR_HEAP_DESC descHeap = {};
-		descHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		descHeap.NumDescriptors = NUM_BUFFERS;
-		descHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-		descHeap.NodeMask = 0;
-
-		if (m_pID3D12Device->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pID3D12RtvDescriptorHeap)) == S_OK)
-		{
-			m_RtvDescriptorIncrement = m_pID3D12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
-		}
-		else
-		{
-			Console::Write(L"Error: Failed to create descriptor heap\n");
-			Status = FALSE;
-		}
-	}
-
-	if (Status == TRUE)
-	{
-		D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandle = m_pID3D12RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
-		for (UINT i = 0; (Status == TRUE) && (i < NUM_BUFFERS); i++)
-		{
-			if (m_pIDxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&m_pID3D12RenderBuffers[i])) != S_OK)
-			{
-				Console::Write(L"Error: Could not get swap chain buffer %u\n", i);
-				Status = FALSE;
-			}
-
-			m_pID3D12Device->CreateRenderTargetView(m_pID3D12RenderBuffers[i], NULL, cpuDescHandle);
-
-			cpuDescHandle.ptr += m_RtvDescriptorIncrement;
-		}
-	}
-
-	if (Status == TRUE)
-	{
-		D3D12_RESOURCE_DESC UploadHeapResourceDesc = { };
-		UploadHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		UploadHeapResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-		UploadHeapResourceDesc.Width = rDesc.UploadHeapSize;
-		UploadHeapResourceDesc.Height = 1;
-		UploadHeapResourceDesc.DepthOrArraySize = 1;
-		UploadHeapResourceDesc.MipLevels = 1;
-		UploadHeapResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-		UploadHeapResourceDesc.SampleDesc.Count = 1;
-		UploadHeapResourceDesc.SampleDesc.Quality = 0;
-		UploadHeapResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		UploadHeapResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-		D3D12_RESOURCE_ALLOCATION_INFO UploadHeapAllocationInfo = m_pID3D12Device->GetResourceAllocationInfo(0, 1, &UploadHeapResourceDesc);
-
-		D3D12_HEAP_DESC UploadHeapDesc = { };
-		UploadHeapDesc.SizeInBytes = UploadHeapAllocationInfo.SizeInBytes;
-		UploadHeapDesc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
-		UploadHeapDesc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		UploadHeapDesc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-		UploadHeapDesc.Properties.CreationNodeMask = 1;
-		UploadHeapDesc.Properties.VisibleNodeMask = 1;
-
-		if (m_pID3D12Device->CreateHeap(&UploadHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<VOID**>(&m_pID3D12UploadHeap)) != S_OK)
-		{
-			Status = FALSE;
-			Console::Write(L"Error: Failed to create upload heap\n");
-		}
-	}
-
-	if (Status == TRUE)
-	{
-		D3D12_RESOURCE_DESC PrimaryHeapResourceDesc = { };
-		PrimaryHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-		PrimaryHeapResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-		PrimaryHeapResourceDesc.Width = rDesc.PrimaryHeapSize;
-		PrimaryHeapResourceDesc.Height = 1;
-		PrimaryHeapResourceDesc.DepthOrArraySize = 1;
-		PrimaryHeapResourceDesc.MipLevels = 1;
-		PrimaryHeapResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
-		PrimaryHeapResourceDesc.SampleDesc.Count = 1;
-		PrimaryHeapResourceDesc.SampleDesc.Quality = 0;
-		PrimaryHeapResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-		PrimaryHeapResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
-
-		D3D12_RESOURCE_ALLOCATION_INFO PrimaryHeapAllocationInfo = m_pID3D12Device->GetResourceAllocationInfo(0, 1, &PrimaryHeapResourceDesc);
-
-		D3D12_HEAP_DESC PrimaryHeapDesc = { };
-		PrimaryHeapDesc.SizeInBytes = PrimaryHeapAllocationInfo.SizeInBytes;
-		PrimaryHeapDesc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
-		PrimaryHeapDesc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
-		PrimaryHeapDesc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
-		PrimaryHeapDesc.Properties.CreationNodeMask = 1;
-		PrimaryHeapDesc.Properties.VisibleNodeMask = 1;
-
-		if (m_pID3D12Device->CreateHeap(&PrimaryHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<VOID**>(&m_pID3D12PrimaryHeap)) != S_OK)
-		{
-			Status = FALSE;
-			Console::Write(L"Error: Failed to create upload heap\n");
-		}
+		Status = InitializeHeaps(rDesc);
 	}
 
 	if (Status == TRUE)
@@ -366,25 +236,16 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pID3D12UploadHeap = NULL;
 	}
 
-	for (UINT i = 0; i < NUM_BUFFERS; i++)
+	if (m_pIWindow != NULL)
 	{
-		if (m_pID3D12RenderBuffers[i] != NULL)
-		{
-			m_pID3D12RenderBuffers[i]->Release();
-			m_pID3D12RenderBuffers[i] = NULL;
-		}
+		CWindow* pWindow = static_cast<CWindow*>(m_pIWindow);
+		pWindow->ReleaseSwapChain();
 	}
 
 	if (m_pID3D12RtvDescriptorHeap != NULL)
 	{
 		m_pID3D12RtvDescriptorHeap->Release();
 		m_pID3D12RtvDescriptorHeap = NULL;
-	}
-
-	if (m_pIDxgiSwapChain != NULL)
-	{
-		m_pIDxgiSwapChain->Release();
-		m_pIDxgiSwapChain = NULL;
 	}
 
 	if (m_pCopyQueue != NULL)
@@ -671,11 +532,181 @@ BOOL CGfxDevice::PrintDeviceProperties(VOID)
 	return Status;
 }
 
+BOOL CGfxDevice::InitializeHeaps(DeviceFactory::Descriptor& rDesc)
+{
+	BOOL Status = TRUE;
+
+	if (Status == TRUE)
+	{
+		D3D12_RESOURCE_DESC UploadHeapResourceDesc = { };
+		UploadHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		UploadHeapResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+		UploadHeapResourceDesc.Width = rDesc.UploadHeapSize;
+		UploadHeapResourceDesc.Height = 1;
+		UploadHeapResourceDesc.DepthOrArraySize = 1;
+		UploadHeapResourceDesc.MipLevels = 1;
+		UploadHeapResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+		UploadHeapResourceDesc.SampleDesc.Count = 1;
+		UploadHeapResourceDesc.SampleDesc.Quality = 0;
+		UploadHeapResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		UploadHeapResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		D3D12_RESOURCE_ALLOCATION_INFO UploadHeapAllocationInfo = m_pID3D12Device->GetResourceAllocationInfo(0, 1, &UploadHeapResourceDesc);
+
+		D3D12_HEAP_DESC UploadHeapDesc = { };
+		UploadHeapDesc.SizeInBytes = UploadHeapAllocationInfo.SizeInBytes;
+		UploadHeapDesc.Properties.Type = D3D12_HEAP_TYPE_UPLOAD;
+		UploadHeapDesc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		UploadHeapDesc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		UploadHeapDesc.Properties.CreationNodeMask = 1;
+		UploadHeapDesc.Properties.VisibleNodeMask = 1;
+
+		if (m_pID3D12Device->CreateHeap(&UploadHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<VOID**>(&m_pID3D12UploadHeap)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create upload heap\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		D3D12_RESOURCE_DESC PrimaryHeapResourceDesc = { };
+		PrimaryHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
+		PrimaryHeapResourceDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
+		PrimaryHeapResourceDesc.Width = rDesc.PrimaryHeapSize;
+		PrimaryHeapResourceDesc.Height = 1;
+		PrimaryHeapResourceDesc.DepthOrArraySize = 1;
+		PrimaryHeapResourceDesc.MipLevels = 1;
+		PrimaryHeapResourceDesc.Format = DXGI_FORMAT_UNKNOWN;
+		PrimaryHeapResourceDesc.SampleDesc.Count = 1;
+		PrimaryHeapResourceDesc.SampleDesc.Quality = 0;
+		PrimaryHeapResourceDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+		PrimaryHeapResourceDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
+
+		D3D12_RESOURCE_ALLOCATION_INFO PrimaryHeapAllocationInfo = m_pID3D12Device->GetResourceAllocationInfo(0, 1, &PrimaryHeapResourceDesc);
+
+		D3D12_HEAP_DESC PrimaryHeapDesc = { };
+		PrimaryHeapDesc.SizeInBytes = PrimaryHeapAllocationInfo.SizeInBytes;
+		PrimaryHeapDesc.Properties.Type = D3D12_HEAP_TYPE_DEFAULT;
+		PrimaryHeapDesc.Properties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+		PrimaryHeapDesc.Properties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+		PrimaryHeapDesc.Properties.CreationNodeMask = 1;
+		PrimaryHeapDesc.Properties.VisibleNodeMask = 1;
+
+		if (m_pID3D12Device->CreateHeap(&PrimaryHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<VOID**>(&m_pID3D12PrimaryHeap)) != S_OK)
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create upload heap\n");
+		}
+	}
+
+	return Status;
+}
+
+BOOL CGfxDevice::InitializeSwapChain(VOID)
+{
+	BOOL Status = TRUE;
+	IDXGISwapChain4* pIDxgiSwapChain = NULL;
+	CWindow* pWindow = static_cast<CWindow*>(m_pIWindow);
+	UINT32 NumBuffers = pWindow->GetNumBuffers();
+
+	if (Status == TRUE)
+	{
+		D3D12_DESCRIPTOR_HEAP_DESC descHeap = {};
+		descHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
+		descHeap.NumDescriptors = NumBuffers;
+		descHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+		descHeap.NodeMask = 0;
+
+		if (m_pID3D12Device->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pID3D12RtvDescriptorHeap)) == S_OK)
+		{
+			m_RtvDescriptorIncrement = m_pID3D12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+		}
+		else
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Failed to create descriptor heap\n");
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		WIN_RECT rect = {};
+
+		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, rect) == TRUE)
+		{
+			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { };
+			swapChainDesc.Width = rect.width;
+			swapChainDesc.Height = rect.height;
+			swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			swapChainDesc.Stereo = FALSE;
+			swapChainDesc.SampleDesc.Count = 1;
+			swapChainDesc.SampleDesc.Quality = 0;
+			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+			swapChainDesc.BufferCount = NumBuffers;
+			swapChainDesc.Scaling = DXGI_SCALING_NONE;
+			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+			swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+			swapChainDesc.Flags = 0;
+
+			IDXGISwapChain1* pISwapChain1 = NULL;
+
+			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pGraphicsQueue->GetD3D12CommandQueue(), m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
+			{
+				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<VOID**>(&pIDxgiSwapChain));
+				pISwapChain1->Release();
+			}
+			else
+			{
+				Status = FALSE;
+				Console::Write(L"Error: Failed to create swap chain\n");
+			}
+		}
+		else
+		{
+			Status = FALSE;
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		if (pWindow->InitializeSwapChain(pIDxgiSwapChain) != TRUE)
+		{
+			Status = FALSE;
+			pIDxgiSwapChain->Release();
+			pIDxgiSwapChain = NULL;
+		}
+	}
+
+	if (Status == TRUE)
+	{
+		D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandle = m_pID3D12RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+		for (UINT i = 0; (Status == TRUE) && (i < NumBuffers); i++)
+		{
+			ID3D12Resource* pIRenderBuffer = NULL;
+
+			if (pIDxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&pIRenderBuffer)) != S_OK)
+			{
+				Status = FALSE;
+				Console::Write(L"Error: Could not get swap chain buffer %u\n", i);
+			}
+
+			m_pID3D12Device->CreateRenderTargetView(pIRenderBuffer, NULL, cpuDescHandle);
+			pWindow->SetRenderBuffer(i, pIRenderBuffer);
+
+			cpuDescHandle.ptr += m_RtvDescriptorIncrement;
+		}
+	}
+
+	return Status;
+}
+
 ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 {
 	BOOL Status = TRUE;
-	D3D12_COMMAND_LIST_TYPE CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	ICommandQueue* pICommandQueue = NULL;
+	D3D12_COMMAND_LIST_TYPE CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	ID3D12Fence* pID3D12Fence = NULL;
 	ID3D12CommandQueue* pID3D12CommandQueue = NULL;
 
