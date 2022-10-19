@@ -72,6 +72,19 @@ public:
 BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc);
 VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
 
+// IMesh
+struct MESH_DESC
+{
+	UINT        BufferSize;
+	UINT        Stride;
+	UINT        NumVertices;
+};
+
+class __declspec(novtable) IMesh
+{
+public:
+};
+
 // ICommandBuffer
 enum COMMAND_BUFFER_TYPE
 {
@@ -85,9 +98,15 @@ enum COMMAND_BUFFER_TYPE
 class __declspec(novtable) ICommandBuffer
 {
 public:
+	virtual VOID ClearRenderBuffer(UINT64 CpuDescriptor, FLOAT RGBA[]) = 0;
+	virtual VOID Present(HANDLE hResource) = 0;
+	virtual VOID Render(IMesh* pIMesh) = 0;
+	virtual VOID SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth) = 0;
+	virtual VOID SetRenderer(IRenderer* pIRenderer) = 0;
+	virtual VOID SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor) = 0;
+
+	virtual BOOL Finalize(VOID) = 0;
 	virtual BOOL Reset(VOID) = 0;
-	virtual BOOL SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth) = 0;
-	virtual BOOL SetRenderer(IRenderer* pIRenderer) = 0;
 };
 
 // class IQueue
@@ -105,12 +124,6 @@ class __declspec(novtable) ICommandQueue
 public:
 };
 
-// IMesh
-class __declspec(novtable) IMesh
-{
-public:
-};
-
 // IGfxDevice
 class __declspec(novtable) IGfxDevice
 {
@@ -121,7 +134,7 @@ public:
 	virtual IRenderer*      CreateRenderer(const RENDERER_DESC& rDesc) = 0;
 	virtual VOID            DestroyRenderer(IRenderer* pIRenderer) = 0;
 
-	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT StrideInBytes) = 0;
+	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc) = 0;
 	virtual VOID            DestroyMesh(IMesh* pIMesh) = 0;
 };
 

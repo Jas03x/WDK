@@ -125,7 +125,12 @@ public:
 				}
 			};
 
-			m_pIMesh = m_pIGfxDevice->CreateMesh(reinterpret_cast<CONST VOID*>(Vertices), sizeof(Vertices), sizeof(Vertex));
+			MESH_DESC MeshDesc = {};
+			MeshDesc.BufferSize = sizeof(Vertices);
+			MeshDesc.Stride = sizeof(Vertex);
+			MeshDesc.NumVertices = sizeof(Vertices) / sizeof(Vertex);
+
+			m_pIMesh = m_pIGfxDevice->CreateMesh(Vertices, MeshDesc);
 
 			if (m_pIMesh == NULL)
 			{
@@ -184,20 +189,16 @@ private:
 
 		if (Status == TRUE)
 		{
-			Status = m_pIGraphicsCommandBuffer->SetRenderer(m_pIRenderer);
-		}
+			RenderBuffer CurrentBuffer = m_pIWindow->GetCurrentRenderBuffer();
 
-		if (Status == TRUE)
-		{
-			Status = m_pIGraphicsCommandBuffer->SetViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, MIN_DEPTH, MAX_DEPTH);
-		}
+			m_pIGraphicsCommandBuffer->SetRenderer(m_pIRenderer);
+			m_pIGraphicsCommandBuffer->SetViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, MIN_DEPTH, MAX_DEPTH);
+			m_pIGraphicsCommandBuffer->SetRenderTarget(CurrentBuffer.hResource, CurrentBuffer.CpuDescriptor);
+			m_pIGraphicsCommandBuffer->Render(m_pIMesh);
+			m_pIGraphicsCommandBuffer->Present(CurrentBuffer.hResource);
 
-		/*
-		if (Status == TRUE)
-		{
-			Status = m_pIGraphicsCommandBuffer->SetRenderTarget();
+			Status = m_pIGraphicsCommandBuffer->Finalize();
 		}
-		*/
 
 		return Status;
 	}

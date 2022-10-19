@@ -693,7 +693,7 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 			}
 
 			m_pID3D12Device->CreateRenderTargetView(pIRenderBuffer, NULL, cpuDescHandle);
-			pWindow->SetRenderBuffer(i, pIRenderBuffer);
+			pWindow->SetRenderBuffer(i, pIRenderBuffer, cpuDescHandle.ptr);
 
 			cpuDescHandle.ptr += m_RtvDescriptorIncrement;
 		}
@@ -1088,7 +1088,7 @@ VOID CGfxDevice::DestroyCommandBuffer(ICommandBuffer* pICommandBuffer)
 	}
 }
 
-IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT StrideInBytes)
+IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 {
 	BOOL Status = TRUE;
 	IMesh* pIMesh = NULL;
@@ -1101,7 +1101,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 		D3D12_RESOURCE_DESC VertexBufferDesc = {};
 		VertexBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		VertexBufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-		VertexBufferDesc.Width = SizeInBytes;
+		VertexBufferDesc.Width = rDesc.BufferSize;
 		VertexBufferDesc.Height = 1;
 		VertexBufferDesc.DepthOrArraySize = 1;
 		VertexBufferDesc.MipLevels = 1;
@@ -1132,7 +1132,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 
 		if (VertexDataUploadBuffer->Map(0, &CpuReadRange, reinterpret_cast<VOID**>(&VertexBufferCpuVa)) == S_OK)
 		{
-			CopyMemory(VertexBufferCpuVa, pVertexData, SizeInBytes);
+			CopyMemory(VertexBufferCpuVa, pVertexData, rDesc.BufferSize);
 			VertexDataUploadBuffer->Unmap(0, NULL);
 		}
 		else
@@ -1175,7 +1175,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT St
 		pIMesh = new CMesh();
 		if (pIMesh != NULL)
 		{
-			if (static_cast<CMesh*>(pIMesh)->Initialize(VertexBuffer, SizeInBytes, StrideInBytes) == FALSE)
+			if (static_cast<CMesh*>(pIMesh)->Initialize(VertexBuffer, rDesc) == FALSE)
 			{
 				Status = FALSE;
 				DestroyMesh(pIMesh);

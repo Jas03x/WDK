@@ -71,13 +71,13 @@
     <ClInclude Include="Source\Gfx\Core\CCommandBuffer.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Gfx\3D\CMesh.hpp">
-      <Filter>Source\Gfx\3D</Filter>
-    </ClInclude>
     <ClInclude Include="Source\Gfx\Core\EnumTranslator.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
     <ClInclude Include="Source\Gfx\Core\CCommandQueue.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CMesh.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
   </ItemGroup>
@@ -112,13 +112,13 @@
     <ClCompile Include="Source\Gfx\Core\CCommandBuffer.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Gfx\3D\CMesh.cpp">
-      <Filter>Source\Gfx\3D</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Gfx\Core\EnumTranslator.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
     <ClCompile Include="Source\Gfx\Core\CCommandQueue.cpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CMesh.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>

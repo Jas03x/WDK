@@ -73,7 +73,7 @@ public:
 	virtual IRenderer*         CreateRenderer(const RENDERER_DESC& rDesc);
 	virtual VOID               DestroyRenderer(IRenderer* pIRenderer);
 
-	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, UINT SizeInBytes, UINT StrideInBytes);
+	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc);
 	virtual VOID               DestroyMesh(IMesh* pIMesh);
 };
 

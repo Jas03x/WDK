@@ -259,9 +259,19 @@ BOOL CWindow::InitializeSwapChain(IDXGISwapChain4* pIDxgiSwapChain)
 	return Status;
 }
 
-VOID CWindow::SetRenderBuffer(UINT index, ID3D12Resource* pIRenderBuffer)
+RenderBuffer CWindow::GetCurrentRenderBuffer(VOID)
 {
-	m_pID3D12RenderBuffers[index] = pIRenderBuffer;
+	RenderBuffer rb = {};
+	rb.hResource = m_pID3D12RenderBuffers[m_FrameIndex];
+	rb.CpuDescriptor = m_RenderBufferCpuDescriptors[m_FrameIndex];
+
+	return rb;
+}
+
+VOID CWindow::SetRenderBuffer(UINT uIndex, ID3D12Resource* pIRenderBuffer, UINT64 CpuDescriptor)
+{
+	m_pID3D12RenderBuffers[uIndex] = pIRenderBuffer;
+	m_RenderBufferCpuDescriptors[uIndex] = CpuDescriptor;
 }
 
 VOID CWindow::ReleaseSwapChain(VOID)
