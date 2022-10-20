@@ -282,3 +282,20 @@ VOID CWindow::ReleaseSwapChain(VOID)
 		m_pIDxgiSwapChain = NULL;
 	}
 }
+
+BOOL CWindow::Present(VOID)
+{
+	BOOL Status = TRUE;
+
+	if (m_pIDxgiSwapChain->Present(1, 0) == S_OK)
+	{
+		m_FrameIndex = (m_FrameIndex + 1) % NUM_BUFFERS;
+	}
+	else
+	{
+		Status = FALSE;
+		Console::Write(L"Error: Failed to signal swap chain to present\n");
+	}
+
+	return Status;
+}

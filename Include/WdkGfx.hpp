@@ -136,6 +136,9 @@ public:
 
 	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc) = 0;
 	virtual VOID            DestroyMesh(IMesh* pIMesh) = 0;
+
+	virtual BOOL            SubmitCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
+	virtual BOOL            SyncQueue(COMMAND_QUEUE_TYPE Type) = 0;
 };
 
 // Device Factory

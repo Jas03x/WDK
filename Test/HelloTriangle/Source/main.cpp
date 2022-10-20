@@ -200,6 +200,21 @@ private:
 			Status = m_pIGraphicsCommandBuffer->Finalize();
 		}
 
+		if (Status == TRUE)
+		{
+			m_pIGfxDevice->SubmitCommandBuffer(m_pIGraphicsCommandBuffer);
+		}
+
+		if (Status == TRUE)
+		{
+			Status = m_pIWindow->Present();
+		}
+
+		if (Status == TRUE)
+		{
+			Status = m_pIGfxDevice->SyncQueue(COMMAND_QUEUE_TYPE_GRAPHICS);
+		}
+
 		return Status;
 	}
 

@@ -46,6 +46,7 @@ public:
 	BOOL                 InitializeSwapChain(IDXGISwapChain4* pIDxgiSwapChain);
 	VOID                 ReleaseSwapChain(VOID);
 
+	virtual BOOL         Present(VOID);
 	virtual RenderBuffer GetCurrentRenderBuffer(VOID);
 	VOID                 SetRenderBuffer(UINT uIndex, ID3D12Resource* pIRenderBuffer, UINT64 CpuDescriptor);
 };

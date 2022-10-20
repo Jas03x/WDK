@@ -39,11 +39,12 @@ struct RenderBuffer
 class __declspec(novtable) IWindow
 {
 public:
-	virtual HWND GetHandle(VOID) = 0;
-	virtual BOOL Open(VOID) = 0;
-	virtual BOOL GetEvent(WIN_EVENT& rEvent) = 0;
-	virtual BOOL GetRect(WIN_AREA area, WIN_RECT& rRect) = 0;
+	virtual HWND         GetHandle(VOID) = 0;
+	virtual BOOL         Open(VOID) = 0;
+	virtual BOOL         GetEvent(WIN_EVENT& rEvent) = 0;
+	virtual BOOL         GetRect(WIN_AREA area, WIN_RECT& rRect) = 0;
 
+	virtual BOOL         Present(VOID) = 0;
 	virtual RenderBuffer GetCurrentRenderBuffer(VOID) = 0;
 };
 

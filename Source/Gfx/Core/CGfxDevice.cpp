@@ -741,7 +741,7 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 		pICommandQueue = new CCommandQueue();
 		if (pICommandQueue != NULL)
 		{
-			if (static_cast<CCommandQueue*>(pICommandQueue)->Initialize(pID3D12CommandQueue, pID3D12Fence) != TRUE)
+			if (static_cast<CCommandQueue*>(pICommandQueue)->Initialize(Type, pID3D12CommandQueue, pID3D12Fence) != TRUE)
 			{
 				DestroyCommandQueue(pICommandQueue);
 				pICommandQueue = NULL;
@@ -1052,7 +1052,7 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 		pICommandBuffer = new CCommandBuffer();
 		if (pICommandBuffer != NULL)
 		{
-			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(pID3D12CommandAllocator, pID3D12GraphicsCommandList) == FALSE)
+			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(Type, pID3D12CommandAllocator, pID3D12GraphicsCommandList) == FALSE)
 			{
 				DestroyCommandBuffer(pICommandBuffer);
 				pICommandBuffer = NULL;
@@ -1094,7 +1094,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 	IMesh* pIMesh = NULL;
 	ID3D12Resource* VertexBuffer = NULL;
 	ID3D12Resource* VertexDataUploadBuffer = NULL;
-	ID3D12GraphicsCommandList* pICommandList = static_cast<CCommandBuffer*>(m_pICopyCommandBuffer)->GetD3D12GraphicsCommandList();
+	ID3D12GraphicsCommandList* pICommandList = static_cast<CCommandBuffer*>(m_pICopyCommandBuffer)->GetD3D12CommandList();
 
 	if (Status == TRUE)
 	{
@@ -1162,12 +1162,12 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 	}
 
 	if (Status == TRUE)
-	{
+	{		
 		ID3D12CommandList* pICommandLists[] = { pICommandList };
-		
+
 		m_pCopyQueue->GetD3D12CommandQueue()->ExecuteCommandLists(1, pICommandLists);
-		
-		Status = m_pCopyQueue->Wait();
+
+		Status = m_pCopyQueue->Sync();
 	}
 
 	if (Status == TRUE)
@@ -1211,4 +1211,63 @@ VOID CGfxDevice::DestroyMesh(IMesh* pIMesh)
 		pMesh->Uninitialize();
 		delete pMesh;
 	}
+}
+
+BOOL CGfxDevice::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
+{
+	BOOL Status = TRUE;
+
+	if (pICommandBuffer == NULL)
+	{
+		Status = FALSE;
+	}
+
+	if (Status == TRUE)
+	{
+		CCommandBuffer* pCommandBuffer = static_cast<CCommandBuffer*>(pICommandBuffer);
+		
+		switch (pCommandBuffer->GetType())
+		{
+			case COMMAND_BUFFER_TYPE_GRAPHICS:
+			{
+				m_pGraphicsQueue->SubmitCommandBuffer(pICommandBuffer);
+				break;
+			}
+			default:
+			{
+				Status = FALSE;
+				Console::Write(L"Error: Trying to submit unsupported command buffer\n");
+				break;
+			}
+		}
+	}
+
+	return Status;
+}
+
+BOOL CGfxDevice::SyncQueue(COMMAND_QUEUE_TYPE Type)
+{
+	BOOL Status = TRUE;
+
+	switch (Type)
+	{
+		case COMMAND_QUEUE_TYPE_GRAPHICS:
+		{
+			Status = m_pGraphicsQueue->Sync();
+			break;
+		}
+		case COMMAND_QUEUE_TYPE_COPY:
+		{
+			Status = m_pCopyQueue->Sync();
+			break;
+		}
+		default:
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Trying to sync unsupported command queue\n");
+			break;
+		}
+	}
+
+	return Status;
 }

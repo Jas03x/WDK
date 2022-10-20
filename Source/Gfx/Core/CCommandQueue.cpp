@@ -4,6 +4,8 @@
 
 #include "Wdk.hpp"
 
+#include "CCommandBuffer.hpp"
+
 CCommandQueue::CCommandQueue(VOID)
 {
 	m_pID3D12CommandQueue = NULL;
@@ -17,10 +19,11 @@ CCommandQueue::~CCommandQueue(VOID)
 {
 }
 
-BOOL CCommandQueue::Initialize(ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence)
+BOOL CCommandQueue::Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence)
 {
 	BOOL Status = TRUE;
 
+	m_Type = Type;
 	m_hFenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
 	if (m_hFenceEvent != NULL)
@@ -76,7 +79,35 @@ ID3D12CommandQueue* CCommandQueue::GetD3D12CommandQueue(VOID)
 	return m_pID3D12CommandQueue;
 }
 
-BOOL CCommandQueue::Wait(VOID)
+BOOL CCommandQueue::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
+{
+	BOOL Status = TRUE;
+
+	if (pICommandBuffer == NULL)
+	{
+		Status = FALSE;
+	}
+
+	if (Status == TRUE)
+	{
+		CCommandBuffer* pCommandBuffer = static_cast<CCommandBuffer*>(pICommandBuffer);
+
+		if (pCommandBuffer->GetType() == m_Type)
+		{
+			ID3D12CommandList* pICommandLists[] = { pCommandBuffer->GetD3D12CommandList() };
+			m_pID3D12CommandQueue->ExecuteCommandLists(1, pICommandLists);
+		}
+		else
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Submitting different command buffer type to command queue\n");
+		}
+	}
+
+	return Status;
+}
+
+BOOL CCommandQueue::Sync(VOID)
 {
 	BOOL Status = TRUE;
 

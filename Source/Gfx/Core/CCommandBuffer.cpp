@@ -9,9 +9,10 @@
 
 CCommandBuffer::CCommandBuffer(VOID)
 {
+	m_Type = COMMAND_BUFFER_TYPE_INVALID;
 	m_pID3D12CommandAllocator = NULL;
-	m_pID3D12GraphicsCommandList = NULL;
-	m_bWriteStatus = FALSE;
+	m_pID3D12CommandList = NULL;
+	m_State = STATE_ERROR;
 }
 
 CCommandBuffer::~CCommandBuffer(VOID)
@@ -19,16 +20,17 @@ CCommandBuffer::~CCommandBuffer(VOID)
 
 }
 
-BOOL CCommandBuffer::Initialize(ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pIGraphicsCommandList)
+BOOL CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList)
 {
 	BOOL Status = TRUE;
 
-	m_bWriteStatus = TRUE;
+	m_Type = Type;
+	m_State = STATE_RESET;
 
-	if ((pICommandAllocator != NULL) && (pIGraphicsCommandList != NULL))
+	if ((pICommandAllocator != NULL) && (pICommandList != NULL))
 	{
 		m_pID3D12CommandAllocator = pICommandAllocator;
-		m_pID3D12GraphicsCommandList = pIGraphicsCommandList;
+		m_pID3D12CommandList = pICommandList;
 	}
 	else
 	{
@@ -41,10 +43,10 @@ BOOL CCommandBuffer::Initialize(ID3D12CommandAllocator* pICommandAllocator, ID3D
 
 VOID CCommandBuffer::Uninitialize(VOID)
 {
-	if (m_pID3D12GraphicsCommandList != NULL)
+	if (m_pID3D12CommandList != NULL)
 	{
-		m_pID3D12GraphicsCommandList->Release();
-		m_pID3D12GraphicsCommandList = NULL;
+		m_pID3D12CommandList->Release();
+		m_pID3D12CommandList = NULL;
 	}
 
 	if (m_pID3D12CommandAllocator != NULL)
@@ -54,18 +56,27 @@ VOID CCommandBuffer::Uninitialize(VOID)
 	}
 }
 
-ID3D12GraphicsCommandList* CCommandBuffer::GetD3D12GraphicsCommandList(VOID)
+COMMAND_BUFFER_TYPE CCommandBuffer::GetType(VOID)
 {
-	return m_pID3D12GraphicsCommandList;
+	return m_Type;
+}
+
+ID3D12GraphicsCommandList* CCommandBuffer::GetD3D12CommandList(VOID)
+{
+	return m_pID3D12CommandList;
 }
 
 BOOL CCommandBuffer::Finalize(VOID)
 {
 	BOOL Status = TRUE;
 
-	if (m_bWriteStatus == TRUE)
+	if (m_State == STATE_RECORDING)
 	{
-		if (m_pID3D12GraphicsCommandList->Close() != S_OK)
+		if (m_pID3D12CommandList->Close() == S_OK)
+		{
+			m_State = STATE_CLOSED;
+		}
+		else
 		{
 			Status = FALSE;
 			Console::Write(L"Error: Could not finalize command list\n");
@@ -74,7 +85,7 @@ BOOL CCommandBuffer::Finalize(VOID)
 	else
 	{
 		Status = FALSE;
-		Console::Write(L"Error: Error while generating command buffer\n");
+		Console::Write(L"Error: Cannot finalize empty command buffer\n");
 	}
 
 	return Status;
@@ -84,24 +95,34 @@ BOOL CCommandBuffer::Reset(VOID)
 {
 	BOOL Status = TRUE;
 
-	if (m_pID3D12CommandAllocator->Reset() != S_OK)
+	if (m_State != STATE_RESET)
 	{
-		Status = FALSE;
-		Console::Write(L"Error: Failed to reset D3D12 command allocator\n");
-	}
+		if (m_State != STATE_ERROR)
+		{
+			if (m_pID3D12CommandAllocator->Reset() != S_OK)
+			{
+				Status = FALSE;
+				Console::Write(L"Error: Failed to reset D3D12 command allocator\n");
+			}
 
-	if (Status == TRUE)
-	{
-		if (m_pID3D12GraphicsCommandList->Reset(m_pID3D12CommandAllocator, NULL) != S_OK)
+			if (Status == TRUE)
+			{
+				if (m_pID3D12CommandList->Reset(m_pID3D12CommandAllocator, NULL) == S_OK)
+				{
+					m_State = STATE_RESET;
+				}
+				else
+				{
+					Status = FALSE;
+					Console::Write(L"Error: Failed to reset D3D12 command list\n");
+				}
+			}
+		}
+		else
 		{
 			Status = FALSE;
-			Console::Write(L"Error: Failed to reset D3D12 command list\n");
+			Console::Write(L"Error: Cannot reset command buffer in error state\n");
 		}
-	}
-
-	if (Status == FALSE)
-	{
-		m_bWriteStatus = FALSE;
 	}
 
 	return Status;
@@ -109,7 +130,7 @@ BOOL CCommandBuffer::Reset(VOID)
 
 VOID CCommandBuffer::SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth)
 {
-	if (m_bWriteStatus == TRUE)
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
 		D3D12_VIEWPORT Viewport = {};
 		Viewport.TopLeftX = static_cast<FLOAT>(x);
@@ -125,25 +146,27 @@ VOID CCommandBuffer::SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth
 		ScissorRect.right = w;
 		ScissorRect.bottom = h;
 
-		m_pID3D12GraphicsCommandList->RSSetViewports(1, &Viewport);
-		m_pID3D12GraphicsCommandList->RSSetScissorRects(1, &ScissorRect);
+		m_State = STATE_RECORDING;
+		m_pID3D12CommandList->RSSetViewports(1, &Viewport);
+		m_pID3D12CommandList->RSSetScissorRects(1, &ScissorRect);
 	}
 }
 
 VOID CCommandBuffer::SetRenderer(IRenderer* pIRenderer)
 {
-	if (m_bWriteStatus == TRUE)
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
 		if (pIRenderer != NULL)
 		{
 			CRenderer* pCRenderer = static_cast<CRenderer*>(pIRenderer);
 
-			m_pID3D12GraphicsCommandList->SetPipelineState(pCRenderer->GetD3D12PipelineState());
-			m_pID3D12GraphicsCommandList->SetGraphicsRootSignature(pCRenderer->GetD3D12RootSignature());
+			m_State = STATE_RECORDING;
+			m_pID3D12CommandList->SetPipelineState(pCRenderer->GetD3D12PipelineState());
+			m_pID3D12CommandList->SetGraphicsRootSignature(pCRenderer->GetD3D12RootSignature());
 		}
 		else
 		{
-			m_bWriteStatus = FALSE;
+			m_State = STATE_ERROR;
 			Console::Write(L"Error: Could not set command buffer renderer - received null renderer\n");
 		}
 	}
@@ -151,7 +174,7 @@ VOID CCommandBuffer::SetRenderer(IRenderer* pIRenderer)
 
 VOID CCommandBuffer::SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor)
 {
-	if (m_bWriteStatus == TRUE)
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
 		if ((hResource != NULL) && (CpuDescriptor != 0))
 		{
@@ -166,12 +189,13 @@ VOID CCommandBuffer::SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor)
 			Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 			Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
 
-			m_pID3D12GraphicsCommandList->ResourceBarrier(1, &Barrier);
-			m_pID3D12GraphicsCommandList->OMSetRenderTargets(1, &CpuDescHandle, FALSE, nullptr);
+			m_State = STATE_RECORDING;
+			m_pID3D12CommandList->ResourceBarrier(1, &Barrier);
+			m_pID3D12CommandList->OMSetRenderTargets(1, &CpuDescHandle, FALSE, nullptr);
 		}
 		else
 		{
-			m_bWriteStatus = FALSE;
+			m_State = STATE_ERROR;
 			Console::Write(L"Error: Could not set command buffer render target - received null render buffer\n");
 		}
 	}
@@ -179,7 +203,7 @@ VOID CCommandBuffer::SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor)
 
 VOID CCommandBuffer::Present(HANDLE hResource)
 {
-	if (m_bWriteStatus == TRUE)
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
 		if (hResource != NULL)
 		{
@@ -193,11 +217,12 @@ VOID CCommandBuffer::Present(HANDLE hResource)
 			Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 			Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
 
-			m_pID3D12GraphicsCommandList->ResourceBarrier(1, &Barrier);
+			m_State = STATE_RECORDING;
+			m_pID3D12CommandList->ResourceBarrier(1, &Barrier);
 		}
 		else
 		{
-			m_bWriteStatus = FALSE;
+			m_State = STATE_ERROR;
 			Console::Write(L"Error: Could not present - received null render buffer\n");
 		}
 	}
@@ -205,17 +230,18 @@ VOID CCommandBuffer::Present(HANDLE hResource)
 
 VOID CCommandBuffer::ClearRenderBuffer(UINT64 CpuDescriptor, FLOAT RGBA[])
 {
-	if (m_bWriteStatus == TRUE)
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
 		if ((CpuDescriptor != 0) && (RGBA != NULL))
 		{
 			D3D12_CPU_DESCRIPTOR_HANDLE CpuDescHandle = { CpuDescriptor };
 
-			m_pID3D12GraphicsCommandList->ClearRenderTargetView(CpuDescHandle, RGBA, 0, NULL);
+			m_State = STATE_RECORDING;
+			m_pID3D12CommandList->ClearRenderTargetView(CpuDescHandle, RGBA, 0, NULL);
 		}
 		else
 		{
-			m_bWriteStatus = FALSE;
+			m_State = STATE_ERROR;
 			Console::Write(L"Error: Could not clear render buffer - received invalid parameter(s)\n");
 		}
 	}
@@ -223,7 +249,7 @@ VOID CCommandBuffer::ClearRenderBuffer(UINT64 CpuDescriptor, FLOAT RGBA[])
 
 VOID CCommandBuffer::Render(IMesh* pIMesh)
 {
-	if (m_bWriteStatus == TRUE)
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
 		if (pIMesh != NULL)
 		{
@@ -235,13 +261,14 @@ VOID CCommandBuffer::Render(IMesh* pIMesh)
 			VertexBufferView.SizeInBytes = MeshDesc.BufferSize;
 			VertexBufferView.StrideInBytes = MeshDesc.Stride;
 
-			m_pID3D12GraphicsCommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			m_pID3D12GraphicsCommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
-			m_pID3D12GraphicsCommandList->DrawInstanced(MeshDesc.NumVertices, 1, 0, 0);
+			m_State = STATE_RECORDING;
+			m_pID3D12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			m_pID3D12CommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
+			m_pID3D12CommandList->DrawInstanced(MeshDesc.NumVertices, 1, 0, 0);
 		}
 		else
 		{
-			m_bWriteStatus = FALSE;
+			m_State = STATE_ERROR;
 			Console::Write(L"Error: Could not render mesh - received invalid parameter(s)\n");
 		}
 	}

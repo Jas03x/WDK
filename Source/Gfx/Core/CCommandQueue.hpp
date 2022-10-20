@@ -13,6 +13,8 @@ class CCommandQueue : public ICommandQueue
 private:
 	enum : UINT { COMMAND_QUEUE_TIMEOUT = 1000 };
 
+	COMMAND_QUEUE_TYPE      m_Type;
+
 	ID3D12CommandQueue*     m_pID3D12CommandQueue;
 	ID3D12Fence*            m_pID3D12Fence;
 
@@ -23,10 +25,11 @@ public:
 	CCommandQueue(VOID);
 	~CCommandQueue(VOID);
 
-	BOOL Initialize(ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence);
-	VOID Uninitialize(VOID);
+	BOOL                    Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence);
+	VOID                    Uninitialize(VOID);
 
-	BOOL                    Wait(VOID);
+	BOOL                    SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
+	BOOL                    Sync(VOID);
 
 	ID3D12CommandQueue*     GetD3D12CommandQueue(VOID);
 };

@@ -63,8 +63,8 @@ private:
 	BOOL                       InitializeHeaps(DeviceFactory::Descriptor& rDesc);
 	BOOL                       InitializeSwapChain(VOID);
 
-	virtual ICommandQueue*     CreateCommandQueue(COMMAND_QUEUE_TYPE Type);
-	virtual VOID               DestroyCommandQueue(ICommandQueue* pICommandQueue);
+	ICommandQueue*             CreateCommandQueue(COMMAND_QUEUE_TYPE Type);
+	VOID                       DestroyCommandQueue(ICommandQueue* pICommandQueue);
 
 public:
 	virtual ICommandBuffer*    CreateCommandBuffer(COMMAND_BUFFER_TYPE Type);
@@ -75,6 +75,9 @@ public:
 
 	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc);
 	virtual VOID               DestroyMesh(IMesh* pIMesh);
+
+	virtual BOOL               SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
+	virtual BOOL               SyncQueue(COMMAND_QUEUE_TYPE Type);
 };
 
 #endif // WDK_CGFX_DEVICE_HPP
