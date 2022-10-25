@@ -80,6 +80,9 @@
     <ClInclude Include="Source\Gfx\Core\CMesh.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CSwapChain.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -119,6 +122,9 @@
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
     <ClCompile Include="Source\Gfx\Core\CMesh.cpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CSwapChain.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>

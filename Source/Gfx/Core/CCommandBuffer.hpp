@@ -31,12 +31,12 @@ public:
 	BOOL                       Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList);
 	VOID                       Uninitialize(VOID);
 
-	virtual VOID               ClearRenderBuffer(UINT64 CpuDescriptor, FLOAT RGBA[]);
-	virtual VOID               Present(HANDLE hResource);
+	virtual VOID               ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[]);
+	virtual VOID               Present(const RenderBuffer& rBuffer);
 	virtual VOID               Render(IMesh* pIMesh);
 	virtual VOID               SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth);
 	virtual VOID               SetRenderer(IRenderer* pIRenderer);
-	virtual VOID               SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor);
+	virtual VOID               SetRenderTarget(const RenderBuffer& rBuffer);
 
 	virtual BOOL               Finalize(VOID);
 	virtual BOOL               Reset(VOID);

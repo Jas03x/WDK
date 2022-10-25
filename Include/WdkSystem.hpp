@@ -30,11 +30,15 @@ struct WIN_EVENT
 	WIN_MSG msg;
 };
 
+// Shared structure between system and gfx
+#ifndef WDK_RENDER_BUFFER
+#define WDK_RENDER_BUFFER
 struct RenderBuffer
 {
 	HANDLE hResource;
 	UINT64 CpuDescriptor;
 };
+#endif // WDK_RENDER_BUFFER
 
 class __declspec(novtable) IWindow
 {

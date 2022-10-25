@@ -5,8 +5,18 @@
 
 class IWindow;
 
-const FLOAT MIN_DEPTH = 0.0f;
-const FLOAT MAX_DEPTH = 1.0f;
+CONST FLOAT MIN_DEPTH = 0.0f;
+CONST FLOAT MAX_DEPTH = 1.0f;
+
+// Shared structure between system and gfx
+#ifndef WDK_RENDER_BUFFER
+#define WDK_RENDER_BUFFER
+struct RenderBuffer
+{
+	HANDLE hResource;
+	UINT64 CpuDescriptor;
+};
+#endif // WDK_RENDER_BUFFER
 
 // IRenderer
 struct SHADER_BYTECODE
@@ -69,7 +79,7 @@ class __declspec(novtable) IRenderer
 public:
 };
 
-BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc);
+BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc);
 VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
 
 // IMesh
@@ -98,12 +108,12 @@ enum COMMAND_BUFFER_TYPE
 class __declspec(novtable) ICommandBuffer
 {
 public:
-	virtual VOID ClearRenderBuffer(UINT64 CpuDescriptor, FLOAT RGBA[]) = 0;
-	virtual VOID Present(HANDLE hResource) = 0;
+	virtual VOID ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[]) = 0;
+	virtual VOID Present(const RenderBuffer& rBuffer) = 0;
 	virtual VOID Render(IMesh* pIMesh) = 0;
 	virtual VOID SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth) = 0;
 	virtual VOID SetRenderer(IRenderer* pIRenderer) = 0;
-	virtual VOID SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor) = 0;
+	virtual VOID SetRenderTarget(const RenderBuffer& rBuffer) = 0;
 
 	virtual BOOL Finalize(VOID) = 0;
 	virtual BOOL Reset(VOID) = 0;
@@ -131,7 +141,7 @@ public:
 	virtual ICommandBuffer* CreateCommandBuffer(COMMAND_BUFFER_TYPE Type) = 0;
 	virtual VOID            DestroyCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
 
-	virtual IRenderer*      CreateRenderer(const RENDERER_DESC& rDesc) = 0;
+	virtual IRenderer*      CreateRenderer(CONST RENDERER_DESC& rDesc) = 0;
 	virtual VOID            DestroyRenderer(IRenderer* pIRenderer) = 0;
 
 	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc) = 0;
@@ -151,7 +161,7 @@ public:
 		UINT64 PrimaryHeapSize;
 	};
 
-	static IGfxDevice* CreateInstance(IWindow* pIWindow, Descriptor& rDesc);
+	static IGfxDevice* CreateInstance(IWindow* pIWindow, const Descriptor& rDesc);
 	static VOID        DestroyInstance(IGfxDevice* pIDevice);
 };
 

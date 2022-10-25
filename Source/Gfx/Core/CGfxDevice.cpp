@@ -12,10 +12,12 @@
 #include "CCommandQueue.hpp"
 #include "CMesh.hpp"
 #include "CRenderer.hpp"
+#include "CSwapChain.hpp"
 #include "CWindow.hpp"
+
 #include "EnumTranslator.hpp"
 
-IGfxDevice* DeviceFactory::CreateInstance(IWindow* pIWindow, DeviceFactory::Descriptor& rDesc)
+IGfxDevice* DeviceFactory::CreateInstance(IWindow* pIWindow, const DeviceFactory::Descriptor& rDesc)
 {
 	CGfxDevice* pDevice = new CGfxDevice();
 
@@ -53,7 +55,6 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pIDxgiAdapter = NULL;
 
 	m_pID3D12Device = NULL;
-	m_pID3D12RtvDescriptorHeap = NULL;
 	m_pID3D12UploadHeap = NULL;
 	m_pID3D12PrimaryHeap = NULL;
 
@@ -61,8 +62,6 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pGraphicsQueue = NULL;
 
 	m_pICopyCommandBuffer = NULL;
-
-	m_RtvDescriptorIncrement = 0;
 }
 
 CGfxDevice::~CGfxDevice(VOID)
@@ -70,7 +69,7 @@ CGfxDevice::~CGfxDevice(VOID)
 
 }
 
-BOOL CGfxDevice::Initialize(IWindow* pIWindow, DeviceFactory::Descriptor& rDesc)
+BOOL CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& rDesc)
 {
 	BOOL Status = TRUE;
 
@@ -218,6 +217,11 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow, DeviceFactory::Descriptor& rDesc)
 
 VOID CGfxDevice::Uninitialize(VOID)
 {
+	if (m_pIWindow != NULL)
+	{
+		static_cast<CWindow*>(m_pIWindow)->SwapChainNotification(CWindow::SWAPCHAIN_DESTROYED, NULL);
+	}
+
 	if (m_pICopyCommandBuffer != NULL)
 	{
 		DestroyCommandBuffer(m_pICopyCommandBuffer);
@@ -236,18 +240,6 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pID3D12UploadHeap = NULL;
 	}
 
-	if (m_pIWindow != NULL)
-	{
-		CWindow* pWindow = static_cast<CWindow*>(m_pIWindow);
-		pWindow->ReleaseSwapChain();
-	}
-
-	if (m_pID3D12RtvDescriptorHeap != NULL)
-	{
-		m_pID3D12RtvDescriptorHeap->Release();
-		m_pID3D12RtvDescriptorHeap = NULL;
-	}
-
 	if (m_pCopyQueue != NULL)
 	{
 		DestroyCommandQueue(m_pCopyQueue);
@@ -258,6 +250,13 @@ VOID CGfxDevice::Uninitialize(VOID)
 	{
 		DestroyCommandQueue(m_pGraphicsQueue);
 		m_pGraphicsQueue = NULL;
+	}
+
+	if (m_pSwapChain != NULL)
+	{
+		m_pSwapChain->Uninitialize();
+		delete m_pSwapChain;
+		m_pSwapChain = NULL;
 	}
 
 	if (m_pID3D12Device != NULL)
@@ -532,7 +531,7 @@ BOOL CGfxDevice::PrintDeviceProperties(VOID)
 	return Status;
 }
 
-BOOL CGfxDevice::InitializeHeaps(DeviceFactory::Descriptor& rDesc)
+BOOL CGfxDevice::InitializeHeaps(const DeviceFactory::Descriptor& rDesc)
 {
 	BOOL Status = TRUE;
 
@@ -607,20 +606,24 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 {
 	BOOL Status = TRUE;
 	IDXGISwapChain4* pIDxgiSwapChain = NULL;
-	CWindow* pWindow = static_cast<CWindow*>(m_pIWindow);
-	UINT32 NumBuffers = pWindow->GetNumBuffers();
+	ID3D12DescriptorHeap* pIRtvDescriptorHeap = NULL;
+
+	UINT RtvDescriptorIncrement = 0;
+	CSwapChain::Descriptor Descriptor = {};
 
 	if (Status == TRUE)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC descHeap = {};
 		descHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
-		descHeap.NumDescriptors = NumBuffers;
+		descHeap.NumDescriptors = CSwapChain::NUM_BUFFERS;
 		descHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		descHeap.NodeMask = 0;
 
-		if (m_pID3D12Device->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pID3D12RtvDescriptorHeap)) == S_OK)
+		if (m_pID3D12Device->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&pIRtvDescriptorHeap)) == S_OK)
 		{
-			m_RtvDescriptorIncrement = m_pID3D12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+			RtvDescriptorIncrement = m_pID3D12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+
+			Descriptor.RtvDescriptorIncrement = RtvDescriptorIncrement;
 		}
 		else
 		{
@@ -631,27 +634,27 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 
 	if (Status == TRUE)
 	{
-		WIN_RECT rect = {};
+		WIN_RECT Rect = {};
 
-		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, rect) == TRUE)
+		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, Rect) == TRUE)
 		{
-			DXGI_SWAP_CHAIN_DESC1 swapChainDesc = { };
-			swapChainDesc.Width = rect.width;
-			swapChainDesc.Height = rect.height;
-			swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-			swapChainDesc.Stereo = FALSE;
-			swapChainDesc.SampleDesc.Count = 1;
-			swapChainDesc.SampleDesc.Quality = 0;
-			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapChainDesc.BufferCount = NumBuffers;
-			swapChainDesc.Scaling = DXGI_SCALING_NONE;
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-			swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-			swapChainDesc.Flags = 0;
+			DXGI_SWAP_CHAIN_DESC1 SwapChainDesc = { };
+			SwapChainDesc.Width = Rect.width;
+			SwapChainDesc.Height = Rect.height;
+			SwapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			SwapChainDesc.Stereo = FALSE;
+			SwapChainDesc.SampleDesc.Count = 1;
+			SwapChainDesc.SampleDesc.Quality = 0;
+			SwapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+			SwapChainDesc.BufferCount = CSwapChain::NUM_BUFFERS;
+			SwapChainDesc.Scaling = DXGI_SCALING_NONE;
+			SwapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+			SwapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+			SwapChainDesc.Flags = 0;
 
 			IDXGISwapChain1* pISwapChain1 = NULL;
 
-			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pGraphicsQueue->GetD3D12CommandQueue(), m_pIWindow->GetHandle(), &swapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
+			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pGraphicsQueue->GetD3D12CommandQueue(), m_pIWindow->GetHandle(), &SwapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
 			{
 				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<VOID**>(&pIDxgiSwapChain));
 				pISwapChain1->Release();
@@ -670,19 +673,9 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 
 	if (Status == TRUE)
 	{
-		if (pWindow->InitializeSwapChain(pIDxgiSwapChain) != TRUE)
-		{
-			Status = FALSE;
-			pIDxgiSwapChain->Release();
-			pIDxgiSwapChain = NULL;
-		}
-	}
+		D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = pIRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-	if (Status == TRUE)
-	{
-		D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandle = m_pID3D12RtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-
-		for (UINT i = 0; (Status == TRUE) && (i < NumBuffers); i++)
+		for (UINT i = 0; (Status == TRUE) && (i < CSwapChain::NUM_BUFFERS); i++)
 		{
 			ID3D12Resource* pIRenderBuffer = NULL;
 
@@ -692,10 +685,45 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 				Console::Write(L"Error: Could not get swap chain buffer %u\n", i);
 			}
 
-			m_pID3D12Device->CreateRenderTargetView(pIRenderBuffer, NULL, cpuDescHandle);
-			pWindow->SetRenderBuffer(i, pIRenderBuffer, cpuDescHandle.ptr);
+			m_pID3D12Device->CreateRenderTargetView(pIRenderBuffer, NULL, CpuDescriptor);
+			
+			Descriptor.RenderBuffers[i].hResource = pIRenderBuffer;
+			Descriptor.RenderBuffers[i].CpuDescriptor = CpuDescriptor.ptr;
+			CpuDescriptor.ptr += RtvDescriptorIncrement;
+		}
+	}
 
-			cpuDescHandle.ptr += m_RtvDescriptorIncrement;
+	if (Status == TRUE)
+	{
+		m_pSwapChain = new CSwapChain();
+
+		if (m_pSwapChain != NULL)
+		{
+			if (m_pSwapChain->Initialize(pIDxgiSwapChain, pIRtvDescriptorHeap, Descriptor))
+			{
+				static_cast<CWindow*>(m_pIWindow)->SwapChainNotification(CWindow::SWAPCHAIN_CREATED, m_pSwapChain);
+			}
+			else
+			{
+				m_pSwapChain->Uninitialize();
+				delete m_pSwapChain;
+				m_pSwapChain = NULL;
+			}
+		}
+	}
+
+	if (Status == FALSE)
+	{
+		if (pIDxgiSwapChain != NULL)
+		{
+			pIDxgiSwapChain->Release();
+			pIDxgiSwapChain = NULL;
+		}
+
+		if (pIRtvDescriptorHeap != NULL)
+		{
+			pIRtvDescriptorHeap->Release();
+			pIRtvDescriptorHeap = NULL;
 		}
 	}
 
@@ -777,7 +805,7 @@ VOID CGfxDevice::DestroyCommandQueue(ICommandQueue* pICommandQueue)
 	}
 }
 
-IRenderer* CGfxDevice::CreateRenderer(const RENDERER_DESC& rDesc)
+IRenderer* CGfxDevice::CreateRenderer(CONST RENDERER_DESC& rDesc)
 {
 	BOOL Status = TRUE;
 

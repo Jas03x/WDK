@@ -19,6 +19,8 @@ private:
 	IMesh*          m_pIMesh;
 	ICommandBuffer* m_pIGraphicsCommandBuffer;
 
+	CONST FLOAT     m_ClearColor[4] = { 0, 0, 0, 0 };
+
 public:
 	HelloTriangle()
 	{
@@ -109,7 +111,7 @@ public:
 				float colour[3];
 			};
 
-			static const Vertex Vertices[] =
+			static CONST Vertex Vertices[] =
 			{
 				{
 					{ 0.5f, 1.0f, 0.0f }, // top
@@ -193,9 +195,10 @@ private:
 
 			m_pIGraphicsCommandBuffer->SetRenderer(m_pIRenderer);
 			m_pIGraphicsCommandBuffer->SetViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, MIN_DEPTH, MAX_DEPTH);
-			m_pIGraphicsCommandBuffer->SetRenderTarget(CurrentBuffer.hResource, CurrentBuffer.CpuDescriptor);
+			m_pIGraphicsCommandBuffer->SetRenderTarget(CurrentBuffer);
+			m_pIGraphicsCommandBuffer->ClearRenderBuffer(CurrentBuffer, m_ClearColor);
 			m_pIGraphicsCommandBuffer->Render(m_pIMesh);
-			m_pIGraphicsCommandBuffer->Present(CurrentBuffer.hResource);
+			m_pIGraphicsCommandBuffer->Present(CurrentBuffer);
 
 			Status = m_pIGraphicsCommandBuffer->Finalize();
 		}

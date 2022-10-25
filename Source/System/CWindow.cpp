@@ -1,9 +1,8 @@
 #include "CWindow.hpp"
 
-#include <d3d12.h>
-#include <dxgi1_6.h>
-
 #include <strsafe.h>
+
+#include "CSwapChain.hpp"
 
 #undef CreateWindow
 
@@ -41,16 +40,8 @@ CWindow::CWindow(VOID)
 	m_bOpen = FALSE;
 	m_hWnd = NULL;
 	m_hInstance = NULL;
-	m_FrameIndex = 0;
 	
 	ZeroMemory(m_ClassName, sizeof(m_ClassName));
-
-	m_pIDxgiSwapChain = NULL;
-
-	for (UINT i = 0; i < NUM_BUFFERS; i++)
-	{
-		m_pID3D12RenderBuffers[i] = NULL;
-	}
 }
 
 CWindow::~CWindow(VOID)
@@ -134,19 +125,9 @@ BOOL CWindow::Initialize(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidt
 
 VOID CWindow::Uninitialize(VOID)
 {
-	for (UINT32 i = 0; i < NUM_BUFFERS; i++)
+	if (m_pSwapChain != NULL)
 	{
-		if (m_pID3D12RenderBuffers[i] != NULL)
-		{
-			m_pID3D12RenderBuffers[i]->Release();
-			m_pID3D12RenderBuffers[i] = NULL;
-		}
-	}
-
-	if (m_pIDxgiSwapChain != NULL)
-	{
-		m_pIDxgiSwapChain->Release();
-		m_pIDxgiSwapChain = NULL;
+		Console::Write(L"Warning: Window being uninitialized but swap chain not released\n");
 	}
 
 	if (m_hWnd != NULL)
@@ -156,6 +137,11 @@ VOID CWindow::Uninitialize(VOID)
 	}
 
 	UnregisterClass(m_ClassName, m_hInstance);
+
+	m_hCID = 0;
+	m_hInstance = NULL;
+	m_bOpen = FALSE;
+	ZeroMemory(m_ClassName, sizeof(m_ClassName));
 }
 
 HWND CWindow::GetHandle(VOID)
@@ -243,59 +229,43 @@ BOOL CWindow::GetRect(WIN_AREA area, WIN_RECT& rRect)
 	return Status;
 }
 
-UINT CWindow::GetNumBuffers(VOID)
-{
-	return NUM_BUFFERS;
-}
-
-BOOL CWindow::InitializeSwapChain(IDXGISwapChain4* pIDxgiSwapChain)
+BOOL CWindow::SwapChainNotification(SWAPCHAIN_NOTIFICATION Notification, HANDLE hSwapChain)
 {
 	BOOL Status = TRUE;
 
-	m_pIDxgiSwapChain = pIDxgiSwapChain;
-
-	m_FrameIndex = m_pIDxgiSwapChain->GetCurrentBackBufferIndex();
+	switch (Notification)
+	{
+		case SWAPCHAIN_CREATED:
+		{
+			m_pSwapChain = reinterpret_cast<CSwapChain*>(hSwapChain);
+			break;
+		}
+		case SWAPCHAIN_DESTROYED:
+		{
+			m_pSwapChain = NULL;
+			break;
+		}
+		default:
+		{
+			Status = FALSE;
+			Console::Write(L"Error: Invalid swap chain notification event\n");
+			break;
+		}
+	}
 
 	return Status;
-}
-
-RenderBuffer CWindow::GetCurrentRenderBuffer(VOID)
-{
-	RenderBuffer rb = {};
-	rb.hResource = m_pID3D12RenderBuffers[m_FrameIndex];
-	rb.CpuDescriptor = m_RenderBufferCpuDescriptors[m_FrameIndex];
-
-	return rb;
-}
-
-VOID CWindow::SetRenderBuffer(UINT uIndex, ID3D12Resource* pIRenderBuffer, UINT64 CpuDescriptor)
-{
-	m_pID3D12RenderBuffers[uIndex] = pIRenderBuffer;
-	m_RenderBufferCpuDescriptors[uIndex] = CpuDescriptor;
-}
-
-VOID CWindow::ReleaseSwapChain(VOID)
-{
-	if (m_pIDxgiSwapChain != NULL)
-	{
-		m_pIDxgiSwapChain->Release();
-		m_pIDxgiSwapChain = NULL;
-	}
 }
 
 BOOL CWindow::Present(VOID)
 {
 	BOOL Status = TRUE;
-
-	if (m_pIDxgiSwapChain->Present(1, 0) == S_OK)
-	{
-		m_FrameIndex = (m_FrameIndex + 1) % NUM_BUFFERS;
-	}
-	else
-	{
-		Status = FALSE;
-		Console::Write(L"Error: Failed to signal swap chain to present\n");
-	}
-
+	Status = m_pSwapChain->Present();
 	return Status;
+}
+
+RenderBuffer CWindow::GetCurrentRenderBuffer(VOID)
+{
+	RenderBuffer Buffer = {};
+	m_pSwapChain->GetCurrentRenderBuffer(Buffer.hResource, Buffer.CpuDescriptor);
+	return Buffer;
 }

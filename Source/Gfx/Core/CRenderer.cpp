@@ -4,7 +4,7 @@
 
 #include "Wdk.hpp"
 
-BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc)
+BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc)
 {
 	BOOL Status = TRUE;
 

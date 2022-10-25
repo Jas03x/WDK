@@ -172,14 +172,14 @@ VOID CCommandBuffer::SetRenderer(IRenderer* pIRenderer)
 	}
 }
 
-VOID CCommandBuffer::SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor)
+VOID CCommandBuffer::SetRenderTarget(const RenderBuffer& rBuffer)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
-		if ((hResource != NULL) && (CpuDescriptor != 0))
+		if ((rBuffer.hResource != NULL) && (rBuffer.CpuDescriptor != 0))
 		{
-			D3D12_CPU_DESCRIPTOR_HANDLE CpuDescHandle = { CpuDescriptor };
-			ID3D12Resource* pIRenderBuffer = reinterpret_cast<ID3D12Resource*>(hResource);
+			D3D12_CPU_DESCRIPTOR_HANDLE CpuDescHandle = { rBuffer.CpuDescriptor };
+			ID3D12Resource* pIRenderBuffer = reinterpret_cast<ID3D12Resource*>(rBuffer.hResource);
 			
 			D3D12_RESOURCE_BARRIER Barrier = {};
 			Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -201,13 +201,13 @@ VOID CCommandBuffer::SetRenderTarget(HANDLE hResource, UINT64 CpuDescriptor)
 	}
 }
 
-VOID CCommandBuffer::Present(HANDLE hResource)
+VOID CCommandBuffer::Present(const RenderBuffer& rBuffer)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
-		if (hResource != NULL)
+		if (rBuffer.hResource != NULL)
 		{
-			ID3D12Resource* pIRenderBuffer = reinterpret_cast<ID3D12Resource*>(hResource);
+			ID3D12Resource* pIRenderBuffer = reinterpret_cast<ID3D12Resource*>(rBuffer.hResource);
 
 			D3D12_RESOURCE_BARRIER Barrier = {};
 			Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -228,13 +228,13 @@ VOID CCommandBuffer::Present(HANDLE hResource)
 	}
 }
 
-VOID CCommandBuffer::ClearRenderBuffer(UINT64 CpuDescriptor, FLOAT RGBA[])
+VOID CCommandBuffer::ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[])
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
-		if ((CpuDescriptor != 0) && (RGBA != NULL))
+		if ((rBuffer.CpuDescriptor != 0) && (RGBA != NULL))
 		{
-			D3D12_CPU_DESCRIPTOR_HANDLE CpuDescHandle = { CpuDescriptor };
+			D3D12_CPU_DESCRIPTOR_HANDLE CpuDescHandle = { rBuffer.CpuDescriptor };
 
 			m_State = STATE_RECORDING;
 			m_pID3D12CommandList->ClearRenderTargetView(CpuDescHandle, RGBA, 0, NULL);

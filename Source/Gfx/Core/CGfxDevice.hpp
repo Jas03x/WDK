@@ -11,11 +11,11 @@ struct IDXGISwapChain4;
 
 struct ID3D12Debug;
 struct ID3D12Device;
-struct ID3D12DescriptorHeap;
 struct ID3D12Resource;
 struct ID3D12Heap;
 
 class CCommandQueue;
+class CSwapChain;
 
 class CGfxDevice : public IGfxDevice
 {
@@ -39,20 +39,19 @@ private:
 	
 	ID3D12Heap*				   m_pID3D12UploadHeap;
 	ID3D12Heap*				   m_pID3D12PrimaryHeap;
-	ID3D12DescriptorHeap*      m_pID3D12RtvDescriptorHeap;
 
 	CCommandQueue*             m_pCopyQueue;
 	CCommandQueue*             m_pGraphicsQueue;
 
-	ICommandBuffer*            m_pICopyCommandBuffer;
+	CSwapChain*                m_pSwapChain;
 
-	UINT32  				   m_RtvDescriptorIncrement;
+	ICommandBuffer*            m_pICopyCommandBuffer;
 
 public:
 	CGfxDevice(VOID);
 	virtual ~CGfxDevice(VOID);
 
-	BOOL				       Initialize(IWindow* pIWindow, DeviceFactory::Descriptor& rDesc);
+	BOOL				       Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& rDesc);
 	VOID				       Uninitialize(VOID);
 
 private:
@@ -60,7 +59,7 @@ private:
 	BOOL				       PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter);
 	BOOL				       PrintDeviceProperties(VOID);
 
-	BOOL                       InitializeHeaps(DeviceFactory::Descriptor& rDesc);
+	BOOL                       InitializeHeaps(const DeviceFactory::Descriptor& rDesc);
 	BOOL                       InitializeSwapChain(VOID);
 
 	ICommandQueue*             CreateCommandQueue(COMMAND_QUEUE_TYPE Type);
@@ -70,7 +69,7 @@ public:
 	virtual ICommandBuffer*    CreateCommandBuffer(COMMAND_BUFFER_TYPE Type);
 	virtual VOID               DestroyCommandBuffer(ICommandBuffer* pICommandBuffer);
 
-	virtual IRenderer*         CreateRenderer(const RENDERER_DESC& rDesc);
+	virtual IRenderer*         CreateRenderer(CONST RENDERER_DESC& rDesc);
 	virtual VOID               DestroyRenderer(IRenderer* pIRenderer);
 
 	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc);

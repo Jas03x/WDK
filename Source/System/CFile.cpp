@@ -8,7 +8,7 @@ File* File::Open(PCWCHAR Path)
 	return static_cast<File*>(CFile::Open(Path));
 }
 
-File* File::Open(const FILE_PATH& Path)
+File* File::Open(CONST FILE_PATH& Path)
 {
 	BOOL Status = TRUE;
 	File* pFile = NULL;

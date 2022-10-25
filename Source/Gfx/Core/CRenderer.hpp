@@ -24,7 +24,7 @@ public:
 	ID3D12RootSignature* GetD3D12RootSignature(VOID);
 };
 
-BOOL ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc);
+BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc);
 VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
 
 #endif // WDK_CRENDERER_HPP

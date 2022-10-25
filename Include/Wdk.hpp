@@ -34,7 +34,7 @@ public:
 	};
 
 	static File* Open(PCWCHAR Path);
-	static File* Open(const FILE_PATH& Path);
+	static File* Open(CONST FILE_PATH& Path);
 
 	static VOID   Close(File* pIFile);
 
