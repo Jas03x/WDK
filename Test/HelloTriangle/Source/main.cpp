@@ -114,16 +114,16 @@ public:
 			static CONST Vertex Vertices[] =
 			{
 				{
-					{ 0.5f, 1.0f, 0.0f }, // top
-					{ 1.0f, 0.0f, 0.0f }  // red
+					{  1.0f, -1.0f,  0.0f }, // right
+					{  0.0f,  1.0f,  0.0f }  // green
 				},
 				{
-					{ 0.0f, 0.0f, 0.0f }, // left
-					{ 0.0f, 0.0f, 1.0f }  // blue
+					{ -1.0f, -1.0f,  0.0f }, // left
+					{  0.0f,  0.0f,  1.0f }  // blue
 				},
 				{
-					{ 1.0f, 0.0f, 0.0f }, // right
-					{ 0.0f, 1.0f, 0.0f }  // green
+					{  0.0f,  1.0f,  0.0f }, // top
+					{  1.0f,  0.0f,  0.0f }  // red
 				}
 			};
 
