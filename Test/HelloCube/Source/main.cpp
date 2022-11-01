@@ -5,8 +5,8 @@
 
 #include <vector>
 
-CONST PCWCHAR WINDOW_CLASS = L"HelloTriangle";
-CONST PCWCHAR WINDOW_TITLE = L"Hello Triangle";
+CONST PCWCHAR WINDOW_CLASS = L"HelloCube";
+CONST PCWCHAR WINDOW_TITLE = L"Hello Cube";
 CONST ULONG WINDOW_HEIGHT  = 512;
 CONST ULONG WINDOW_WIDTH   = 512;
 
@@ -105,34 +105,142 @@ public:
 
 		if (Status == TRUE)
 		{
+			/*
+			*      4 ______________ 5
+			*       /|            /|
+			*      / |           / |
+			*   0 /__|__________/1 |
+			*     |  |          |  |
+			*     |  |__________|__|
+			*     |  /6         | 7/
+			*     | /           | /
+			*     |/____________|/
+			*   2                3
+			* 
+			* 0: (-0.5, +0.5, +0.5)
+			* 1: (+0.5, +0.5, +0.5)
+			* 2: (-0.5, -0.5, +0.5)
+			* 3: (+0.5, -0.5, +0.5)
+			* 4: (-0.5, +0.5, -0.5)
+			* 5: (+0.5, +0.5, -0.5)
+			* 6: (-0.5, -0.5, -0.5)
+			* 7: (+0.5, -0.5, -0.5)
+			*/
+
 			struct Vertex
 			{
 				float vertex[3];
 				float colour[3];
 			};
 
-			static CONST Vertex Vertices[] =
+			struct Face
 			{
+				UINT vertices[6];
+				UINT colour;
+			};
+
+			static CONST FLOAT Vertices[][3] =
+			{
+				{ -0.5, +0.5, +0.5 },
+				{ +0.5, +0.5, +0.5 },
+				{ -0.5, -0.5, +0.5 },
+				{ +0.5, -0.5, +0.5 },
+				{ -0.5, +0.5, -0.5 },
+				{ +0.5, +0.5, -0.5 },
+				{ -0.5, -0.5, -0.5 },
+				{ +0.5, -0.5, -0.5 }
+			};
+
+			static CONST FLOAT Colours[][3] =
+			{
+				{ 1.0, 0.0, 0.0 }, // Red
+				{ 0.0, 1.0, 0.0 }, // Green
+				{ 0.0, 0.0, 1.0 }, // Blue
+				{ 1.0, 1.0, 0.0 }, // Yellow
+				{ 1.0, 0.5, 0.0 }, // Orange
+				{ 1.0, 1.0, 1.0 }  // White
+			};
+
+			static CONST Face Faces[] =
+			{
+				// Front:
 				{
-					{  1.0f, -1.0f,  0.0f }, // right
-					{  0.0f,  1.0f,  0.0f }  // green
+					{
+						0, 1, 2,
+						3, 2, 1
+					},
+					0
 				},
+
+				// Back:
 				{
-					{ -1.0f, -1.0f,  0.0f }, // left
-					{  0.0f,  0.0f,  1.0f }  // blue
+					{
+						4, 5, 6,
+						5, 6, 7
+					},
+					1
 				},
+
+				// Right:
 				{
-					{  0.0f,  1.0f,  0.0f }, // top
-					{  1.0f,  0.0f,  0.0f }  // red
+					{
+						1, 3, 7,
+						1, 5, 7
+					},
+					2
+				},
+
+				// Left:
+				{
+					{
+						0, 2, 4,
+						0, 4, 6
+					},
+					3
+				},
+
+				// Top:
+				{
+					{
+						0, 1, 4,
+						1, 4, 5
+					},
+					4
+				},
+
+				// Bottom:
+				{
+					{
+						2, 3, 6,
+						3, 6, 7
+					},
+					5
 				}
 			};
 
-			MESH_DESC MeshDesc = {};
-			MeshDesc.BufferSize = sizeof(Vertices);
-			MeshDesc.Stride = sizeof(Vertex);
-			MeshDesc.NumVertices = sizeof(Vertices) / sizeof(Vertex);
+			Vertex VertexArray[_countof(Faces) * 6] = {};
 
-			m_pIMesh = m_pIGfxDevice->CreateMesh(Vertices, MeshDesc);
+			for (UINT i = 0; i < _countof(Faces); i++)
+			{
+				for (UINT j = 0; j < 6; j++)
+				{
+					Vertex& v = VertexArray[i * _countof(Faces) + j];
+
+					v.vertex[0] = Vertices[Faces[i].vertices[j]][0];
+					v.vertex[1] = Vertices[Faces[i].vertices[j]][1];
+					v.vertex[2] = Vertices[Faces[i].vertices[j]][2];
+					v.colour[0] = Colours[Faces[i].colour][0];
+					v.colour[1] = Colours[Faces[i].colour][1];
+					v.colour[2] = Colours[Faces[i].colour][2];
+				}
+			}
+
+			MESH_DESC MeshDesc = {};
+			MeshDesc.BufferSize = sizeof(VertexArray);
+			MeshDesc.Stride = sizeof(Vertex);
+			MeshDesc.NumVertices = sizeof(VertexArray) / sizeof(Vertex);
+
+			m_pIMesh = m_pIGfxDevice->CreateMesh(VertexArray, MeshDesc);
 
 			if (m_pIMesh == NULL)
 			{
