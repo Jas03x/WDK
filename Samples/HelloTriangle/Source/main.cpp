@@ -5,8 +5,8 @@
 
 #include <vector>
 
-CONST PCWCHAR WINDOW_CLASS = L"HelloCube";
-CONST PCWCHAR WINDOW_TITLE = L"Hello Cube";
+CONST PCWCHAR WINDOW_CLASS = L"HelloTriangle";
+CONST PCWCHAR WINDOW_TITLE = L"Hello Triangle";
 CONST ULONG WINDOW_HEIGHT  = 512;
 CONST ULONG WINDOW_WIDTH   = 512;
 
@@ -15,7 +15,7 @@ class HelloTriangle
 private:
 	IWindow*        m_pIWindow;
 	IGfxDevice*     m_pIGfxDevice;
-	IRenderer*      m_pIRenderer;
+	IRendererState* m_pIRendererState;
 	IMesh*          m_pIMesh;
 	ICommandBuffer* m_pIGraphicsCommandBuffer;
 
@@ -26,7 +26,7 @@ public:
 	{
 		m_pIWindow = NULL;
 		m_pIGfxDevice = NULL;
-		m_pIRenderer = NULL;
+		m_pIRendererState = NULL;
 		m_pIMesh = NULL;
 		m_pIGraphicsCommandBuffer = NULL;
 	}
@@ -67,7 +67,7 @@ public:
 
 		if (Status == TRUE)
 		{
-			RENDERER_DESC desc = {};
+			RENDERER_STATE_DESC Desc = {};
 
 			INPUT_ELEMENT_DESC InputElements[] =
 			{
@@ -75,21 +75,21 @@ public:
 				{ INPUT_ELEMENT_COLOR,    0, INPUT_ELEMENT_FORMAT_RGB_32F, 0, sizeof(FLOAT) * 3, INPUT_ELEMENT_TYPE_PER_VERTEX, 0 },
 			};
 
-			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/VertexShader.cso"), desc.VertexShader);
-			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/PixelShader.cso"),  desc.PixelShader);
+			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/VertexShader.cso"), Desc.VertexShader);
+			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/PixelShader.cso"),  Desc.PixelShader);
 
-			desc.InputLayout.pInputElements = InputElements;
-			desc.InputLayout.NumInputs = sizeof(InputElements) / sizeof(INPUT_ELEMENT_DESC);
+			Desc.InputLayout.pInputElements = InputElements;
+			Desc.InputLayout.NumInputs = sizeof(InputElements) / sizeof(INPUT_ELEMENT_DESC);
 
-			m_pIRenderer = m_pIGfxDevice->CreateRenderer(desc);
-			if (m_pIRenderer == NULL)
+			m_pIRendererState = m_pIGfxDevice->CreateRendererState(Desc);
+			if (m_pIRendererState == NULL)
 			{
 				Status = FALSE;
 				Console::Write(L"Error: Could not initialize renderer\n");
 			}
 
-			ReleaseShaderBytecode(desc.VertexShader);
-			ReleaseShaderBytecode(desc.PixelShader);
+			ReleaseShaderBytecode(Desc.VertexShader);
+			ReleaseShaderBytecode(Desc.PixelShader);
 		}
 
 		if (Status == TRUE)
@@ -105,142 +105,34 @@ public:
 
 		if (Status == TRUE)
 		{
-			/*
-			*      4 ______________ 5
-			*       /|            /|
-			*      / |           / |
-			*   0 /__|__________/1 |
-			*     |  |          |  |
-			*     |  |__________|__|
-			*     |  /6         | 7/
-			*     | /           | /
-			*     |/____________|/
-			*   2                3
-			* 
-			* 0: (-0.5, +0.5, +0.5)
-			* 1: (+0.5, +0.5, +0.5)
-			* 2: (-0.5, -0.5, +0.5)
-			* 3: (+0.5, -0.5, +0.5)
-			* 4: (-0.5, +0.5, -0.5)
-			* 5: (+0.5, +0.5, -0.5)
-			* 6: (-0.5, -0.5, -0.5)
-			* 7: (+0.5, -0.5, -0.5)
-			*/
-
 			struct Vertex
 			{
 				float vertex[3];
 				float colour[3];
 			};
 
-			struct Face
+			static CONST Vertex Vertices[] =
 			{
-				UINT vertices[6];
-				UINT colour;
-			};
-
-			static CONST FLOAT Vertices[][3] =
-			{
-				{ -0.5, +0.5, +0.5 },
-				{ +0.5, +0.5, +0.5 },
-				{ -0.5, -0.5, +0.5 },
-				{ +0.5, -0.5, +0.5 },
-				{ -0.5, +0.5, -0.5 },
-				{ +0.5, +0.5, -0.5 },
-				{ -0.5, -0.5, -0.5 },
-				{ +0.5, -0.5, -0.5 }
-			};
-
-			static CONST FLOAT Colours[][3] =
-			{
-				{ 1.0, 0.0, 0.0 }, // Red
-				{ 0.0, 1.0, 0.0 }, // Green
-				{ 0.0, 0.0, 1.0 }, // Blue
-				{ 1.0, 1.0, 0.0 }, // Yellow
-				{ 1.0, 0.5, 0.0 }, // Orange
-				{ 1.0, 1.0, 1.0 }  // White
-			};
-
-			static CONST Face Faces[] =
-			{
-				// Front:
 				{
-					{
-						0, 1, 2,
-						3, 2, 1
-					},
-					0
+					{  1.0f, -1.0f,  0.0f }, // right
+					{  0.0f,  1.0f,  0.0f }  // green
 				},
-
-				// Back:
 				{
-					{
-						4, 5, 6,
-						5, 6, 7
-					},
-					1
+					{ -1.0f, -1.0f,  0.0f }, // left
+					{  0.0f,  0.0f,  1.0f }  // blue
 				},
-
-				// Right:
 				{
-					{
-						1, 3, 7,
-						1, 5, 7
-					},
-					2
-				},
-
-				// Left:
-				{
-					{
-						0, 2, 4,
-						0, 4, 6
-					},
-					3
-				},
-
-				// Top:
-				{
-					{
-						0, 1, 4,
-						1, 4, 5
-					},
-					4
-				},
-
-				// Bottom:
-				{
-					{
-						2, 3, 6,
-						3, 6, 7
-					},
-					5
+					{  0.0f,  1.0f,  0.0f }, // top
+					{  1.0f,  0.0f,  0.0f }  // red
 				}
 			};
-
-			Vertex VertexArray[_countof(Faces) * 6] = {};
-
-			for (UINT i = 0; i < _countof(Faces); i++)
-			{
-				for (UINT j = 0; j < 6; j++)
-				{
-					Vertex& v = VertexArray[i * _countof(Faces) + j];
-
-					v.vertex[0] = Vertices[Faces[i].vertices[j]][0];
-					v.vertex[1] = Vertices[Faces[i].vertices[j]][1];
-					v.vertex[2] = Vertices[Faces[i].vertices[j]][2];
-					v.colour[0] = Colours[Faces[i].colour][0];
-					v.colour[1] = Colours[Faces[i].colour][1];
-					v.colour[2] = Colours[Faces[i].colour][2];
-				}
-			}
 
 			MESH_DESC MeshDesc = {};
-			MeshDesc.BufferSize = sizeof(VertexArray);
+			MeshDesc.BufferSize = sizeof(Vertices);
 			MeshDesc.Stride = sizeof(Vertex);
-			MeshDesc.NumVertices = sizeof(VertexArray) / sizeof(Vertex);
+			MeshDesc.NumVertices = sizeof(Vertices) / sizeof(Vertex);
 
-			m_pIMesh = m_pIGfxDevice->CreateMesh(VertexArray, MeshDesc);
+			m_pIMesh = m_pIGfxDevice->CreateMesh(Vertices, MeshDesc);
 
 			if (m_pIMesh == NULL)
 			{
@@ -271,10 +163,10 @@ public:
 			m_pIGraphicsCommandBuffer = NULL;
 		}
 
-		if (m_pIRenderer != NULL)
+		if (m_pIRendererState != NULL)
 		{
-			m_pIGfxDevice->DestroyRenderer(m_pIRenderer);
-			m_pIRenderer = NULL;
+			m_pIGfxDevice->DestroyRendererState(m_pIRendererState);
+			m_pIRendererState = NULL;
 		}
 
 		if (m_pIGfxDevice != NULL)
@@ -301,10 +193,11 @@ private:
 		{
 			RenderBuffer CurrentBuffer = m_pIWindow->GetCurrentRenderBuffer();
 
-			m_pIGraphicsCommandBuffer->SetRenderer(m_pIRenderer);
 			m_pIGraphicsCommandBuffer->SetViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT, MIN_DEPTH, MAX_DEPTH);
 			m_pIGraphicsCommandBuffer->SetRenderTarget(CurrentBuffer);
 			m_pIGraphicsCommandBuffer->ClearRenderBuffer(CurrentBuffer, m_ClearColor);
+			
+			m_pIGraphicsCommandBuffer->ProgramPipeline(m_pIRendererState);
 			m_pIGraphicsCommandBuffer->Render(m_pIMesh);
 			m_pIGraphicsCommandBuffer->Present(CurrentBuffer);
 

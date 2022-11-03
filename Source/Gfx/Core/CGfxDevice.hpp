@@ -69,8 +69,8 @@ public:
 	virtual ICommandBuffer*    CreateCommandBuffer(COMMAND_BUFFER_TYPE Type);
 	virtual VOID               DestroyCommandBuffer(ICommandBuffer* pICommandBuffer);
 
-	virtual IRenderer*         CreateRenderer(CONST RENDERER_DESC& rDesc);
-	virtual VOID               DestroyRenderer(IRenderer* pIRenderer);
+	virtual IRendererState*    CreateRendererState(CONST RENDERER_STATE_DESC& rDesc);
+	virtual VOID               DestroyRendererState(IRendererState* pIRendererState);
 
 	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc);
 	virtual VOID               DestroyMesh(IMesh* pIMesh);

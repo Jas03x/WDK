@@ -35,7 +35,7 @@ public:
 	virtual VOID               Present(const RenderBuffer& rBuffer);
 	virtual VOID               Render(IMesh* pIMesh);
 	virtual VOID               SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth);
-	virtual VOID               SetRenderer(IRenderer* pIRenderer);
+	virtual VOID               ProgramPipeline(IRendererState* pIRendererState);
 	virtual VOID               SetRenderTarget(const RenderBuffer& rBuffer);
 
 	virtual BOOL               Finalize(VOID);

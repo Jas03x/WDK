@@ -59,7 +59,7 @@
     <ClInclude Include="Source\Math\CMath.hpp">
       <Filter>Source\Math</Filter>
     </ClInclude>
-    <ClInclude Include="Source\Gfx\Core\CRenderer.hpp">
+    <ClInclude Include="Source\Gfx\Core\CRendererState.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
     <ClInclude Include="Source\System\CFile.hpp">
@@ -103,7 +103,7 @@
     <ClCompile Include="Source\Math\CMath.cpp">
       <Filter>Source\Math</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Gfx\Core\CRenderer.cpp">
+    <ClCompile Include="Source\Gfx\Core\CRendererState.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
     <ClCompile Include="Source\System\CFile.cpp">

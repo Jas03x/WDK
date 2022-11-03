@@ -1,4 +1,4 @@
-#include "CRenderer.hpp"
+#include "CRendererState.hpp"
 
 #include <d3d12.h>
 
@@ -44,17 +44,17 @@ VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc)
 	rDesc.Size = 0;
 }
 
-CRenderer::CRenderer(VOID)
+CRendererState::CRendererState(VOID)
 {
 	m_pID3D12PipelineState = NULL;
 	m_pID3D12RootSignature = NULL;
 }
 
-CRenderer::~CRenderer(VOID)
+CRendererState::~CRendererState(VOID)
 {
 }
 
-BOOL CRenderer::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState)
+BOOL CRendererState::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState)
 {
 	BOOL Status = TRUE;
 
@@ -72,7 +72,7 @@ BOOL CRenderer::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineS
 	return Status;
 }
 
-VOID CRenderer::Uninitialize(VOID)
+VOID CRendererState::Uninitialize(VOID)
 {
 	if (m_pID3D12PipelineState != NULL)
 	{
@@ -87,12 +87,12 @@ VOID CRenderer::Uninitialize(VOID)
 	}
 }
 
-ID3D12PipelineState* CRenderer::GetD3D12PipelineState(VOID)
+ID3D12PipelineState* CRendererState::GetD3D12PipelineState(VOID)
 {
 	return m_pID3D12PipelineState;
 }
 
-ID3D12RootSignature* CRenderer::GetD3D12RootSignature(VOID)
+ID3D12RootSignature* CRendererState::GetD3D12RootSignature(VOID)
 {
 	return m_pID3D12RootSignature;
 }

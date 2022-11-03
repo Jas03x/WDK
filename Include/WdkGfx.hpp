@@ -18,7 +18,7 @@ struct RenderBuffer
 };
 #endif // WDK_RENDER_BUFFER
 
-// IRenderer
+// IRendererState
 struct SHADER_BYTECODE
 {
 	BYTE* pCode;
@@ -67,14 +67,14 @@ struct INPUT_BUFFER_LAYOUT
 	UINT                NumInputs;
 };
 
-struct RENDERER_DESC
+struct RENDERER_STATE_DESC
 {
 	SHADER_BYTECODE     VertexShader;
 	SHADER_BYTECODE     PixelShader;
 	INPUT_BUFFER_LAYOUT InputLayout;
 };
 
-class __declspec(novtable) IRenderer
+class __declspec(novtable) IRendererState
 {
 public:
 };
@@ -112,7 +112,7 @@ public:
 	virtual VOID Present(const RenderBuffer& rBuffer) = 0;
 	virtual VOID Render(IMesh* pIMesh) = 0;
 	virtual VOID SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth) = 0;
-	virtual VOID SetRenderer(IRenderer* pIRenderer) = 0;
+	virtual VOID ProgramPipeline(IRendererState* pIRendererState) = 0;
 	virtual VOID SetRenderTarget(const RenderBuffer& rBuffer) = 0;
 
 	virtual BOOL Finalize(VOID) = 0;
@@ -141,8 +141,8 @@ public:
 	virtual ICommandBuffer* CreateCommandBuffer(COMMAND_BUFFER_TYPE Type) = 0;
 	virtual VOID            DestroyCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
 
-	virtual IRenderer*      CreateRenderer(CONST RENDERER_DESC& rDesc) = 0;
-	virtual VOID            DestroyRenderer(IRenderer* pIRenderer) = 0;
+	virtual IRendererState* CreateRendererState(CONST RENDERER_STATE_DESC& rDesc) = 0;
+	virtual VOID            DestroyRendererState(IRendererState* pIRendererState) = 0;
 
 	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc) = 0;
 	virtual VOID            DestroyMesh(IMesh* pIMesh) = 0;

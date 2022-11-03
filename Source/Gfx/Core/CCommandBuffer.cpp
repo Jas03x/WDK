@@ -5,7 +5,7 @@
 #include "Wdk.hpp"
 
 #include "CMesh.hpp"
-#include "CRenderer.hpp"
+#include "CRendererState.hpp"
 
 CCommandBuffer::CCommandBuffer(VOID)
 {
@@ -152,13 +152,13 @@ VOID CCommandBuffer::SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth
 	}
 }
 
-VOID CCommandBuffer::SetRenderer(IRenderer* pIRenderer)
+VOID CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
-		if (pIRenderer != NULL)
+		if (pIRendererState != NULL)
 		{
-			CRenderer* pCRenderer = static_cast<CRenderer*>(pIRenderer);
+			CRendererState* pCRenderer = static_cast<CRendererState*>(pIRendererState);
 
 			m_State = STATE_RECORDING;
 			m_pID3D12CommandList->SetPipelineState(pCRenderer->GetD3D12PipelineState());

@@ -11,7 +11,7 @@
 #include "CCommandBuffer.hpp"
 #include "CCommandQueue.hpp"
 #include "CMesh.hpp"
-#include "CRenderer.hpp"
+#include "CRendererState.hpp"
 #include "CSwapChain.hpp"
 #include "CWindow.hpp"
 
@@ -53,6 +53,9 @@ CGfxDevice::CGfxDevice(VOID)
 
 	m_pIDxgiFactory = NULL;
 	m_pIDxgiAdapter = NULL;
+
+	m_pIWindow = NULL;
+	m_pSwapChain = NULL;
 
 	m_pID3D12Device = NULL;
 	m_pID3D12UploadHeap = NULL;
@@ -805,13 +808,13 @@ VOID CGfxDevice::DestroyCommandQueue(ICommandQueue* pICommandQueue)
 	}
 }
 
-IRenderer* CGfxDevice::CreateRenderer(CONST RENDERER_DESC& rDesc)
+IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc)
 {
 	BOOL Status = TRUE;
 
-	IRenderer* pIRenderer = NULL;
-	ID3D12PipelineState* pIPipelineState = NULL;
-	ID3D12RootSignature* pIRootSignature = NULL;
+	IRendererState* pIRendererState = NULL;
+	ID3D12PipelineState* pID3D12PipelineState = NULL;
+	ID3D12RootSignature* pID3D12RootSignature = NULL;
 	D3D12_INPUT_ELEMENT_DESC InputElementDescs[MAX_INPUT_ELEMENTS] = {};
 	
 	if (rDesc.InputLayout.NumInputs <= MAX_INPUT_ELEMENTS)
@@ -862,7 +865,7 @@ IRenderer* CGfxDevice::CreateRenderer(CONST RENDERER_DESC& rDesc)
 
 		if (D3D12SerializeRootSignature(&desc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignature, &pError) == S_OK)
 		{
-			if (m_pID3D12Device->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&pIRootSignature)) != S_OK)
+			if (m_pID3D12Device->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&pID3D12RootSignature)) != S_OK)
 			{
 				Console::Write(L"Error: Could not create root signature\n");
 				Status = FALSE;
@@ -899,7 +902,7 @@ IRenderer* CGfxDevice::CreateRenderer(CONST RENDERER_DESC& rDesc)
 		ZeroMemory(&Desc, sizeof(Desc));
 
 		// Root Signature
-		Desc.pRootSignature     = pIRootSignature;
+		Desc.pRootSignature     = pID3D12RootSignature;
 
 		// Vertex Shader
 		Desc.VS.pShaderBytecode = rDesc.VertexShader.pCode;
@@ -1009,7 +1012,7 @@ IRenderer* CGfxDevice::CreateRenderer(CONST RENDERER_DESC& rDesc)
 		
 		Desc.Flags                           = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-		if (m_pID3D12Device->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<VOID**>(&pIPipelineState)) != S_OK)
+		if (m_pID3D12Device->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<VOID**>(&pID3D12PipelineState)) != S_OK)
 		{
 			Status = false;
 			Console::Write(L"Error: Failed to create graphics pipeline state object\n");
@@ -1018,32 +1021,32 @@ IRenderer* CGfxDevice::CreateRenderer(CONST RENDERER_DESC& rDesc)
 
 	if (Status == TRUE)
 	{
-		pIRenderer = new CRenderer();
-		if (pIRenderer != NULL)
+		pIRendererState = new CRendererState();
+		if (pIRendererState != NULL)
 		{
-			if (static_cast<CRenderer*>(pIRenderer)->Initialize(pIRootSignature, pIPipelineState) == FALSE)
+			if (static_cast<CRendererState*>(pIRendererState)->Initialize(pID3D12RootSignature, pID3D12PipelineState) == FALSE)
 			{
-				DestroyRenderer(pIRenderer);
-				pIRenderer = NULL;
+				DestroyRendererState(pIRendererState);
+				pIRendererState = NULL;
 			}
 		}
 		else
 		{
-			pIPipelineState->Release();
-			pIRootSignature->Release();
+			pID3D12PipelineState->Release();
+			pID3D12RootSignature->Release();
 		}
 	}
 
-	return pIRenderer;
+	return pIRendererState;
 }
 
-VOID CGfxDevice::DestroyRenderer(IRenderer* pIRenderer)
+VOID CGfxDevice::DestroyRendererState(IRendererState* pIRendererState)
 {
-	CRenderer* pRenderer = static_cast<CRenderer*>(pIRenderer);
-	if (pRenderer != NULL)
+	CRendererState* pRendererState = static_cast<CRendererState*>(pIRendererState);
+	if (pRendererState != NULL)
 	{
-		pRenderer->Uninitialize();
-		delete pRenderer;
+		pRendererState->Uninitialize();
+		delete pRendererState;
 	}
 }
 
