@@ -166,6 +166,7 @@
     <ClInclude Include="Include\WdkSystem.hpp" />
     <ClInclude Include="Source\Gfx\Core\CCommandBuffer.hpp" />
     <ClInclude Include="Source\Gfx\Core\CCommandQueue.hpp" />
+    <ClInclude Include="Source\Gfx\Core\CConstantBuffer.hpp" />
     <ClInclude Include="Source\Gfx\Core\CGfxDevice.hpp" />
     <ClInclude Include="Source\Gfx\Core\CMesh.hpp" />
     <ClInclude Include="Source\Gfx\Core\CRendererState.hpp" />
@@ -181,6 +182,7 @@
   <ItemGroup>
     <ClCompile Include="Source\Gfx\Core\CCommandBuffer.cpp" />
     <ClCompile Include="Source\Gfx\Core\CCommandQueue.cpp" />
+    <ClCompile Include="Source\Gfx\Core\CConstantBuffer.cpp" />
     <ClCompile Include="Source\Gfx\Core\CGfxDevice.cpp" />
     <ClCompile Include="Source\Gfx\Core\CMesh.cpp" />
     <ClCompile Include="Source\Gfx\Core\CRendererState.cpp" />

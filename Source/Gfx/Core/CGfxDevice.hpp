@@ -1,7 +1,6 @@
 #ifndef WDK_CGFX_DEVICE_HPP
 #define WDK_CGFX_DEVICE_HPP
 
-#include "Wdk.hpp"
 #include "WdkGfx.hpp"
 
 struct IDXGIDebug;
@@ -13,6 +12,7 @@ struct ID3D12Debug;
 struct ID3D12Device;
 struct ID3D12Resource;
 struct ID3D12Heap;
+struct ID3D12DescriptorHeap;
 
 class CCommandQueue;
 class CSwapChain;
@@ -39,6 +39,9 @@ private:
 	
 	ID3D12Heap*				   m_pID3D12UploadHeap;
 	ID3D12Heap*				   m_pID3D12PrimaryHeap;
+	ID3D12Heap*                m_pID3D12ConstantBufferHeap;
+
+	ID3D12DescriptorHeap*      m_pID3D12ConstantBufferDescriptorHeap;
 
 	CCommandQueue*             m_pCopyQueue;
 	CCommandQueue*             m_pGraphicsQueue;
@@ -60,6 +63,7 @@ private:
 	BOOL				       PrintDeviceProperties(VOID);
 
 	BOOL                       InitializeHeaps(const DeviceFactory::Descriptor& rDesc);
+	BOOL                       InitializeDescriptorHeaps(VOID);
 	BOOL                       InitializeSwapChain(VOID);
 
 	ICommandQueue*             CreateCommandQueue(COMMAND_QUEUE_TYPE Type);
@@ -71,6 +75,9 @@ public:
 
 	virtual IRendererState*    CreateRendererState(CONST RENDERER_STATE_DESC& rDesc);
 	virtual VOID               DestroyRendererState(IRendererState* pIRendererState);
+
+	virtual IConstantBuffer*   CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc);
+	virtual VOID               DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer);
 
 	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc);
 	virtual VOID               DestroyMesh(IMesh* pIMesh);

@@ -82,12 +82,23 @@ public:
 BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc);
 VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
 
+// IConstantBuffer
+struct CONSTANT_BUFFER_DESC
+{
+	UINT Size;
+};
+
+class __declspec(novtable) IConstantBuffer
+{
+public:
+};
+
 // IMesh
 struct MESH_DESC
 {
-	UINT        BufferSize;
-	UINT        Stride;
-	UINT        NumVertices;
+	UINT BufferSize;
+	UINT Stride;
+	UINT NumVertices;
 };
 
 class __declspec(novtable) IMesh
@@ -138,17 +149,20 @@ public:
 class __declspec(novtable) IGfxDevice
 {
 public:
-	virtual ICommandBuffer* CreateCommandBuffer(COMMAND_BUFFER_TYPE Type) = 0;
-	virtual VOID            DestroyCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
+	virtual ICommandBuffer*  CreateCommandBuffer(COMMAND_BUFFER_TYPE Type) = 0;
+	virtual VOID             DestroyCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
 
-	virtual IRendererState* CreateRendererState(CONST RENDERER_STATE_DESC& rDesc) = 0;
-	virtual VOID            DestroyRendererState(IRendererState* pIRendererState) = 0;
+	virtual IRendererState*  CreateRendererState(CONST RENDERER_STATE_DESC& rDesc) = 0;
+	virtual VOID             DestroyRendererState(IRendererState* pIRendererState) = 0;
 
-	virtual IMesh*          CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc) = 0;
-	virtual VOID            DestroyMesh(IMesh* pIMesh) = 0;
+	virtual IConstantBuffer* CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc) = 0;
+	virtual VOID             DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer) = 0;
 
-	virtual BOOL            SubmitCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
-	virtual BOOL            SyncQueue(COMMAND_QUEUE_TYPE Type) = 0;
+	virtual IMesh*           CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc) = 0;
+	virtual VOID             DestroyMesh(IMesh* pIMesh) = 0;
+
+	virtual BOOL             SubmitCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;
+	virtual BOOL             SyncQueue(COMMAND_QUEUE_TYPE Type) = 0;
 };
 
 // Device Factory
@@ -159,6 +173,7 @@ public:
 	{
 		UINT64 UploadHeapSize;
 		UINT64 PrimaryHeapSize;
+		UINT64 ConstantBufferHeapSize;
 	};
 
 	static IGfxDevice* CreateInstance(IWindow* pIWindow, const Descriptor& rDesc);

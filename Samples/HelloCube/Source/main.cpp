@@ -23,13 +23,16 @@ private:
 		BYTE Padding[256]; // needs to be aligned to 256 bytes
 	};
 
-	IWindow*        m_pIWindow;
-	IGfxDevice*     m_pIGfxDevice;
-	IRendererState* m_pIRendererState;
-	IMesh*          m_pIMesh;
-	ICommandBuffer* m_pIGraphicsCommandBuffer;
+	IWindow*         m_pIWindow;
+	IGfxDevice*      m_pIGfxDevice;
 
-	CONST FLOAT     m_ClearColor[4] = { 0, 0, 0, 0 };
+	IConstantBuffer* m_pIConstantBuffer;
+	IRendererState*  m_pIRendererState;
+	ICommandBuffer*  m_pIGraphicsCommandBuffer;
+
+	IMesh*           m_pIMesh;
+
+	CONST FLOAT      m_ClearColor[4] = { 0, 0, 0, 0 };
 
 public:
 	HelloCube()
@@ -39,6 +42,7 @@ public:
 		m_pIRendererState = NULL;
 		m_pIMesh = NULL;
 		m_pIGraphicsCommandBuffer = NULL;
+		m_pIConstantBuffer = NULL;
 	}
 
 	BOOL Initialize(VOID)
@@ -61,6 +65,7 @@ public:
 			DeviceFactory::Descriptor GfxDeviceDesc = {};
 			GfxDeviceDesc.UploadHeapSize = static_cast<UINT64>(64U * MB);
 			GfxDeviceDesc.PrimaryHeapSize = static_cast<UINT64>(64U * MB);
+			GfxDeviceDesc.ConstantBufferHeapSize = static_cast<UINT64>(64U * MB);
 
 			m_pIGfxDevice = DeviceFactory::CreateInstance(m_pIWindow, GfxDeviceDesc);
 			if (m_pIGfxDevice == NULL)
@@ -110,6 +115,20 @@ public:
 			{
 				Status = FALSE;
 				Console::Write(L"Error: could not create graphics command buffer\n");
+			}
+		}
+
+		if (Status == TRUE)
+		{
+			CONSTANT_BUFFER_DESC Desc = {};
+			Desc.Size = sizeof(ConstantBuffer);
+
+			m_pIConstantBuffer = m_pIGfxDevice->CreateConstantBuffer(Desc);
+
+			if (m_pIConstantBuffer == NULL)
+			{
+				Status = FALSE;
+				Console::Write(L"Error: could not create constant buffer\n");
 			}
 		}
 
@@ -273,6 +292,12 @@ public:
 		{
 			m_pIGfxDevice->DestroyMesh(m_pIMesh);
 			m_pIMesh = NULL;
+		}
+
+		if (m_pIConstantBuffer != NULL)
+		{
+			m_pIGfxDevice->DestroyConstantBuffer(m_pIConstantBuffer);
+			m_pIConstantBuffer = NULL;
 		}
 
 		if (m_pIGraphicsCommandBuffer != NULL)
