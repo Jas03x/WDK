@@ -10,7 +10,7 @@ CONST PCWCHAR WINDOW_TITLE = L"Hello Cube";
 CONST ULONG WINDOW_HEIGHT  = 512;
 CONST ULONG WINDOW_WIDTH   = 512;
 
-class CubeRenderer
+class HelloCube
 {
 private:
 	union ConstantBuffer
@@ -23,12 +23,6 @@ private:
 		BYTE Padding[256]; // needs to be aligned to 256 bytes
 	};
 
-	IRendererState* m_pIRendererState;
-};
-
-class HelloTriangle
-{
-private:
 	IWindow*        m_pIWindow;
 	IGfxDevice*     m_pIGfxDevice;
 	IRendererState* m_pIRendererState;
@@ -38,7 +32,7 @@ private:
 	CONST FLOAT     m_ClearColor[4] = { 0, 0, 0, 0 };
 
 public:
-	HelloTriangle()
+	HelloCube()
 	{
 		m_pIWindow = NULL;
 		m_pIGfxDevice = NULL;
@@ -375,24 +369,24 @@ INT WdkMain(INT argc, PWCHAR argv)
 {
 	INT Status = STATUS::SUCCESS;
 
-	Console::Write(L"Hello Triangle!\n");
+	Console::Write(L"Hello Cube!\n");
 
-	HelloTriangle hello_triangle;
+	HelloCube hello_cube;
 
-	if (hello_triangle.Initialize() != TRUE)
+	if (hello_cube.Initialize() != TRUE)
 	{
 		Status = STATUS::UNSUCCESSFUL;
 	}
 
 	if (Status == STATUS::SUCCESS)
 	{
-		if (hello_triangle.Run() == FALSE)
+		if (hello_cube.Run() == FALSE)
 		{
 			Status = STATUS::UNSUCCESSFUL;
 		}
 	}
 
-	hello_triangle.Uninitialize();
+	hello_cube.Uninitialize();
 
 	if (Status == STATUS::SUCCESS)
 	{
