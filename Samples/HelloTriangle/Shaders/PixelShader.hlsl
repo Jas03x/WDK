@@ -7,7 +7,7 @@ struct PS_Input
 
 struct PS_Output
 {
-    float4 color : SV_TARGET;
+    float4 color : SV_TARGET; // pixel position in screen space
 };
 
 PS_Output main(PS_Input input)

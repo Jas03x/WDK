@@ -1,6 +1,7 @@
 
 #include <Wdk.hpp>
 #include <WdkGfx.hpp>
+#include "WdkMath.hpp"
 #include <WdkSystem.hpp>
 
 #include <vector>
@@ -17,11 +18,16 @@ private:
 	{
 		struct
 		{
-			FLOAT Transform[4][4];
+			Matrix4F Transform;
 		};
 
 		BYTE Padding[256]; // needs to be aligned to 256 bytes
-	};
+
+		ConstantBuffer()
+		{
+			memset(this, 0, sizeof(ConstantBuffer));
+		}
+	} m_ConstantBuffer;
 
 	IWindow*         m_pIWindow;
 	IGfxDevice*      m_pIGfxDevice;
@@ -326,6 +332,16 @@ public:
 	}
 
 private:
+	BOOL Update(VOID)
+	{
+		BOOL Status = TRUE;
+
+		m_ConstantBuffer.Transform *= Matrix4F(Quaternion(0.1f, 0.0f, 0.0f));
+		memcpy(m_pIConstantBuffer->GetCpuVA(), &m_ConstantBuffer, sizeof(ConstantBuffer));
+
+		return Status;
+	}
+
 	BOOL Render(VOID)
 	{
 		BOOL Status = TRUE;
@@ -382,7 +398,12 @@ public:
 			}
 			else
 			{
-				Status = Render();
+				Status = Update();
+
+				if (Status == TRUE)
+				{
+					Status = Render();
+				}
 			}
 		}
 

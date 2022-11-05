@@ -41,3 +41,8 @@ VOID CConstantBuffer::Uninitialize(VOID)
 		m_pID3D12ConstantBufferResource = NULL;
 	}
 }
+
+VOID* CConstantBuffer::GetCpuVA(VOID)
+{
+	return m_CpuVa;
+}

@@ -918,8 +918,8 @@ template <typename T> Matrix4<T> Matrix::Rotate(const Vector3<T>& v)
 
 #define INSTANTIATE_MATRIX_TEMPLATES_FOR_FLOATING_POINT_TYPE(X)							\
     template struct Matrix2<X>;                                                         \
-    template struct Matrix2<X>;                                                         \
-    template struct Matrix2<X>;                                                         \
+    template struct Matrix3<X>;                                                         \
+    template struct Matrix4<X>;                                                         \
 	template Matrix2<X> Matrix::Inverse(const Matrix2<X>& m);							\
 	template Matrix3<X> Matrix::Inverse(const Matrix3<X>& m);							\
 	template Matrix4<X> Matrix::Inverse(const Matrix4<X>& m);							\

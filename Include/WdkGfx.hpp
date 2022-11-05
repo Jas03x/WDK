@@ -91,6 +91,7 @@ struct CONSTANT_BUFFER_DESC
 class __declspec(novtable) IConstantBuffer
 {
 public:
+	virtual VOID* GetCpuVA(VOID) = 0;
 };
 
 // IMesh
