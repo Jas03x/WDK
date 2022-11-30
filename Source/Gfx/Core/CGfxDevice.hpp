@@ -39,9 +39,8 @@ private:
 	
 	ID3D12Heap*				   m_pID3D12UploadHeap;
 	ID3D12Heap*				   m_pID3D12PrimaryHeap;
-	ID3D12Heap*                m_pID3D12ConstantBufferHeap;
 
-	ID3D12DescriptorHeap*      m_pID3D12ConstantBufferDescriptorHeap;
+	ID3D12DescriptorHeap*      m_pID3D12ShaderResourceDescriptorHeap;
 
 	CCommandQueue*             m_pCopyQueue;
 	CCommandQueue*             m_pGraphicsQueue;
@@ -84,6 +83,8 @@ public:
 
 	virtual BOOL               SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
 	virtual BOOL               SyncQueue(COMMAND_QUEUE_TYPE Type);
+
+	ID3D12DescriptorHeap*      GetID3D12ShaderResourceDescriptorHeap();
 };
 
 #endif // WDK_CGFX_DEVICE_HPP

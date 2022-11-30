@@ -4,6 +4,8 @@
 #include "WdkMath.hpp"
 #include <WdkSystem.hpp>
 
+#include "Windows.h"
+
 #include <vector>
 
 CONST PCWCHAR WINDOW_CLASS = L"HelloCube";
@@ -25,7 +27,9 @@ private:
 
 		ConstantBuffer()
 		{
-			memset(this, 0, sizeof(ConstantBuffer));
+			ZeroMemory(this, sizeof(ConstantBuffer));
+
+			Transform = Matrix4F(1.0);
 		}
 	} m_ConstantBuffer;
 
@@ -89,6 +93,7 @@ public:
 		if (Status == TRUE)
 		{
 			RENDERER_STATE_DESC Desc = {};
+			Desc.EnableDepthClipping = FALSE;
 
 			INPUT_ELEMENT_DESC InputElements[] =
 			{
@@ -210,7 +215,7 @@ public:
 				// Back:
 				{
 					{
-						4, 5, 6,
+						6, 5, 4,
 						5, 6, 7
 					},
 					1
@@ -219,7 +224,7 @@ public:
 				// Right:
 				{
 					{
-						1, 3, 7,
+						7, 3, 1,
 						1, 5, 7
 					},
 					2
@@ -229,7 +234,7 @@ public:
 				{
 					{
 						0, 2, 4,
-						0, 4, 6
+						6, 4, 2
 					},
 					3
 				},
@@ -237,7 +242,7 @@ public:
 				// Top:
 				{
 					{
-						0, 1, 4,
+						4, 1, 0,
 						1, 4, 5
 					},
 					4
@@ -247,7 +252,7 @@ public:
 				{
 					{
 						2, 3, 6,
-						3, 6, 7
+						7, 6, 3
 					},
 					5
 				}
@@ -336,7 +341,7 @@ private:
 	{
 		BOOL Status = TRUE;
 
-		m_ConstantBuffer.Transform *= Matrix4F(Quaternion(0.1f, 0.0f, 0.0f));
+		m_ConstantBuffer.Transform *= Matrix4F(Quaternion(0.01f, 0.01f, 0.0f));
 		memcpy(m_pIConstantBuffer->GetCpuVA(), &m_ConstantBuffer, sizeof(ConstantBuffer));
 
 		return Status;

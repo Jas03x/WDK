@@ -4,6 +4,7 @@
 
 #include "Wdk.hpp"
 
+#include "CGfxDevice.hpp"
 #include "CMesh.hpp"
 #include "CRendererState.hpp"
 
@@ -20,22 +21,23 @@ CCommandBuffer::~CCommandBuffer(VOID)
 
 }
 
-BOOL CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList)
+BOOL CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, CGfxDevice* pGfxDevice, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList)
 {
 	BOOL Status = TRUE;
 
 	m_Type = Type;
 	m_State = STATE_RESET;
 
-	if ((pICommandAllocator != NULL) && (pICommandList != NULL))
+	if ((pGfxDevice != NULL) && (pICommandAllocator != NULL) && (pICommandList != NULL))
 	{
+		m_pGfxDevice = pGfxDevice;
 		m_pID3D12CommandAllocator = pICommandAllocator;
 		m_pID3D12CommandList = pICommandList;
 	}
 	else
 	{
 		Status = FALSE;
-		Console::Write(L"Error: Could not create command buffer - null D3D12 interfaces\n");
+		Console::Write(L"Error: Could not create command buffer - null interfaces\n");
 	}
 
 	return Status;
@@ -159,10 +161,15 @@ VOID CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
 		if (pIRendererState != NULL)
 		{
 			CRendererState* pCRenderer = static_cast<CRendererState*>(pIRendererState);
+			ID3D12DescriptorHeap* pHeaps[] = { m_pGfxDevice->GetID3D12ShaderResourceDescriptorHeap() };
 
 			m_State = STATE_RECORDING;
 			m_pID3D12CommandList->SetPipelineState(pCRenderer->GetD3D12PipelineState());
 			m_pID3D12CommandList->SetGraphicsRootSignature(pCRenderer->GetD3D12RootSignature());
+			m_pID3D12CommandList->SetDescriptorHeaps(_countof(pHeaps), pHeaps);
+			
+			// test:
+			m_pID3D12CommandList->SetGraphicsRootDescriptorTable(0, m_pGfxDevice->GetID3D12ShaderResourceDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
 		}
 		else
 		{

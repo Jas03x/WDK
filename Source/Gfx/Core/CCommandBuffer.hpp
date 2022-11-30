@@ -6,6 +6,8 @@
 struct ID3D12CommandAllocator;
 struct ID3D12GraphicsCommandList;
 
+class  CGfxDevice;
+
 class CCommandBuffer : public ICommandBuffer
 {
 private:
@@ -24,11 +26,13 @@ private:
 	ID3D12CommandAllocator*    m_pID3D12CommandAllocator;
 	ID3D12GraphicsCommandList* m_pID3D12CommandList;
 
+	CGfxDevice*                m_pGfxDevice;
+
 public:
 	CCommandBuffer(VOID);
 	~CCommandBuffer(VOID);
 
-	BOOL                       Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList);
+	BOOL                       Initialize(COMMAND_BUFFER_TYPE Type, CGfxDevice* pGfxDevice, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList);
 	VOID                       Uninitialize(VOID);
 
 	virtual VOID               ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[]);

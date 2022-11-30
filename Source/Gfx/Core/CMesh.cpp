@@ -4,7 +4,9 @@
 
 CMesh::CMesh(VOID)
 {
-
+	m_VertexBufferGpuVA = 0;
+	m_pID3D12Resource = NULL;
+	ZeroMemory(&m_MeshDesc, sizeof(MESH_DESC));
 }
 
 CMesh::~CMesh(VOID)

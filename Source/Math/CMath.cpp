@@ -46,14 +46,13 @@ template <typename T> VOID WriteToBuffer(PWCHAR& pBuffer, SIZE_T& szBuffer, T t)
 
 	if constexpr (std::is_arithmetic<T>::value)
 	{
-		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%f", t); }
-		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
-		else											{ StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%lli", static_cast<LONGLONG>(t));  }
+		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%f", t); }
+		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
+		else											{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%lli", static_cast<LONGLONG>(t));  }
 	}
-	else												{ StringCchPrintfExW(pBuffer, szBuffer, NULL, &cchRemaining, 0, L"%S", t); }
+	else												{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%S", t); }
 
-	pBuffer  += cchRemaining;
-	szBuffer -= cchRemaining;
+	szBuffer -= (szBuffer - cchRemaining);
 }
 
 // ------------------------------------ Scalar functions ------------------------------------------
@@ -261,16 +260,16 @@ template <typename T> std::wstring VectorToString(T* pElements, SIZE_T nElements
 	PWCHAR pBuffer = buffer;
 	SIZE_T szBuffer = _countof(buffer);
 
-	WriteToBuffer(pBuffer, szBuffer, "<");
+	WriteToBuffer(pBuffer, szBuffer, L"<");
 	for (uint32_t i = 0; i < nElements; i++)
 	{
 		WriteToBuffer(pBuffer, szBuffer, pElements[i]);
 		if (i != (nElements - 1))
 		{
-			WriteToBuffer(pBuffer, szBuffer, ", ");
+			WriteToBuffer(pBuffer, szBuffer, L", ");
 		}
 	}
-	WriteToBuffer(pBuffer, szBuffer, ">");
+	WriteToBuffer(pBuffer, szBuffer, L">");
 	
 	*pBuffer = 0; // null-terminate
 
@@ -652,7 +651,7 @@ template <typename T> Matrix4<T>::Matrix4(const Vector4<T>& v0, const Vector4<T>
 }
 template <typename T> Matrix4<T>::Matrix4(const Matrix4<T>& m) : Matrix4<T>(m[0], m[1], m[2], m[3]) { }
 
-template <typename T> Matrix4<T>::Matrix4(const Quaternion<T>& q)
+template <typename T> Matrix4<T>::Matrix4(const Quaternion<T>& q) : Matrix4<T>(1)
 {
 	float qxx = q.x * q.x;
 	float qxy = q.x * q.y;
@@ -914,6 +913,36 @@ template <typename T> Matrix4<T> Matrix::Rotate(const Vector3<T>& v)
 	return Matrix4F(Quaternion(v));
 }
 
+template <typename T> std::wstring MatrixToString(T* pElements, SIZE_T nElements)
+{
+	WCHAR buffer[2048] = {};
+
+	PWCHAR pBuffer = buffer;
+	SIZE_T szBuffer = _countof(buffer);
+
+	for (uint32_t i = 0; i < nElements; i++)
+	{
+		WriteToBuffer(pBuffer, szBuffer, L"[");
+		for (uint32_t j = 0; j < nElements; j++)
+		{
+			WriteToBuffer(pBuffer, szBuffer, *(pElements + (i * nElements) + j));
+			if (j != (nElements - 1))
+			{
+				WriteToBuffer(pBuffer, szBuffer, L", ");
+			}
+		}
+		WriteToBuffer(pBuffer, szBuffer, L"]\n");
+	}
+
+	*pBuffer = 0; // null-terminate
+
+	return std::wstring(buffer);
+}
+
+template <typename T> std::wstring Matrix::ToString(const Matrix2<T>& m) { return MatrixToString(&m.elements[0][0], 2); }
+template <typename T> std::wstring Matrix::ToString(const Matrix3<T>& m) { return MatrixToString(&m.elements[0][0], 3); }
+template <typename T> std::wstring Matrix::ToString(const Matrix4<T>& m) { return MatrixToString(&m.elements[0][0], 4); }
+
 // ------------------------- Matrix template/function instantiations ------------------------------
 
 #define INSTANTIATE_MATRIX_TEMPLATES_FOR_FLOATING_POINT_TYPE(X)							\
@@ -926,5 +955,8 @@ template <typename T> Matrix4<T> Matrix::Rotate(const Vector3<T>& v)
 	template Matrix2<X> Matrix::Transpose(const Matrix2<X>& m);							\
 	template Matrix3<X> Matrix::Transpose(const Matrix3<X>& m);							\
 	template Matrix4<X> Matrix::Transpose(const Matrix4<X>& m);							\
+	template std::wstring Matrix::ToString(const Matrix2<X>& m);						\
+	template std::wstring Matrix::ToString(const Matrix3<X>& m);						\
+	template std::wstring Matrix::ToString(const Matrix4<X>& m);						\
 
 INSTANTIATE_MATRIX_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)

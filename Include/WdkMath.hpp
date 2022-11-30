@@ -329,6 +329,10 @@ namespace Matrix
 	template <typename T> Matrix4<T> Translate(const Vector3<T>& v);
 	template <typename T> Matrix4<T> Scale(const Vector3<T>& v);
 	template <typename T> Matrix4<T> Rotate(const Vector3<T>& v);
+
+	template <typename T> std::wstring ToString(const Matrix2<T>& m);
+	template <typename T> std::wstring ToString(const Matrix3<T>& m);
+	template <typename T> std::wstring ToString(const Matrix4<T>& m);
 }
 
 // Global vector operators

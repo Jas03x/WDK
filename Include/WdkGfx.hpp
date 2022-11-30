@@ -69,6 +69,8 @@ struct INPUT_BUFFER_LAYOUT
 
 struct RENDERER_STATE_DESC
 {
+	BOOL                EnableDepthClipping;
+
 	SHADER_BYTECODE     VertexShader;
 	SHADER_BYTECODE     PixelShader;
 	INPUT_BUFFER_LAYOUT InputLayout;
