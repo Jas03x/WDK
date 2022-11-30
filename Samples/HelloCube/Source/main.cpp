@@ -75,7 +75,6 @@ public:
 			DeviceFactory::Descriptor GfxDeviceDesc = {};
 			GfxDeviceDesc.UploadHeapSize = static_cast<UINT64>(64U * MB);
 			GfxDeviceDesc.PrimaryHeapSize = static_cast<UINT64>(64U * MB);
-			GfxDeviceDesc.ConstantBufferHeapSize = static_cast<UINT64>(64U * MB);
 
 			m_pIGfxDevice = DeviceFactory::CreateInstance(m_pIWindow, GfxDeviceDesc);
 			if (m_pIGfxDevice == NULL)

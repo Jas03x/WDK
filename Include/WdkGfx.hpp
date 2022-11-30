@@ -176,7 +176,6 @@ public:
 	{
 		UINT64 UploadHeapSize;
 		UINT64 PrimaryHeapSize;
-		UINT64 ConstantBufferHeapSize;
 	};
 
 	static IGfxDevice* CreateInstance(IWindow* pIWindow, const Descriptor& rDesc);
