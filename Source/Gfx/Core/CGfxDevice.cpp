@@ -60,8 +60,10 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pSwapChain = NULL;
 
 	m_pID3D12Device = NULL;
+
 	m_pID3D12UploadHeap = NULL;
 	m_pID3D12PrimaryHeap = NULL;
+	m_pID3D12ShaderResourceDescriptorHeap = NULL;
 
 	m_pCopyQueue = NULL;
 	m_pGraphicsQueue = NULL;

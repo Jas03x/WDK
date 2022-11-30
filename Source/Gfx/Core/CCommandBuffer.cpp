@@ -13,6 +13,7 @@ CCommandBuffer::CCommandBuffer(VOID)
 	m_Type = COMMAND_BUFFER_TYPE_INVALID;
 	m_pID3D12CommandAllocator = NULL;
 	m_pID3D12CommandList = NULL;
+	m_pGfxDevice = NULL;
 	m_State = STATE_ERROR;
 }
 
