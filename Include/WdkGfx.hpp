@@ -96,14 +96,20 @@ public:
 	virtual VOID* GetCpuVA(VOID) = 0;
 };
 
-// IMesh
-struct MESH_DESC
+// IVertexBuffer
+struct VERTEX_BUFFER_DESC
 {
 	UINT BufferSize;
 	UINT Stride;
 	UINT NumVertices;
 };
 
+class __declspec(novtable) IVertexBuffer
+{
+public:
+};
+
+// IMesh
 class __declspec(novtable) IMesh
 {
 public:
@@ -161,7 +167,10 @@ public:
 	virtual IConstantBuffer* CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc) = 0;
 	virtual VOID             DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer) = 0;
 
-	virtual IMesh*           CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc) = 0;
+	virtual IVertexBuffer*   CreateVertexBuffer(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc) = 0;
+	virtual VOID             DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer) = 0;
+
+	virtual IMesh*           CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc) = 0;
 	virtual VOID             DestroyMesh(IMesh* pIMesh) = 0;
 
 	virtual BOOL             SubmitCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;

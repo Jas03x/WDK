@@ -3,26 +3,17 @@
 
 #include "WdkGfx.hpp"
 
-struct ID3D12Resource;
-
 class CMesh : public IMesh
 {
 private:
-	ID3D12Resource* m_pID3D12Resource;
-
-	MESH_DESC       m_MeshDesc;
-
-	UINT64          m_VertexBufferGpuVA;
+	IVertexBuffer* m_pIVertexBuffer;
 
 public:
 	CMesh(VOID);
 	~CMesh(VOID);
 
-	BOOL Initialize(ID3D12Resource* VertexBuffer, MESH_DESC& rDesc);
+	BOOL Initialize(IVertexBuffer* pIVertexBuffer);
 	VOID Uninitialize(VOID);
-
-	UINT64 GetVertexBufferGpuVA(VOID);
-	MESH_DESC GetMeshDesc(VOID);
 };
 
 #endif //WDK_CMESH_HPP

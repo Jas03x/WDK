@@ -14,6 +14,7 @@
 #include "CMesh.hpp"
 #include "CRendererState.hpp"
 #include "CSwapChain.hpp"
+#include "CVertexBuffer.hpp"
 #include "CWindow.hpp"
 
 #include "EnumTranslator.hpp"
@@ -163,7 +164,7 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& 
 
 	if (Status == TRUE)
 	{
-		D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), reinterpret_cast<VOID**>(&m_pID3D12Device));
+		D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device9), reinterpret_cast<VOID**>(&m_pID3D12Device));
 
 		if (m_pID3D12Device != NULL)
 		{
@@ -627,6 +628,7 @@ BOOL CGfxDevice::InitializeDescriptorHeaps(VOID)
 	if (Status == TRUE)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
+		cbvHeapDesc.NodeMask = 0;
 		cbvHeapDesc.NumDescriptors = 1;
 		cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -897,18 +899,13 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 		Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS;
 		Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS;
 		Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS;
-
-		D3D12_DESCRIPTOR_RANGE DescRange = {};
-		DescRange.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;
-		DescRange.NumDescriptors = 1;
-		DescRange.BaseShaderRegister = 0;
-		DescRange.RegisterSpace = 0;
-		DescRange.OffsetInDescriptorsFromTableStart = D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;
+		Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS;
+		Flags |= D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS;
 
 		D3D12_ROOT_PARAMETER RootParameter = {};
-		RootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-		RootParameter.DescriptorTable.NumDescriptorRanges = 1;
-		RootParameter.DescriptorTable.pDescriptorRanges = &DescRange;
+		RootParameter.ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+		RootParameter.Descriptor.RegisterSpace = 0;
+		RootParameter.Descriptor.ShaderRegister = 0;
 		RootParameter.ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
 		D3D12_ROOT_SIGNATURE_DESC Desc = { };
@@ -1277,12 +1274,12 @@ VOID CGfxDevice::DestroyCommandBuffer(ICommandBuffer* pICommandBuffer)
 	}
 }
 
-IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
+IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc)
 {
 	BOOL Status = TRUE;
-	IMesh* pIMesh = NULL;
-	ID3D12Resource* VertexBuffer = NULL;
-	ID3D12Resource* VertexDataUploadBuffer = NULL;
+	IVertexBuffer* pIVertexBuffer = NULL;
+	ID3D12Resource* pID3D12VertexBuffer = NULL;
+	ID3D12Resource* pID3D12VertexDataUploadBuffer = NULL;
 	ID3D12GraphicsCommandList* pICommandList = static_cast<CCommandBuffer*>(m_pICopyCommandBuffer)->GetD3D12CommandList();
 
 	if (Status == TRUE)
@@ -1300,12 +1297,12 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 		VertexBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		VertexBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12PrimaryHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&VertexBuffer)) != S_OK)
+		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12PrimaryHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&pID3D12VertexBuffer)) != S_OK)
 		{
 			Status = FALSE;
 		}
 
-		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12UploadHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&VertexDataUploadBuffer)) != S_OK)
+		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12UploadHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&pID3D12VertexDataUploadBuffer)) != S_OK)
 		{
 			Status = FALSE;
 		}
@@ -1319,10 +1316,10 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 		CpuReadRange.Begin = 0;
 		CpuReadRange.End = 0;
 
-		if (VertexDataUploadBuffer->Map(0, &CpuReadRange, reinterpret_cast<VOID**>(&VertexBufferCpuVa)) == S_OK)
+		if (pID3D12VertexDataUploadBuffer->Map(0, &CpuReadRange, reinterpret_cast<VOID**>(&VertexBufferCpuVa)) == S_OK)
 		{
 			CopyMemory(VertexBufferCpuVa, pVertexData, rDesc.BufferSize);
-			VertexDataUploadBuffer->Unmap(0, NULL);
+			pID3D12VertexDataUploadBuffer->Unmap(0, NULL);
 		}
 		else
 		{
@@ -1336,12 +1333,12 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 		D3D12_RESOURCE_BARRIER Barrier = {};
 		Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
 		Barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		Barrier.Transition.pResource = VertexBuffer;
+		Barrier.Transition.pResource = pID3D12VertexBuffer;
 		Barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
 		Barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
 		Barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_COMMON; // Resources decay to the common state when accessed from a copy queue in commmand lists
-		
-		pICommandList->CopyResource(VertexBuffer, VertexDataUploadBuffer);
+
+		pICommandList->CopyResource(pID3D12VertexBuffer, pID3D12VertexDataUploadBuffer);
 		pICommandList->ResourceBarrier(1, &Barrier);
 		if (pICommandList->Close() != S_OK)
 		{
@@ -1351,7 +1348,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 	}
 
 	if (Status == TRUE)
-	{		
+	{
 		ID3D12CommandList* pICommandLists[] = { pICommandList };
 
 		m_pCopyQueue->GetD3D12CommandQueue()->ExecuteCommandLists(1, pICommandLists);
@@ -1361,10 +1358,71 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 
 	if (Status == TRUE)
 	{
+		pIVertexBuffer = new CVertexBuffer();
+
+		if (pIVertexBuffer != NULL)
+		{
+			if (static_cast<CVertexBuffer*>(pIVertexBuffer)->Initialize(pID3D12VertexBuffer, rDesc) == FALSE)
+			{
+				Status = FALSE;
+				DestroyVertexBuffer(pIVertexBuffer);
+				pIVertexBuffer = NULL;
+			}
+		}
+		else
+		{
+			Status = FALSE;
+		}
+	}
+
+	if (pID3D12VertexDataUploadBuffer != NULL)
+	{
+		pID3D12VertexDataUploadBuffer->Release();
+		pID3D12VertexDataUploadBuffer = NULL;
+	}
+
+	if ((Status == FALSE) && (pID3D12VertexBuffer != NULL))
+	{
+		pID3D12VertexBuffer->Release();
+		pID3D12VertexBuffer = NULL;
+	}
+
+	return pIVertexBuffer;
+}
+
+VOID CGfxDevice::DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer)
+{
+	CVertexBuffer* pVertexBuffer = static_cast<CVertexBuffer*>(pIVertexBuffer);
+	if (pVertexBuffer != NULL)
+	{
+		pVertexBuffer->Uninitialize();
+		delete pVertexBuffer;
+		pVertexBuffer = NULL;
+	}
+}
+
+IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc)
+{
+	BOOL Status = TRUE;
+	IMesh* pIMesh = NULL;
+	IVertexBuffer* pIVertexBuffer = NULL;
+
+	if (Status == TRUE)
+	{
+		pIVertexBuffer = CreateVertexBuffer(pVertexData, rDesc);
+
+		if (pIVertexBuffer == NULL)
+		{
+			Status = FALSE;
+		}
+	}
+
+	if (Status == TRUE)
+	{
 		pIMesh = new CMesh();
 		if (pIMesh != NULL)
 		{
-			if (static_cast<CMesh*>(pIMesh)->Initialize(VertexBuffer, rDesc) == FALSE)
+			if (static_cast<CMesh*>(pIMesh)->Initialize(pIVertexBuffer) == FALSE)
 			{
 				Status = FALSE;
 				DestroyMesh(pIMesh);
@@ -1377,16 +1435,10 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc)
 		}
 	}
 
-	if (VertexDataUploadBuffer != NULL)
+	if ((Status == FALSE) && (pIVertexBuffer != NULL))
 	{
-		VertexDataUploadBuffer->Release();
-		VertexDataUploadBuffer = NULL;
-	}
-
-	if ((Status == FALSE) && (VertexBuffer != NULL))
-	{
-		VertexBuffer->Release();
-		VertexBuffer = NULL;
+		DestroyVertexBuffer(pIVertexBuffer);
+		pIVertexBuffer = NULL;
 	}
 
 	return pIMesh;

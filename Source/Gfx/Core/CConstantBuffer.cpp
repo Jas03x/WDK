@@ -7,7 +7,7 @@
 CConstantBuffer::CConstantBuffer(VOID)
 {
 	m_CpuVa = NULL;
-	m_pID3D12ConstantBufferResource = NULL;
+	m_pID3D12Resource = NULL;
 }
 
 CConstantBuffer::~CConstantBuffer(VOID)
@@ -22,7 +22,7 @@ BOOL CConstantBuffer::Initialize(ID3D12Resource* pID3D12ConstantBufferResource, 
 	if (pID3D12ConstantBufferResource != NULL)
 	{
 		m_CpuVa = CpuVa;
-		m_pID3D12ConstantBufferResource = pID3D12ConstantBufferResource;
+		m_pID3D12Resource = pID3D12ConstantBufferResource;
 	}
 	else
 	{
@@ -35,10 +35,10 @@ BOOL CConstantBuffer::Initialize(ID3D12Resource* pID3D12ConstantBufferResource, 
 
 VOID CConstantBuffer::Uninitialize(VOID)
 {
-	if (m_pID3D12ConstantBufferResource != NULL)
+	if (m_pID3D12Resource != NULL)
 	{
-		m_pID3D12ConstantBufferResource->Release();
-		m_pID3D12ConstantBufferResource = NULL;
+		m_pID3D12Resource->Release();
+		m_pID3D12Resource = NULL;
 	}
 }
 

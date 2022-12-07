@@ -35,7 +35,7 @@ private:
 	IDXGIFactory7*			   m_pIDxgiFactory;
 	IDXGIAdapter4*			   m_pIDxgiAdapter;
 
-	ID3D12Device*			   m_pID3D12Device;
+	ID3D12Device9*			   m_pID3D12Device;
 	
 	ID3D12Heap*				   m_pID3D12UploadHeap;
 	ID3D12Heap*				   m_pID3D12PrimaryHeap;
@@ -78,7 +78,10 @@ public:
 	virtual IConstantBuffer*   CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc);
 	virtual VOID               DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer);
 
-	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, MESH_DESC& rDesc);
+	virtual IVertexBuffer*     CreateVertexBuffer(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc);
+	virtual VOID               DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer);
+
+	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc);
 	virtual VOID               DestroyMesh(IMesh* pIMesh);
 
 	virtual BOOL               SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);

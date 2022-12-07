@@ -86,6 +86,9 @@
     <ClInclude Include="Source\Gfx\Core\CConstantBuffer.hpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClInclude>
+    <ClInclude Include="Source\Gfx\Core\CVertexBuffer.hpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Source\Wdk.cpp">
@@ -131,6 +134,9 @@
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
     <ClCompile Include="Source\Gfx\Core\CConstantBuffer.cpp">
+      <Filter>Source\Gfx\Core</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Gfx\Core\CVertexBuffer.cpp">
       <Filter>Source\Gfx\Core</Filter>
     </ClCompile>
   </ItemGroup>

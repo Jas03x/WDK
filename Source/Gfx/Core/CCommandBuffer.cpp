@@ -13,7 +13,6 @@ CCommandBuffer::CCommandBuffer(VOID)
 	m_Type = COMMAND_BUFFER_TYPE_INVALID;
 	m_pID3D12CommandAllocator = NULL;
 	m_pID3D12CommandList = NULL;
-	m_pGfxDevice = NULL;
 	m_State = STATE_ERROR;
 }
 
@@ -22,16 +21,15 @@ CCommandBuffer::~CCommandBuffer(VOID)
 
 }
 
-BOOL CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, CGfxDevice* pGfxDevice, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList)
+BOOL CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList)
 {
 	BOOL Status = TRUE;
 
 	m_Type = Type;
 	m_State = STATE_RESET;
 
-	if ((pGfxDevice != NULL) && (pICommandAllocator != NULL) && (pICommandList != NULL))
+	if ((pICommandAllocator != NULL) && (pICommandList != NULL))
 	{
-		m_pGfxDevice = pGfxDevice;
 		m_pID3D12CommandAllocator = pICommandAllocator;
 		m_pID3D12CommandList = pICommandList;
 	}
@@ -168,9 +166,8 @@ VOID CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
 			m_pID3D12CommandList->SetPipelineState(pCRenderer->GetD3D12PipelineState());
 			m_pID3D12CommandList->SetGraphicsRootSignature(pCRenderer->GetD3D12RootSignature());
 			m_pID3D12CommandList->SetDescriptorHeaps(_countof(pHeaps), pHeaps);
-			
-			// test:
-			m_pID3D12CommandList->SetGraphicsRootDescriptorTable(0, m_pGfxDevice->GetID3D12ShaderResourceDescriptorHeap()->GetGPUDescriptorHandleForHeapStart());
+
+			m_pID3D12CommandList->SetGraphicsRootConstantBufferView(0, g_BufferLocation);
 		}
 		else
 		{
@@ -255,7 +252,7 @@ VOID CCommandBuffer::ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT 
 	}
 }
 
-VOID CCommandBuffer::Render(IMesh* pIMesh)
+VOID CCommandBuffer::SetVertexBuffers(IMesh* pIMesh)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
@@ -270,7 +267,6 @@ VOID CCommandBuffer::Render(IMesh* pIMesh)
 			VertexBufferView.StrideInBytes = MeshDesc.Stride;
 
 			m_State = STATE_RECORDING;
-			m_pID3D12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 			m_pID3D12CommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
 			m_pID3D12CommandList->DrawInstanced(MeshDesc.NumVertices, 1, 0, 0);
 		}
@@ -280,4 +276,9 @@ VOID CCommandBuffer::Render(IMesh* pIMesh)
 			Console::Write(L"Error: Could not render mesh - received invalid parameter(s)\n");
 		}
 	}
+}
+
+VOID CCommandBuffer::Render()
+{
+
 }

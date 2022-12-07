@@ -8,7 +8,7 @@ struct ID3D12Resource;
 class CConstantBuffer : public IConstantBuffer
 {
 private:
-	ID3D12Resource* m_pID3D12ConstantBufferResource;
+	ID3D12Resource* m_pID3D12Resource;
 
 	VOID* m_CpuVa;
 

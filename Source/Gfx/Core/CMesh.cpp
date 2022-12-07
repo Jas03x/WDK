@@ -1,12 +1,14 @@
 #include "CMesh.hpp"
 
+#include "Wdk.hpp"
+
 #include <d3d12.h>
+
+#include "CVertexBuffer.hpp"
 
 CMesh::CMesh(VOID)
 {
-	m_VertexBufferGpuVA = 0;
-	m_pID3D12Resource = NULL;
-	ZeroMemory(&m_MeshDesc, sizeof(MESH_DESC));
+	m_pIVertexBuffer = NULL;
 }
 
 CMesh::~CMesh(VOID)
@@ -14,34 +16,23 @@ CMesh::~CMesh(VOID)
 
 }
 
-BOOL CMesh::Initialize(ID3D12Resource* VertexBuffer, MESH_DESC& rDesc)
+BOOL CMesh::Initialize(IVertexBuffer* pIVertexBuffer)
 {
 	BOOL Status = TRUE;
 
-	m_pID3D12Resource = VertexBuffer;
-
-	m_MeshDesc = rDesc;
-
-	m_VertexBufferGpuVA = m_pID3D12Resource->GetGPUVirtualAddress();
+	m_pIVertexBuffer = pIVertexBuffer;
 
 	return Status;
 }
 
 VOID CMesh::Uninitialize(VOID)
 {
-	if (m_pID3D12Resource != NULL)
+	if (m_pIVertexBuffer != NULL)
 	{
-		m_pID3D12Resource->Release();
-		m_pID3D12Resource = NULL;
+		CVertexBuffer* pVertexBuffer = static_cast<CVertexBuffer*>(m_pIVertexBuffer);
+		pVertexBuffer->Uninitialize();
+		delete pVertexBuffer;
+
+		m_pIVertexBuffer = NULL;
 	}
-}
-
-UINT64 CMesh::GetVertexBufferGpuVA(VOID)
-{
-	return m_VertexBufferGpuVA;
-}
-
-MESH_DESC CMesh::GetMeshDesc(VOID)
-{
-	return m_MeshDesc;
 }
