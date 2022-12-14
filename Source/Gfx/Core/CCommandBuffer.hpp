@@ -6,8 +6,6 @@
 struct ID3D12CommandAllocator;
 struct ID3D12GraphicsCommandList;
 
-class  CGfxDevice;
-
 class CCommandBuffer : public ICommandBuffer
 {
 private:
@@ -35,7 +33,9 @@ public:
 
 	virtual VOID               ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[]);
 	virtual VOID               Present(const RenderBuffer& rBuffer);
-	virtual VOID               Render(IMesh* pIMesh);
+	virtual VOID               SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVertexBuffers);
+	virtual VOID               SetConstantBuffer(UINT Index, IConstantBuffer* pIConstantBuffer);
+	virtual VOID			   Draw(UINT NumVertices);
 	virtual VOID               SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth);
 	virtual VOID               ProgramPipeline(IRendererState* pIRendererState);
 	virtual VOID               SetRenderTarget(const RenderBuffer& rBuffer);
@@ -44,7 +44,7 @@ public:
 	virtual BOOL               Reset(VOID);
 
 	COMMAND_BUFFER_TYPE        GetType(VOID);
-	ID3D12GraphicsCommandList* GetD3D12CommandList(VOID);
+	ID3D12GraphicsCommandList* GetD3D12Interface(VOID);
 };
 
 #endif // WDK_CCOMMAND_BUFFER_HPP

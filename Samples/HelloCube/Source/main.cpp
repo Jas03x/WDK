@@ -275,11 +275,12 @@ public:
 			}
 
 			MESH_DESC MeshDesc = {};
-			MeshDesc.BufferSize = sizeof(VertexArray);
-			MeshDesc.Stride = sizeof(Vertex);
+			MeshDesc.pVertexData = VertexArray;
+			MeshDesc.VertexBufferSize = sizeof(VertexArray);
+			MeshDesc.VertexStride = sizeof(Vertex);
 			MeshDesc.NumVertices = sizeof(VertexArray) / sizeof(Vertex);
 
-			m_pIMesh = m_pIGfxDevice->CreateMesh(VertexArray, MeshDesc);
+			m_pIMesh = m_pIGfxDevice->CreateMesh(MeshDesc);
 
 			if (m_pIMesh == NULL)
 			{
@@ -361,7 +362,9 @@ private:
 			m_pIGraphicsCommandBuffer->ClearRenderBuffer(CurrentBuffer, m_ClearColor);
 
 			m_pIGraphicsCommandBuffer->ProgramPipeline(m_pIRendererState);
-			m_pIGraphicsCommandBuffer->Render(m_pIMesh);
+			m_pIGraphicsCommandBuffer->SetConstantBuffer(0, m_pIConstantBuffer);
+			m_pIGraphicsCommandBuffer->SetVertexBuffers(1, m_pIMesh->GetVertexBuffer());
+			m_pIGraphicsCommandBuffer->Draw(m_pIMesh->GetVertexCount());
 			m_pIGraphicsCommandBuffer->Present(CurrentBuffer);
 
 			Status = m_pIGraphicsCommandBuffer->Finalize();

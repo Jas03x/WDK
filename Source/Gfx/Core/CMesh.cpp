@@ -16,10 +16,11 @@ CMesh::~CMesh(VOID)
 
 }
 
-BOOL CMesh::Initialize(IVertexBuffer* pIVertexBuffer)
+BOOL CMesh::Initialize(UINT NumVertices, IVertexBuffer* pIVertexBuffer)
 {
 	BOOL Status = TRUE;
 
+	m_NumVertices = NumVertices;
 	m_pIVertexBuffer = pIVertexBuffer;
 
 	return Status;
@@ -35,4 +36,14 @@ VOID CMesh::Uninitialize(VOID)
 
 		m_pIVertexBuffer = NULL;
 	}
+}
+
+UINT CMesh::GetVertexCount(VOID)
+{
+	return m_NumVertices;
+}
+
+IVertexBuffer* CMesh::GetVertexBuffer(VOID)
+{
+	return m_pIVertexBuffer;
 }

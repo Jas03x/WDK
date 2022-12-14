@@ -48,20 +48,24 @@ CRendererState::CRendererState(VOID)
 {
 	m_pID3D12PipelineState = NULL;
 	m_pID3D12RootSignature = NULL;
+	m_pShaderResourceHeap  = NULL;
 }
 
 CRendererState::~CRendererState(VOID)
 {
 }
 
-BOOL CRendererState::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState)
+BOOL CRendererState::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState, ID3D12DescriptorHeap* pShaderResourceHeap)
 {
 	BOOL Status = TRUE;
 
-	if ((pIRootSignature != NULL) && (pIPipelineState != NULL))
+	if ((pIRootSignature != NULL) && (pIPipelineState != NULL) && (pShaderResourceHeap != NULL))
 	{
 		m_pID3D12PipelineState = pIPipelineState;
 		m_pID3D12RootSignature = pIRootSignature;
+
+		m_pShaderResourceHeap = pShaderResourceHeap;
+		pShaderResourceHeap->AddRef();
 	}
 	else
 	{
@@ -74,6 +78,12 @@ BOOL CRendererState::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12Pipe
 
 VOID CRendererState::Uninitialize(VOID)
 {
+	if (m_pShaderResourceHeap != NULL)
+	{
+		m_pShaderResourceHeap->Release();
+		m_pShaderResourceHeap = NULL;
+	}
+
 	if (m_pID3D12PipelineState != NULL)
 	{
 		m_pID3D12PipelineState->Release();
@@ -95,4 +105,9 @@ ID3D12PipelineState* CRendererState::GetD3D12PipelineState(VOID)
 ID3D12RootSignature* CRendererState::GetD3D12RootSignature(VOID)
 {
 	return m_pID3D12RootSignature;
+}
+
+ID3D12DescriptorHeap* CRendererState::GetShaderResourceHeap(VOID)
+{
+	return m_pShaderResourceHeap;
 }

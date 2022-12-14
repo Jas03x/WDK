@@ -35,12 +35,12 @@ private:
 	IDXGIFactory7*			   m_pIDxgiFactory;
 	IDXGIAdapter4*			   m_pIDxgiAdapter;
 
-	ID3D12Device9*			   m_pID3D12Device;
+	ID3D12Device*			   m_pID3D12Device;
 	
 	ID3D12Heap*				   m_pID3D12UploadHeap;
 	ID3D12Heap*				   m_pID3D12PrimaryHeap;
 
-	ID3D12DescriptorHeap*      m_pID3D12ShaderResourceDescriptorHeap;
+	ID3D12DescriptorHeap*      m_pID3D12ShaderResourceHeap;
 
 	CCommandQueue*             m_pCopyQueue;
 	CCommandQueue*             m_pGraphicsQueue;
@@ -78,16 +78,14 @@ public:
 	virtual IConstantBuffer*   CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc);
 	virtual VOID               DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer);
 
-	virtual IVertexBuffer*     CreateVertexBuffer(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc);
+	virtual IVertexBuffer*     CreateVertexBuffer(CONST VOID* pVertexData, UINT Size, UINT Stride);
 	virtual VOID               DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer);
 
-	virtual IMesh*             CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc);
+	virtual IMesh*             CreateMesh(const MESH_DESC& rDesc);
 	virtual VOID               DestroyMesh(IMesh* pIMesh);
 
 	virtual BOOL               SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
 	virtual BOOL               SyncQueue(COMMAND_QUEUE_TYPE Type);
-
-	ID3D12DescriptorHeap*      GetID3D12ShaderResourceDescriptorHeap();
 };
 
 #endif // WDK_CGFX_DEVICE_HPP

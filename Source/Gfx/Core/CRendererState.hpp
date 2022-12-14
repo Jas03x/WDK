@@ -6,22 +6,26 @@
 
 struct ID3D12PipelineState;
 struct ID3D12RootSignature;
+struct ID3D12DescriptorHeap;
 
 class CRendererState : public IRendererState
 {
 private:
-	ID3D12PipelineState* m_pID3D12PipelineState;
-	ID3D12RootSignature* m_pID3D12RootSignature;
+	ID3D12PipelineState*  m_pID3D12PipelineState;
+	ID3D12RootSignature*  m_pID3D12RootSignature;
+
+	ID3D12DescriptorHeap* m_pShaderResourceHeap;
 
 public:
 	CRendererState(VOID);
 	~CRendererState(VOID);
 
-	BOOL Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState);
+	BOOL Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState, ID3D12DescriptorHeap* pShaderResourceHeap);
 	VOID Uninitialize(VOID);
 
-	ID3D12PipelineState* GetD3D12PipelineState(VOID);
-	ID3D12RootSignature* GetD3D12RootSignature(VOID);
+	ID3D12PipelineState*  GetD3D12PipelineState(VOID);
+	ID3D12RootSignature*  GetD3D12RootSignature(VOID);
+	ID3D12DescriptorHeap* GetShaderResourceHeap(VOID);
 };
 
 BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc);

@@ -99,20 +99,31 @@ public:
 // IVertexBuffer
 struct VERTEX_BUFFER_DESC
 {
-	UINT BufferSize;
-	UINT Stride;
-	UINT NumVertices;
+	UINT64 GpuVA;
+	UINT   Size;
+	UINT   Stride;
 };
 
 class __declspec(novtable) IVertexBuffer
 {
 public:
+	virtual CONST VERTEX_BUFFER_DESC& GetDesc(VOID) const = 0;
 };
 
 // IMesh
+struct MESH_DESC
+{
+	CONST VOID* pVertexData;
+	UINT        VertexBufferSize;
+	UINT        VertexStride;
+	UINT        NumVertices;
+};
+
 class __declspec(novtable) IMesh
 {
 public:
+	virtual UINT           GetVertexCount(VOID) = 0;
+	virtual IVertexBuffer* GetVertexBuffer(VOID) = 0;
 };
 
 // ICommandBuffer
@@ -130,7 +141,9 @@ class __declspec(novtable) ICommandBuffer
 public:
 	virtual VOID ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[]) = 0;
 	virtual VOID Present(const RenderBuffer& rBuffer) = 0;
-	virtual VOID Render(IMesh* pIMesh) = 0;
+	virtual VOID SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVertexBuffers) = 0;
+	virtual VOID SetConstantBuffer(UINT Index, IConstantBuffer* pIConstantBuffer) = 0;
+	virtual VOID Draw(UINT NumVertices) = 0;
 	virtual VOID SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth) = 0;
 	virtual VOID ProgramPipeline(IRendererState* pIRendererState) = 0;
 	virtual VOID SetRenderTarget(const RenderBuffer& rBuffer) = 0;
@@ -167,10 +180,10 @@ public:
 	virtual IConstantBuffer* CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc) = 0;
 	virtual VOID             DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer) = 0;
 
-	virtual IVertexBuffer*   CreateVertexBuffer(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc) = 0;
+	virtual IVertexBuffer*   CreateVertexBuffer(CONST VOID* pVertexData, UINT Size, UINT Stride) = 0;
 	virtual VOID             DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer) = 0;
 
-	virtual IMesh*           CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc) = 0;
+	virtual IMesh*           CreateMesh(const MESH_DESC& rDesc) = 0;
 	virtual VOID             DestroyMesh(IMesh* pIMesh) = 0;
 
 	virtual BOOL             SubmitCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;

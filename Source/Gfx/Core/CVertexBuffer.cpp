@@ -52,7 +52,7 @@ UINT64 CVertexBuffer::GetGpuVA(VOID)
 	return m_VertexBufferGpuVA;
 }
 
-CONST VERTEX_BUFFER_DESC& CVertexBuffer::GetDesc(VOID)
+CONST VERTEX_BUFFER_DESC& CVertexBuffer::GetDesc(VOID) const
 {
 	return m_Desc;
 }

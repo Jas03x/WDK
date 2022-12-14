@@ -6,7 +6,8 @@
 
 CConstantBuffer::CConstantBuffer(VOID)
 {
-	m_CpuVa = NULL;
+	m_CpuVA = NULL;
+	m_GpuVA = 0;
 	m_pID3D12Resource = NULL;
 }
 
@@ -15,13 +16,14 @@ CConstantBuffer::~CConstantBuffer(VOID)
 
 }
 
-BOOL CConstantBuffer::Initialize(ID3D12Resource* pID3D12ConstantBufferResource, VOID* CpuVa)
+BOOL CConstantBuffer::Initialize(ID3D12Resource* pID3D12ConstantBufferResource, VOID* CpuVA)
 {
 	BOOL Status = TRUE;
 
 	if (pID3D12ConstantBufferResource != NULL)
 	{
-		m_CpuVa = CpuVa;
+		m_CpuVA = CpuVA;
+		m_GpuVA = pID3D12ConstantBufferResource->GetGPUVirtualAddress();
 		m_pID3D12Resource = pID3D12ConstantBufferResource;
 	}
 	else
@@ -44,5 +46,10 @@ VOID CConstantBuffer::Uninitialize(VOID)
 
 VOID* CConstantBuffer::GetCpuVA(VOID)
 {
-	return m_CpuVa;
+	return m_CpuVA;
+}
+
+UINT64 CConstantBuffer::GetGpuVA(VOID)
+{
+	return m_GpuVA;
 }

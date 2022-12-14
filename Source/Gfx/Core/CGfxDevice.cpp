@@ -64,7 +64,7 @@ CGfxDevice::CGfxDevice(VOID)
 
 	m_pID3D12UploadHeap = NULL;
 	m_pID3D12PrimaryHeap = NULL;
-	m_pID3D12ShaderResourceDescriptorHeap = NULL;
+	m_pID3D12ShaderResourceHeap = NULL;
 
 	m_pCopyQueue = NULL;
 	m_pGraphicsQueue = NULL;
@@ -164,7 +164,10 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& 
 
 	if (Status == TRUE)
 	{
-		D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device9), reinterpret_cast<VOID**>(&m_pID3D12Device));
+		if (D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), reinterpret_cast<VOID**>(&m_pID3D12Device)) != S_OK)
+		{
+			Status = FALSE;
+		}
 
 		if (m_pID3D12Device != NULL)
 		{
@@ -241,10 +244,10 @@ VOID CGfxDevice::Uninitialize(VOID)
 		m_pICopyCommandBuffer = NULL;
 	}
 
-	if (m_pID3D12ShaderResourceDescriptorHeap != NULL)
+	if (m_pID3D12ShaderResourceHeap != NULL)
 	{
-		m_pID3D12ShaderResourceDescriptorHeap->Release();
-		m_pID3D12ShaderResourceDescriptorHeap = NULL;
+		m_pID3D12ShaderResourceHeap->Release();
+		m_pID3D12ShaderResourceHeap = NULL;
 	}
 
 	if (m_pID3D12PrimaryHeap != NULL)
@@ -633,9 +636,9 @@ BOOL CGfxDevice::InitializeDescriptorHeaps(VOID)
 		cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
-		m_pID3D12Device->CreateDescriptorHeap(&cbvHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pID3D12ShaderResourceDescriptorHeap));
+		m_pID3D12Device->CreateDescriptorHeap(&cbvHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pID3D12ShaderResourceHeap));
 
-		if (m_pID3D12ShaderResourceDescriptorHeap == NULL)
+		if (m_pID3D12ShaderResourceHeap == NULL)
 		{
 			Status = FALSE;
 			Console::Write(L"Error: Failed to create constant buffer descriptor heap\n");
@@ -1079,7 +1082,7 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 		pIRendererState = new CRendererState();
 		if (pIRendererState != NULL)
 		{
-			if (static_cast<CRendererState*>(pIRendererState)->Initialize(pID3D12RootSignature, pID3D12PipelineState) == FALSE)
+			if (static_cast<CRendererState*>(pIRendererState)->Initialize(pID3D12RootSignature, pID3D12PipelineState, m_pID3D12ShaderResourceHeap) == FALSE)
 			{
 				DestroyRendererState(pIRendererState);
 				pIRendererState = NULL;
@@ -1148,7 +1151,7 @@ IConstantBuffer* CGfxDevice::CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rD
 		cbvDesc.BufferLocation = pID3D12ConstantBufferResource->GetGPUVirtualAddress();
 		cbvDesc.SizeInBytes = rDesc.Size;
 
-		m_pID3D12Device->CreateConstantBufferView(&cbvDesc, m_pID3D12ShaderResourceDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+		m_pID3D12Device->CreateConstantBufferView(&cbvDesc, m_pID3D12ShaderResourceHeap->GetCPUDescriptorHandleForHeapStart());
 	}
 
 	// Map the constant buffer
@@ -1237,7 +1240,7 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 		pICommandBuffer = new CCommandBuffer();
 		if (pICommandBuffer != NULL)
 		{
-			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(Type, this, pID3D12CommandAllocator, pID3D12GraphicsCommandList) == FALSE)
+			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(Type, pID3D12CommandAllocator, pID3D12GraphicsCommandList) == FALSE)
 			{
 				DestroyCommandBuffer(pICommandBuffer);
 				pICommandBuffer = NULL;
@@ -1274,20 +1277,20 @@ VOID CGfxDevice::DestroyCommandBuffer(ICommandBuffer* pICommandBuffer)
 	}
 }
 
-IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc)
+IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size, UINT Stride)
 {
 	BOOL Status = TRUE;
 	IVertexBuffer* pIVertexBuffer = NULL;
 	ID3D12Resource* pID3D12VertexBuffer = NULL;
 	ID3D12Resource* pID3D12VertexDataUploadBuffer = NULL;
-	ID3D12GraphicsCommandList* pICommandList = static_cast<CCommandBuffer*>(m_pICopyCommandBuffer)->GetD3D12CommandList();
+	ID3D12GraphicsCommandList* pICommandList = static_cast<CCommandBuffer*>(m_pICopyCommandBuffer)->GetD3D12Interface();
 
 	if (Status == TRUE)
 	{
 		D3D12_RESOURCE_DESC VertexBufferDesc = {};
 		VertexBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
 		VertexBufferDesc.Alignment = D3D12_DEFAULT_RESOURCE_PLACEMENT_ALIGNMENT;
-		VertexBufferDesc.Width = rDesc.BufferSize;
+		VertexBufferDesc.Width = Size;
 		VertexBufferDesc.Height = 1;
 		VertexBufferDesc.DepthOrArraySize = 1;
 		VertexBufferDesc.MipLevels = 1;
@@ -1318,7 +1321,7 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, CONST VER
 
 		if (pID3D12VertexDataUploadBuffer->Map(0, &CpuReadRange, reinterpret_cast<VOID**>(&VertexBufferCpuVa)) == S_OK)
 		{
-			CopyMemory(VertexBufferCpuVa, pVertexData, rDesc.BufferSize);
+			CopyMemory(VertexBufferCpuVa, pVertexData, Size);
 			pID3D12VertexDataUploadBuffer->Unmap(0, NULL);
 		}
 		else
@@ -1362,7 +1365,12 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, CONST VER
 
 		if (pIVertexBuffer != NULL)
 		{
-			if (static_cast<CVertexBuffer*>(pIVertexBuffer)->Initialize(pID3D12VertexBuffer, rDesc) == FALSE)
+			VERTEX_BUFFER_DESC Descriptor = {};
+			Descriptor.GpuVA = pID3D12VertexBuffer->GetGPUVirtualAddress();
+			Descriptor.Size = Size;
+			Descriptor.Stride = Stride;
+
+			if (static_cast<CVertexBuffer*>(pIVertexBuffer)->Initialize(pID3D12VertexBuffer, Descriptor) == FALSE)
 			{
 				Status = FALSE;
 				DestroyVertexBuffer(pIVertexBuffer);
@@ -1401,7 +1409,7 @@ VOID CGfxDevice::DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer)
 	}
 }
 
-IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC& rDesc)
+IMesh* CGfxDevice::CreateMesh(const MESH_DESC& rDesc)
 {
 	BOOL Status = TRUE;
 	IMesh* pIMesh = NULL;
@@ -1409,7 +1417,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC&
 
 	if (Status == TRUE)
 	{
-		pIVertexBuffer = CreateVertexBuffer(pVertexData, rDesc);
+		pIVertexBuffer = CreateVertexBuffer(rDesc.pVertexData, rDesc.VertexBufferSize, rDesc.VertexStride);
 
 		if (pIVertexBuffer == NULL)
 		{
@@ -1422,7 +1430,7 @@ IMesh* CGfxDevice::CreateMesh(CONST VOID* pVertexData, CONST VERTEX_BUFFER_DESC&
 		pIMesh = new CMesh();
 		if (pIMesh != NULL)
 		{
-			if (static_cast<CMesh*>(pIMesh)->Initialize(pIVertexBuffer) == FALSE)
+			if (static_cast<CMesh*>(pIMesh)->Initialize(rDesc.NumVertices, pIVertexBuffer) == FALSE)
 			{
 				Status = FALSE;
 				DestroyMesh(pIMesh);
@@ -1512,9 +1520,4 @@ BOOL CGfxDevice::SyncQueue(COMMAND_QUEUE_TYPE Type)
 	}
 
 	return Status;
-}
-
-ID3D12DescriptorHeap* CGfxDevice::GetID3D12ShaderResourceDescriptorHeap()
-{
-	return m_pID3D12ShaderResourceDescriptorHeap;
 }

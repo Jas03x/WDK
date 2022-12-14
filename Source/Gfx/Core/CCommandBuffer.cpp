@@ -4,7 +4,7 @@
 
 #include "Wdk.hpp"
 
-#include "CGfxDevice.hpp"
+#include "CConstantBuffer.hpp"
 #include "CMesh.hpp"
 #include "CRendererState.hpp"
 
@@ -62,7 +62,7 @@ COMMAND_BUFFER_TYPE CCommandBuffer::GetType(VOID)
 	return m_Type;
 }
 
-ID3D12GraphicsCommandList* CCommandBuffer::GetD3D12CommandList(VOID)
+ID3D12GraphicsCommandList* CCommandBuffer::GetD3D12Interface(VOID)
 {
 	return m_pID3D12CommandList;
 }
@@ -159,20 +159,38 @@ VOID CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
 	{
 		if (pIRendererState != NULL)
 		{
-			CRendererState* pCRenderer = static_cast<CRendererState*>(pIRendererState);
-			ID3D12DescriptorHeap* pHeaps[] = { m_pGfxDevice->GetID3D12ShaderResourceDescriptorHeap() };
+			CRendererState* pRendererState = static_cast<CRendererState*>(pIRendererState);
+			ID3D12DescriptorHeap* pHeaps[] = { pRendererState->GetShaderResourceHeap() };
 
 			m_State = STATE_RECORDING;
-			m_pID3D12CommandList->SetPipelineState(pCRenderer->GetD3D12PipelineState());
-			m_pID3D12CommandList->SetGraphicsRootSignature(pCRenderer->GetD3D12RootSignature());
-			m_pID3D12CommandList->SetDescriptorHeaps(_countof(pHeaps), pHeaps);
-
-			m_pID3D12CommandList->SetGraphicsRootConstantBufferView(0, g_BufferLocation);
+			m_pID3D12CommandList->SetPipelineState(pRendererState->GetD3D12PipelineState());
+			m_pID3D12CommandList->SetGraphicsRootSignature(pRendererState->GetD3D12RootSignature());
+			m_pID3D12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+			m_pID3D12CommandList->SetDescriptorHeaps(_countof(pHeaps), pHeaps); // TODO: THIS ONLY NEEDS TO BE SET ONCE IN A COMMAND LIST - NOT ONCE EVERY TIME THE RENDERER CHANGES
 		}
 		else
 		{
-			m_State = STATE_ERROR;
 			Console::Write(L"Error: Could not set command buffer renderer - received null renderer\n");
+			m_State = STATE_ERROR;
+		}
+	}
+}
+
+VOID CCommandBuffer::SetConstantBuffer(UINT Index, IConstantBuffer* pIConstantBuffer)
+{
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
+	{
+		if (pIConstantBuffer != NULL)
+		{
+			CConstantBuffer* pConstantBuffer = static_cast<CConstantBuffer*>(pIConstantBuffer);
+
+			m_State = STATE_RECORDING;
+			m_pID3D12CommandList->SetGraphicsRootConstantBufferView(0, pConstantBuffer->GetGpuVA());
+		}
+		else
+		{
+			Console::Write(L"Error: Could not set command buffer renderer - received null renderer\n");
+			m_State = STATE_ERROR;
 		}
 	}
 }
@@ -252,33 +270,55 @@ VOID CCommandBuffer::ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT 
 	}
 }
 
-VOID CCommandBuffer::SetVertexBuffers(IMesh* pIMesh)
+VOID CCommandBuffer::SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVertexBuffers)
 {
+	enum { MAX_VERTEX_BUFFERS = 8 };
+
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
-		if (pIMesh != NULL)
-		{
-			CMesh* pMesh = static_cast<CMesh*>(pIMesh);
-			MESH_DESC MeshDesc = pMesh->GetMeshDesc();
+		bool status = true;
 
-			D3D12_VERTEX_BUFFER_VIEW VertexBufferView = {};
-			VertexBufferView.BufferLocation = pMesh->GetVertexBufferGpuVA();
-			VertexBufferView.SizeInBytes = MeshDesc.BufferSize;
-			VertexBufferView.StrideInBytes = MeshDesc.Stride;
+		if (pIVertexBuffers == NULL)
+		{
+			Console::Write(L"Error: Null descriptors\n");
+			status = false;
+		}
+
+		if (status && (NumBuffers > MAX_VERTEX_BUFFERS))
+		{
+			Console::Write(L"Error: More vertex buffers than supported\n");
+			status = false;
+		}
+
+		if (status)
+		{
+			D3D12_VERTEX_BUFFER_VIEW VertexBufferViews[MAX_VERTEX_BUFFERS] = {};
+
+			for (UINT i = 0; i < NumBuffers; i++)
+			{
+				CONST VERTEX_BUFFER_DESC& Desc = pIVertexBuffers[i].GetDesc();
+
+				VertexBufferViews[i].BufferLocation = Desc.GpuVA;
+				VertexBufferViews[i].SizeInBytes = Desc.Size;
+				VertexBufferViews[i].StrideInBytes = Desc.Stride;
+			}
 
 			m_State = STATE_RECORDING;
-			m_pID3D12CommandList->IASetVertexBuffers(0, 1, &VertexBufferView);
-			m_pID3D12CommandList->DrawInstanced(MeshDesc.NumVertices, 1, 0, 0);
+			m_pID3D12CommandList->IASetVertexBuffers(0, NumBuffers, VertexBufferViews);
 		}
 		else
 		{
+			Console::Write(L"Error: Failed to set vertex buffer(s)\n");
 			m_State = STATE_ERROR;
-			Console::Write(L"Error: Could not render mesh - received invalid parameter(s)\n");
 		}
 	}
 }
 
-VOID CCommandBuffer::Render()
+VOID CCommandBuffer::Draw(UINT NumVertices)
 {
-
+	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
+	{
+		m_State = STATE_RECORDING;
+		m_pID3D12CommandList->DrawInstanced(NumVertices, 1, 0, 0);
+	}
 }

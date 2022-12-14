@@ -94,7 +94,7 @@ BOOL CCommandQueue::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
 
 		if (pCommandBuffer->GetType() == m_Type)
 		{
-			ID3D12CommandList* pICommandLists[] = { pCommandBuffer->GetD3D12CommandList() };
+			ID3D12CommandList* pICommandLists[] = { pCommandBuffer->GetD3D12Interface() };
 			m_pID3D12CommandQueue->ExecuteCommandLists(1, pICommandLists);
 		}
 		else
