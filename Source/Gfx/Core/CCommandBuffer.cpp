@@ -166,7 +166,7 @@ VOID CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
 			m_pID3D12CommandList->SetPipelineState(pRendererState->GetD3D12PipelineState());
 			m_pID3D12CommandList->SetGraphicsRootSignature(pRendererState->GetD3D12RootSignature());
 			m_pID3D12CommandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-			m_pID3D12CommandList->SetDescriptorHeaps(_countof(pHeaps), pHeaps); // TODO: THIS ONLY NEEDS TO BE SET ONCE IN A COMMAND LIST - NOT ONCE EVERY TIME THE RENDERER CHANGES
+			m_pID3D12CommandList->SetDescriptorHeaps(_countof(pHeaps), pHeaps);
 		}
 		else
 		{
