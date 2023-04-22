@@ -141,7 +141,7 @@ class __declspec(novtable) ICommandBuffer
 public:
 	virtual VOID ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[]) = 0;
 	virtual VOID Present(const RenderBuffer& rBuffer) = 0;
-	virtual VOID SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVertexBuffers) = 0;
+	virtual VOID SetVertexBuffers(UINT NumBuffers, const IVertexBuffer* pIVertexBuffers) = 0;
 	virtual VOID SetConstantBuffer(UINT Index, IConstantBuffer* pIConstantBuffer) = 0;
 	virtual VOID Draw(UINT NumVertices) = 0;
 	virtual VOID SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth) = 0;
@@ -183,7 +183,7 @@ public:
 	virtual IVertexBuffer*   CreateVertexBuffer(CONST VOID* pVertexData, UINT Size, UINT Stride) = 0;
 	virtual VOID             DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer) = 0;
 
-	virtual IMesh*           CreateMesh(const MESH_DESC& rDesc) = 0;
+	virtual IMesh*           CreateMesh(CONST MESH_DESC& rDesc) = 0;
 	virtual VOID             DestroyMesh(IMesh* pIMesh) = 0;
 
 	virtual BOOL             SubmitCommandBuffer(ICommandBuffer* pICommandBuffer) = 0;

@@ -81,7 +81,7 @@ public:
 	virtual IVertexBuffer*     CreateVertexBuffer(CONST VOID* pVertexData, UINT Size, UINT Stride);
 	virtual VOID               DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer);
 
-	virtual IMesh*             CreateMesh(const MESH_DESC& rDesc);
+	virtual IMesh*             CreateMesh(CONST MESH_DESC& rDesc);
 	virtual VOID               DestroyMesh(IMesh* pIMesh);
 
 	virtual BOOL               SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);

@@ -49,10 +49,12 @@ VOID DeviceFactory::DestroyInstance(IGfxDevice* pIDevice)
 
 CGfxDevice::CGfxDevice(VOID)
 {
+#if _DEBUG
 	m_hDxgiDebugModule = NULL;
 
 	m_pIDxgiDebugInterface = NULL;
 	m_pID3D12DebugInterface = NULL;
+#endif
 
 	m_pIDxgiFactory = NULL;
 	m_pIDxgiAdapter = NULL;
@@ -1409,7 +1411,7 @@ VOID CGfxDevice::DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer)
 	}
 }
 
-IMesh* CGfxDevice::CreateMesh(const MESH_DESC& rDesc)
+IMesh* CGfxDevice::CreateMesh(CONST MESH_DESC& rDesc)
 {
 	BOOL Status = TRUE;
 	IMesh* pIMesh = NULL;
