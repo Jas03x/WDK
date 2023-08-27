@@ -9,13 +9,13 @@ private:
 	enum { MaxLength = 1024 };
 
 	static HANDLE m_hStdOut;
-	static PWCHAR m_pBuffer;
+	static CWSTR  m_pBuffer;
 
 public:
 	static BOOL Initialize(VOID);
 	static BOOL Uninitialize(VOID);
 
-	static BOOL Write(PCWCHAR Msg, va_list Args);
+	static BOOL Write(CONST_CWSTR Msg, VA_LIST Args);
 };
 
 #endif // WDK_CCONSOLE_HPP

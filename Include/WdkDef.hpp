@@ -48,40 +48,37 @@ typedef unsigned long long  QWORD;
 
 typedef float				FLOAT;
 
-typedef char				*PCH,  *PCHAR;
-typedef wchar_t             *PWCH, *PWCHAR;
+typedef char                CHAR;
+typedef wchar_t             WCHAR;
 
-typedef const char			*PCCH, *PCCHAR;
-typedef const wchar_t		*PCWCH, *PCWCHAR;
+typedef char*               CSTR;
+typedef wchar_t*            CWSTR;
 
-typedef unsigned __int64    WPARAM;
-typedef __int64				LPARAM;
+typedef const char*         CONST_CSTR;
+typedef const wchar_t*      CONST_CWSTR;
 
-typedef unsigned short      ATOM;
-typedef void*				HANDLE;
-typedef struct HWND__*		HWND;
-typedef struct HINSTANCE__* HMODULE;
-typedef struct HINSTANCE__* HINSTANCE;
+typedef void*               HANDLE;
+
 typedef void*				PVOID;
 
-typedef char*				va_list;
+typedef char*				VA_LIST;
 
 enum STATUS
 {
-	SUCCESS = 0x00000000L,
-	UNSUCCESSFUL = 0xC0000001L,
+	SUCCESS         = 0x00000000L,
+	UNSUCCESSFUL    = 0xC0000001L,
 	NOT_IMPLEMENTED = 0xC0000002L
 };
 
 typedef struct FILE_PATH
 {
-	PCWCHAR Directory;
-	PCWCHAR FileName;
+	CONST_CWSTR Directory;
+	CONST_CWSTR FileName;
 
-	inline FILE_PATH(PCWCHAR directory, PCWCHAR filename)
+	inline FILE_PATH(CONST_CWSTR directory, CONST_CWSTR filename)
 	{
 		Directory = directory;
-		FileName = filename;
+		FileName  = filename;
 	}
 } FILE_PATH;
 

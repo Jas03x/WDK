@@ -17,6 +17,8 @@ struct ID3D12DescriptorHeap;
 class CCommandQueue;
 class CSwapChain;
 
+typedef struct HINSTANCE__* HMODULE;
+
 class CGfxDevice : public IGfxDevice
 {
 private:

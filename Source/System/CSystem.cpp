@@ -4,7 +4,7 @@
 #include <windows.h>
 #include <libloaderapi.h>
 
-BOOL System::GetModulePath(PWCHAR pPath, DWORD nSize)
+BOOL System::GetModulePath(CWSTR pPath, DWORD nSize)
 {
 	BOOL Status = TRUE;
 
@@ -28,7 +28,7 @@ BOOL System::GetModulePath(PWCHAR pPath, DWORD nSize)
 	return Status;
 }
 
-BOOL System::GetModuleDirectory(PWCHAR pPath, DWORD nSize)
+BOOL System::GetModuleDirectory(CWSTR pPath, DWORD nSize)
 {
 	BOOL Status = TRUE;
 

@@ -32,7 +32,7 @@ public:
 	CWindow(VOID);
 	virtual ~CWindow(VOID);
 
-	BOOL                 Initialize(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
+	BOOL                 Initialize(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 	VOID                 Uninitialize(VOID);
 
 public:

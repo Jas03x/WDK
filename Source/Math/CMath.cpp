@@ -40,7 +40,7 @@
 
 // ------------------------------------ Helper functions ------------------------------------------
 
-template <typename T> VOID WriteToBuffer(PWCHAR& pBuffer, SIZE_T& szBuffer, T t)
+template <typename T> VOID WriteToBuffer(CWSTR& pBuffer, SIZE_T& szBuffer, T t)
 {
 	SIZE_T cchRemaining = 0;
 
@@ -257,7 +257,7 @@ template <typename T> std::wstring VectorToString(T* pElements, SIZE_T nElements
 {
 	WCHAR buffer[2048] = {};
 
-	PWCHAR pBuffer = buffer;
+	CWSTR pBuffer = buffer;
 	SIZE_T szBuffer = _countof(buffer);
 
 	WriteToBuffer(pBuffer, szBuffer, L"<");
@@ -917,7 +917,7 @@ template <typename T> std::wstring MatrixToString(T* pElements, SIZE_T nElements
 {
 	WCHAR buffer[2048] = {};
 
-	PWCHAR pBuffer = buffer;
+	CWSTR pBuffer = buffer;
 	SIZE_T szBuffer = _countof(buffer);
 
 	for (uint32_t i = 0; i < nElements; i++)

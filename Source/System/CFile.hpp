@@ -14,7 +14,7 @@ private:
 	~CFile();
 
 public:
-	static CFile* Open(PCWCHAR Path);
+	static CFile* Open(CONST_CWSTR Path);
 	static VOID Close(CFile* pCFile);
 
 public:

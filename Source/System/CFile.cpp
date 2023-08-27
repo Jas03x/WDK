@@ -45,7 +45,7 @@ CFile::~CFile()
 {
 }
 
-CFile* CFile::Open(PCWCHAR Path)
+CFile* CFile::Open(CONST_CWSTR Path)
 {
 	CFile* pCFile = new CFile();
 

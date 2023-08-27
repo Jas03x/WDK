@@ -418,7 +418,7 @@ public:
 	}
 };
 
-INT WdkMain(INT argc, PWCHAR argv)
+INT WdkMain(INT argc, CONST_CWSTR argv[])
 {
 	INT Status = STATUS::SUCCESS;
 

@@ -7,10 +7,10 @@
 #include "System/CConsole.hpp"
 #include "System/CMemory.hpp"
 
-BOOL WdkInitialize(INT argc, PWCHAR argv);
+BOOL WdkInitialize(INT argc, CONST_CWSTR argv[]);
 BOOL WdkTerminate(VOID);
 
-void WdkAssert(BOOL b, PCWCHAR error, ...)
+void WdkAssert(BOOL b, CONST_CWSTR error, ...)
 {
 	if (b != TRUE)
 	{
@@ -23,7 +23,7 @@ void WdkAssert(BOOL b, PCWCHAR error, ...)
 	}
 }
 
-INT main(INT argc, PWCHAR argv)
+INT main(INT argc, CONST_CWSTR argv[])
 {
 	INT Status = STATUS::SUCCESS;
 
@@ -47,7 +47,7 @@ INT main(INT argc, PWCHAR argv)
 	return Status;
 }
 
-BOOL WdkInitialize(INT argc, PWCHAR argv)
+BOOL WdkInitialize(INT argc, CONST_CWSTR argv[])
 {
 	BOOL Status = TRUE;
 

@@ -6,7 +6,7 @@
 
 #undef CreateWindow
 
-IWindow* WindowFactory::CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+IWindow* WindowFactory::CreateInstance(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	CWindow* pWindow = new CWindow();
 
@@ -48,7 +48,7 @@ CWindow::~CWindow(VOID)
 {
 }
 
-BOOL CWindow::Initialize(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+BOOL CWindow::Initialize(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
 {
 	BOOL Status = TRUE;
 

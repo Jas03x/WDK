@@ -5,6 +5,8 @@
 
 #undef CreateWindow
 
+typedef struct HWND__* HWND;
+
 enum WIN_AREA
 {
 	CLIENT = 0,
@@ -55,7 +57,7 @@ public:
 class __declspec(novtable) WindowFactory
 {
 public:
-	static IWindow* CreateInstance(PCWCHAR ClassName, PCWCHAR WindowName, ULONG ClientWidth, ULONG ClientHeight);
+	static IWindow* CreateInstance(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
 	static VOID     DestroyInstance(IWindow* pIWindow);
 };
 

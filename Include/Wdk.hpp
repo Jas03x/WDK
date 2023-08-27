@@ -3,9 +3,9 @@
 
 #include "WdkDef.hpp"
 
-INT WdkMain(INT argc, PWCHAR argv);
+INT WdkMain(INT argc, CONST_CWSTR argv[]);
 
-void WdkAssert(BOOL b, PCWCHAR error, ...);
+void WdkAssert(BOOL b, CONST_CWSTR error, ...);
 
 // Memory
 class Memory
@@ -19,8 +19,8 @@ public:
 class Console
 {
 public:
-	static BOOL Write(PCWCHAR Msg, ...);
-	static BOOL Write(PCWCHAR Msg, va_list Args);
+	static BOOL Write(CONST_CWSTR Msg, ...);
+	static BOOL Write(CONST_CWSTR Msg, VA_LIST Args);
 };
 
 // File
@@ -33,8 +33,8 @@ public:
 		WRITE = 1
 	};
 
-	static File* Open(PCWCHAR Path);
-	static File* Open(CONST FILE_PATH& Path);
+	static File*  Open(CONST_CWSTR Path);
+	static File*  Open(CONST FILE_PATH& Path);
 
 	static VOID   Close(File* pIFile);
 
@@ -46,8 +46,8 @@ class System
 {
 public:
 	// Path
-	static BOOL GetModulePath(PWCHAR pPath, DWORD nSize);
-	static BOOL GetModuleDirectory(PWCHAR pPath, DWORD nSize);
+	static BOOL GetModulePath(CWSTR pPath, DWORD nSize);
+	static BOOL GetModuleDirectory(CWSTR pPath, DWORD nSize);
 };
 
 #endif // WDK__HPP

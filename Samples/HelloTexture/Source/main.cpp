@@ -5,8 +5,8 @@
 
 #include <vector>
 
-CONST PCWCHAR WINDOW_CLASS = L"HelloTriangle";
-CONST PCWCHAR WINDOW_TITLE = L"Hello Triangle";
+CONST_CWSTR WINDOW_CLASS = L"HelloTriangle";
+CONST_CWSTR WINDOW_TITLE = L"Hello Triangle";
 CONST ULONG WINDOW_HEIGHT  = 512;
 CONST ULONG WINDOW_WIDTH   = 512;
 
@@ -249,7 +249,7 @@ public:
 	}
 };
 
-INT WdkMain(INT argc, PWCHAR argv)
+INT WdkMain(INT argc, CONST_CWSTR argv[])
 {
 	INT Status = STATUS::SUCCESS;
 

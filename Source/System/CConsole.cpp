@@ -7,13 +7,13 @@
 #include <strsafe.h>
 
 HANDLE CConsole::m_hStdOut = NULL;
-PWCHAR CConsole::m_pBuffer = NULL;
+CWSTR  CConsole::m_pBuffer = NULL;
 
-BOOL Console::Write(PCWCHAR Msg, ...)
+BOOL Console::Write(CONST_CWSTR Msg, ...)
 {
 	BOOL Status = TRUE;
 
-	va_list Args;
+	VA_LIST Args;
 	va_start(Args, Msg);
 
 	Status = CConsole::Write(Msg, Args);
@@ -23,7 +23,7 @@ BOOL Console::Write(PCWCHAR Msg, ...)
 	return Status;
 }
 
-BOOL Console::Write(PCWCHAR Msg, va_list Args)
+BOOL Console::Write(CONST_CWSTR Msg, VA_LIST Args)
 {
 	BOOL Status = TRUE;
 
@@ -45,7 +45,7 @@ BOOL CConsole::Initialize(VOID)
 
 	if (Status == TRUE)
 	{
-		m_pBuffer = reinterpret_cast<PWCHAR>(Memory::Allocate(MaxLength * sizeof(WCHAR), TRUE));
+		m_pBuffer = reinterpret_cast<CWSTR>(Memory::Allocate(MaxLength * sizeof(WCHAR), TRUE));
 	}
 
 	return Status;
@@ -66,7 +66,7 @@ BOOL CConsole::Uninitialize(VOID)
 	return Status;
 }
 
-BOOL CConsole::Write(PCWCHAR Msg, va_list Args)
+BOOL CConsole::Write(CONST_CWSTR Msg, VA_LIST Args)
 {
 	BOOL Status = TRUE;
 	SIZE_T CharsFree = 0;

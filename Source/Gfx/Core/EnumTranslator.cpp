@@ -70,7 +70,7 @@ BOOL EnumTranslator::CommandQueueType_To_CommandListType(COMMAND_QUEUE_TYPE CmdQ
 	return Status;
 }
 
-BOOL EnumTranslator::InputElement_To_SemanticName(INPUT_ELEMENT Element, PCCHAR& rSemanticName)
+BOOL EnumTranslator::InputElement_To_SemanticName(INPUT_ELEMENT Element, CONST_CSTR& rSemanticName)
 {
 	BOOL Status = TRUE;
 
