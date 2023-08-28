@@ -22,8 +22,10 @@ typedef unsigned long long	uint64_t;
 
 typedef int					BOOL;
 typedef char				CHAR;
+typedef unsigned char       UCHAR;
 typedef wchar_t				WCHAR;
 typedef short				SHORT;
+typedef unsigned short      USHORT;
 typedef int					INT;
 typedef unsigned int        UINT;
 typedef long				LONG;
@@ -47,6 +49,7 @@ typedef unsigned long		DWORD;
 typedef unsigned long long  QWORD;
 
 typedef float				FLOAT;
+typedef double              DOUBLE;
 
 typedef char                CHAR;
 typedef wchar_t             WCHAR;

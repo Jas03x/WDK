@@ -107,8 +107,8 @@ public:
 		{
 			struct Vertex
 			{
-				float vertex[3];
-				float colour[3];
+				FLOAT vertex[3];
+				FLOAT colour[3];
 			};
 
 			static CONST Vertex Vertices[] =

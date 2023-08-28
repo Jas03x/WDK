@@ -398,9 +398,9 @@ BOOL CGfxDevice::PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter)
 		Console::Write(L"\tDeviceId: %X\n", Desc.DeviceId);
 		Console::Write(L"\tsubSysId: %X\n", Desc.SubSysId);
 		Console::Write(L"\tRevision: %X\n", Desc.Revision);
-		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedVideoMemory) / static_cast<float>(GB)));
-		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedSystemMemory) / static_cast<float>(GB)));
-		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.SharedSystemMemory) / static_cast<float>(GB)));
+		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<FLOAT>(Desc.DedicatedVideoMemory) / static_cast<FLOAT>(GB)));
+		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<FLOAT>(Desc.DedicatedSystemMemory) / static_cast<FLOAT>(GB)));
+		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<FLOAT>(Desc.SharedSystemMemory) / static_cast<FLOAT>(GB)));
 
 		if (Desc.Flags != DXGI_ADAPTER_FLAG3_NONE)
 		{
@@ -521,10 +521,10 @@ BOOL CGfxDevice::PrintDeviceProperties(VOID)
 		if (m_pIDxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &NonLocalMemoryInfo) == S_OK)
 		{
 			Console::Write(L"\tNon-Local Memory Info:\n");
-			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.Budget) / static_cast<float>(GB));
-			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.CurrentUsage) / static_cast<float>(GB));
-			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.AvailableForReservation) / static_cast<float>(GB));
-			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.CurrentReservation) / static_cast<float>(GB));
+			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.Budget) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.CurrentUsage) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.AvailableForReservation) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.CurrentReservation) / static_cast<FLOAT>(GB));
 		}
 		else
 		{
@@ -540,10 +540,10 @@ BOOL CGfxDevice::PrintDeviceProperties(VOID)
 		if (m_pIDxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &LocalMemoryInfo) == S_OK)
 		{
 			Console::Write(L"\tLocal Memory Info:\n");
-			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<float>(LocalMemoryInfo.Budget) / static_cast<float>(GB));
-			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<float>(LocalMemoryInfo.CurrentUsage) / static_cast<float>(GB));
-			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<float>(LocalMemoryInfo.AvailableForReservation) / static_cast<float>(GB));
-			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<float>(LocalMemoryInfo.CurrentReservation) / static_cast<float>(GB));
+			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.Budget) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.CurrentUsage) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.AvailableForReservation) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.CurrentReservation) / static_cast<FLOAT>(GB));
 		}
 		else
 		{
