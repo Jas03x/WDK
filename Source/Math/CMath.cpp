@@ -42,17 +42,13 @@
 
 template <typename T> VOID WriteToBuffer(CWSTR& pBuffer, SIZE_T& szBuffer, T t)
 {
-	SIZE_T cchRemaining = 0;
-
 	if constexpr (std::is_arithmetic<T>::value)
 	{
-		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%f", t); }
-		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%llu", static_cast<ULONGLONG>(t)); }
-		else											{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%lli", static_cast<LONGLONG>(t));  }
+		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%f", t); }
+		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%llu", static_cast<ULONGLONG>(t)); }
+		else											{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%lli", static_cast<LONGLONG>(t));  }
 	}
-	else												{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &cchRemaining, 0, L"%S", t); }
-
-	szBuffer -= (szBuffer - cchRemaining);
+	else												{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%S", t); }
 }
 
 // ------------------------------------ Scalar functions ------------------------------------------
