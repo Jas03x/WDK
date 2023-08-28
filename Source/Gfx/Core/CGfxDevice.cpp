@@ -1074,7 +1074,7 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 
 		if (m_pID3D12Device->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<VOID**>(&pID3D12PipelineState)) != S_OK)
 		{
-			Status = false;
+			Status = FALSE;
 			Console::Write(L"Error: Failed to create graphics pipeline state object\n");
 		}
 	}
