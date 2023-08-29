@@ -8,14 +8,14 @@ class CConsole
 private:
 	enum { MaxLength = 1024 };
 
-	static HANDLE m_hStdOut;
-	static CWSTR  m_pBuffer;
+	static HANDLE   m_hStdOut;
+	static wchar_t* m_pBuffer;
 
 public:
-	static BOOL Initialize(VOID);
-	static BOOL Uninitialize(VOID);
+	static bool Initialize(void);
+	static bool Uninitialize(void);
 
-	static BOOL Write(CONST_CWSTR Msg, VA_LIST Args);
+	static bool Write(const wchar_t* Msg, va_list Args);
 };
 
 #endif // WDK_CCONSOLE_HPP

@@ -4,56 +4,56 @@
 #include <windows.h>
 #include <libloaderapi.h>
 
-BOOL System::GetModulePath(CWSTR pPath, DWORD nSize)
+bool System::GetModulePath(wchar_t* pPath, uint32_t nSize)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (pPath == NULL)
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Null path string buffer\n");
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		DWORD length = GetModuleFileName(NULL, pPath, nSize);
 
 		if ((length == 0) || ((length == nSize) && (GetLastError() == ERROR_INSUFFICIENT_BUFFER)))
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error 0x%X: Could not get module path\n", GetLastError());
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL System::GetModuleDirectory(CWSTR pPath, DWORD nSize)
+bool System::GetModuleDirectory(wchar_t* pPath, uint32_t nSize)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	Status = GetModulePath(pPath, nSize);
+	status = GetModulePath(pPath, nSize);
 
-	if (Status == TRUE)
+	if (status)
 	{
-		UINT index = 0xFFFFFFFF;
+		uint32_t index = 0xFFFFFFFF;
 
-		for (PWCHAR p = pPath; *p != 0; p++)
+		for (wchar_t* p = pPath; *p != 0; p++)
 		{
 			if ((*p == '/') || (*p == '\\'))
 			{
-				index = static_cast<UINT>(p - pPath);
+				index = static_cast<uint32_t>(p - pPath);
 			}
 		}
 
 		if (index != 0xFFFFFFFF)
 		{
-			for (UINT i = index; i < nSize; i++)
+			for (uint32_t i = index; i < nSize; i++)
 			{
 				pPath[i] = 0;
 			}
 		}
 	}
 
-	return Status;
+	return status;
 }

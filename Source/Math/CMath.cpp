@@ -40,15 +40,15 @@
 
 // ------------------------------------ Helper functions ------------------------------------------
 
-template <typename T> VOID WriteToBuffer(CWSTR& pBuffer, SIZE_T& szBuffer, T t)
+template <typename T> void WriteToBuffer(wchar_t*& pBuffer, size_t& szBuffer, T t)
 {
 	if constexpr (std::is_arithmetic<T>::value)
 	{
 		if constexpr (std::is_floating_point<T>::value) { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%f", t); }
-		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%llu", static_cast<ULONGLONG>(t)); }
-		else											{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%lli", static_cast<LONGLONG>(t));  }
+		else if constexpr (std::is_unsigned<T>::value)  { StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%llu", static_cast<uint64_t>(t)); }
+		else											{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%lli", static_cast<int64_t>(t));  }
 	}
-	else												{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%S", t); }
+	else												{ StringCchPrintfExW(pBuffer, szBuffer, &pBuffer, &szBuffer, 0, L"%s", t); }
 }
 
 // ------------------------------------ Scalar functions ------------------------------------------
@@ -57,9 +57,10 @@ template <typename T>
 T Step(T v0, T v1, T step)
 {
 	T d = v1 - v0;
-
+	
 	if constexpr (std::is_floating_point<T>::value) { return (std::fabs(d) > step) ? (v0 + std::copysign(step, d)) : v1; }
-	else { return static_cast<T>((std::abs(static_cast<LONGLONG>(d)) > step) ? (v0 + std::copysign(step, d)) : v1); }
+	else if constexpr (std::is_signed<T>::value)    { return static_cast<T>((std::abs(static_cast<int64_t>(d)) > step) ? (v0 + std::copysign(step, d)) : v1); }
+	else                                            { return static_cast<T>((d > step) ? (v0 + step) : v1); }
 }
 
 template <typename T>
@@ -74,23 +75,23 @@ T Clamp(T val, T min, T max)
 	template X Step(X v0, X v1, X step);		 \
     template X Clamp(X val, X min, X max);       \
 
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(CHAR)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(SHORT)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(INT)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(LONG)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(UCHAR)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(USHORT)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(UINT)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(ULONG)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(FLOAT)
-INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(DOUBLE)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(int8_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(int16_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(int32_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(int64_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(uint8_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(uint16_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(uint32_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(uint64_t)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(float)
+INSTANTIATE_SCALAR_FUNCTION_TEMPLATES(double)
 
 // ----------------------------------------- Vector2 ----------------------------------------------
 
-template <typename T> Vector2<T>::Vector2() : Vector2<T>(0, 0) { }
+template <typename T> Vector2<T>::Vector2() { for (uint32_t i = 0; i < 2; i++) { elements[i] = 0; } }
 template <typename T> Vector2<T>::Vector2(T t) : Vector2<T>(t, t) { }
 template <typename T> Vector2<T>::Vector2(const Vector2<T>& v) : Vector2<T>(v.x, v.y) { }
-template <typename T> Vector2<T>::Vector2(T _x, T _y) { x = _x; y = _y; }
+template <typename T> Vector2<T>::Vector2(T _x, T _y) : Vector2<T>() { x = _x; y = _y; }
 
 template <typename T> Vector2<T>& Vector2<T>::operator = (const Vector2<T>& v)
 {
@@ -99,8 +100,8 @@ template <typename T> Vector2<T>& Vector2<T>::operator = (const Vector2<T>& v)
 	return *this;
 }
 
-template <typename T> T& Vector2<T>::operator[] (UINT32 i) { return elements[i]; }
-template <typename T> const T& Vector2<T>::operator[] (UINT32 i) const { return elements[i]; }
+template <typename T> T& Vector2<T>::operator[] (uint32_t i) { return elements[i]; }
+template <typename T> const T& Vector2<T>::operator[] (uint32_t i) const { return elements[i]; }
 
 template <typename T> Vector2<T> Vector2<T>::operator + () const { return Vector2<T>(+x, +y); }
 template <typename T> Vector2<T> Vector2<T>::operator - () const
@@ -131,10 +132,10 @@ template <typename T> bool Vector2<T>::operator != (const Vector2<T>& v) const {
 
 // ----------------------------------------- Vector3 ----------------------------------------------
 
-template <typename T> Vector3<T>::Vector3() : Vector3<T>(0, 0, 0) { }
+template <typename T> Vector3<T>::Vector3() { for (uint32_t i = 0; i < 3; i++) { elements[i] = 0; } }
 template <typename T> Vector3<T>::Vector3(T t) : Vector3<T>(t, t, t) { }
 template <typename T> Vector3<T>::Vector3(const Vector3<T>& v) : Vector3<T>(v.x, v.y, v.z) { }
-template <typename T> Vector3<T>::Vector3(T _x, T _y, T _z) { x = _x; y = _y; z = _z; }
+template <typename T> Vector3<T>::Vector3(T _x, T _y, T _z) : Vector3<T>() { x = _x; y = _y; z = _z; }
 
 template <typename T> Vector3<T>& Vector3<T>::operator = (const Vector3<T>& v)
 {
@@ -144,8 +145,8 @@ template <typename T> Vector3<T>& Vector3<T>::operator = (const Vector3<T>& v)
 	return *this;
 }
 
-template <typename T> T& Vector3<T>::operator[] (UINT32 i) { return elements[i]; }
-template <typename T> const T& Vector3<T>::operator[] (UINT32 i) const { return elements[i]; }
+template <typename T> T& Vector3<T>::operator[] (uint32_t i) { return elements[i]; }
+template <typename T> const T& Vector3<T>::operator[] (uint32_t i) const { return elements[i]; }
 
 template <typename T> Vector3<T> Vector3<T>::operator + () const { return Vector3<T>(+x, +y, +z); }
 template <typename T> Vector3<T> Vector3<T>::operator - () const
@@ -177,10 +178,10 @@ template <typename T> bool Vector3<T>::operator != (const Vector3<T>& v) const {
 
 // ----------------------------------------- Vector4 ----------------------------------------------
 
-template <typename T> Vector4<T>::Vector4() : Vector4<T>(0, 0, 0, 0) { }
+template <typename T> Vector4<T>::Vector4() { for (uint32_t i = 0; i < 4; i++) { elements[i] = 0; } }
 template <typename T> Vector4<T>::Vector4(T t) : Vector4<T>(t, t, t, t) { }
 template <typename T> Vector4<T>::Vector4(const Vector4<T>& v) : Vector4<T>(v.x, v.y, v.z, v.w) { }
-template <typename T> Vector4<T>::Vector4(T _x, T _y, T _z, T _w) { x = _x; y = _y; z = _z; w = _w; }
+template <typename T> Vector4<T>::Vector4(T _x, T _y, T _z, T _w) : Vector4<T>() { x = _x; y = _y; z = _z; w = _w; }
 
 template <typename T> Vector4<T>& Vector4<T>::operator = (const Vector4<T>& v)
 {
@@ -191,8 +192,8 @@ template <typename T> Vector4<T>& Vector4<T>::operator = (const Vector4<T>& v)
 	return *this;
 }
 
-template <typename T> T& Vector4<T>::operator[] (UINT32 i) { return elements[i]; }
-template <typename T> const T& Vector4<T>::operator[] (UINT32 i) const { return elements[i]; }
+template <typename T> T& Vector4<T>::operator[] (uint32_t i) { return elements[i]; }
+template <typename T> const T& Vector4<T>::operator[] (uint32_t i) const { return elements[i]; }
 
 template <typename T> Vector4<T> Vector4<T>::operator + () const { return Vector4<T>(+x, +y, +z, +w); }
 template <typename T> Vector4<T> Vector4<T>::operator - () const
@@ -249,15 +250,15 @@ template <typename T> T Vector::Distance(const Vector2<T>& v0, const Vector2<T>&
 template <typename T> T Vector::Distance(const Vector3<T>& v0, const Vector3<T>& v1) { return std::sqrt(SQR(v1.x - v0.x) + SQR(v1.y - v0.y) + SQR(v1.z - v0.z)); }
 template <typename T> T Vector::Distance(const Vector4<T>& v0, const Vector4<T>& v1) { return std::sqrt(SQR(v1.x - v0.x) + SQR(v1.y - v0.y) + SQR(v1.z - v0.z) + SQR(v1.w - v0.w)); }
 
-template <typename T> std::wstring VectorToString(T* pElements, SIZE_T nElements)
+template <typename T> std::wstring VectorToString(T* pElements, size_t nElements)
 {
-	WCHAR buffer[2048] = {};
+	wchar_t buffer[2048] = {};
 
-	CWSTR pBuffer = buffer;
-	SIZE_T szBuffer = _countof(buffer);
+	wchar_t* pBuffer = buffer;
+	size_t szBuffer = _countof(buffer);
 
 	WriteToBuffer(pBuffer, szBuffer, L"<");
-	for (UINT32 i = 0; i < nElements; i++)
+	for (uint32_t i = 0; i < nElements; i++)
 	{
 		WriteToBuffer(pBuffer, szBuffer, pElements[i]);
 		if (i != (nElements - 1))
@@ -302,26 +303,26 @@ template <typename T> std::wstring Vector::ToString(const Vector4<T>& v) { retur
     template X Vector::Distance(const Vector3<X>& v0, const Vector3<X>& v1);            \
     template X Vector::Distance(const Vector4<X>& v0, const Vector4<X>& v1);            \
 
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(char)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(short)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(int)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(long)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned char)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned short)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned int)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(unsigned long)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(int8_t)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(int16_t)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(int32_t)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(int64_t)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(uint8_t)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(uint16_t)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(uint32_t)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_TYPE(uint64_t)
 
-INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(FLOAT)
-INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(DOUBLE)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)
+INSTANTIATE_VECTOR_TEMPLATES_FOR_FLOATING_POINT_TYPE(double)
 
 // --------------------------------------- Quaternion ---------------------------------------------
 
-template <typename T> Quaternion<T>::Quaternion() : Quaternion<T>(0, 0, 0, 0) { }
-template <typename T> Quaternion<T>::Quaternion(const Vector4<T>& v) : Quaternion<T>(v.x, v.y, v.z, v.w) { }
-template <typename T> Quaternion<T>::Quaternion(T _x, T _y, T _z, T _w) { x = _x; y = _y; z = _z; w = _w; }
-
+template <typename T> Quaternion<T>::Quaternion() { for (uint32_t i = 0; i < 4; i++) { elements[i] = 0; } }
 template <typename T> Quaternion<T>::Quaternion(const Vector3<T>& v) : Quaternion<T>(v.x, v.y, v.z) { }
-template <typename T> Quaternion<T>::Quaternion(T _x, T _y, T _z)
+template <typename T> Quaternion<T>::Quaternion(const Vector4<T>& v) : Quaternion<T>(v.x, v.y, v.z, v.w) { }
+template <typename T> Quaternion<T>::Quaternion(T _x, T _y, T _z, T _w) : Quaternion<T>() { x = _x; y = _y; z = _z; w = _w; }
+
+template <typename T> Quaternion<T>::Quaternion(T _x, T _y, T _z) : Quaternion<T>()
 {
 	const Vector3F h = Vector3<T>(_x, _y, _z) * 0.5f; // half-rotation vector
 	const Vector3F c(cosf(h.x), cosf(h.y), cosf(h.z));
@@ -333,11 +334,11 @@ template <typename T> Quaternion<T>::Quaternion(T _x, T _y, T _z)
 	z = c.x * c.y * s.z - s.x * s.y * c.z;
 }
 
-template <typename T> Quaternion<T>::Quaternion(const struct Matrix3<T>& m)
+template <typename T> Quaternion<T>::Quaternion(const struct Matrix3<T>& m) : Quaternion<T>()
 {
 	if (m[0][0] + m[1][1] + m[2][2] >= static_cast<T>(0)) // q_w >= 1/2
 	{
-		FLOAT f = static_cast<T>(2) * sqrt(1 + m[0][0] + m[1][1] + m[2][2]);
+		float f = static_cast<T>(2) * sqrt(1 + m[0][0] + m[1][1] + m[2][2]);
 		w = static_cast<T>(0.25) * f;
 		x = (m[1][2] - m[2][1])  / f;
 		y = (m[2][0] - m[0][2])  / f;
@@ -345,7 +346,7 @@ template <typename T> Quaternion<T>::Quaternion(const struct Matrix3<T>& m)
 	}
 	else if (m[0][0] - m[1][1] - m[2][2] >= static_cast<T>(0)) // q_x >= 1/2
 	{
-		FLOAT f = static_cast<T>(2) * sqrt(1 + m[0][0] - m[1][1] - m[2][2]);
+		float f = static_cast<T>(2) * sqrt(1 + m[0][0] - m[1][1] - m[2][2]);
 		w = (m[1][2] - m[2][1])  / f;
 		x = static_cast<T>(0.25) * f;
 		y = (m[1][0] + m[0][1])  / f;
@@ -353,7 +354,7 @@ template <typename T> Quaternion<T>::Quaternion(const struct Matrix3<T>& m)
 	}
 	else if (-m[0][0] + m[1][1] - m[2][2] >= static_cast<T>(0)) // q_y >= 1/2
 	{
-		FLOAT f = static_cast<T>(2) * sqrt(1 - m[0][0] + m[1][1] - m[2][2]);
+		float f = static_cast<T>(2) * sqrt(1 - m[0][0] + m[1][1] - m[2][2]);
 		w = (m[2][0] - m[0][2])  / f;
 		x = (m[1][0] + m[0][1])  / f;
 		y = static_cast<T>(0.25) * f;
@@ -361,7 +362,7 @@ template <typename T> Quaternion<T>::Quaternion(const struct Matrix3<T>& m)
 	}
 	else // (-m[0][0] - m[1][1] + m[2][2] >= 0) => q_z >= 1/2
 	{
-		FLOAT f = static_cast<T>(2) * sqrt(1 - m[0][0] - m[1][1] + m[2][2]);
+		float f = static_cast<T>(2) * sqrt(1 - m[0][0] - m[1][1] + m[2][2]);
 		w = (m[0][1] - m[1][0])  / f;
 		x = (m[2][0] + m[0][2])  / f;
 		y = (m[1][2] + m[2][1])  / f;
@@ -410,7 +411,7 @@ template <typename T> Quaternion<T>& Quaternion<T>::operator = (const Quaternion
 #define INSTANTIATE_QUATERNION_TEMPLATES_FOR_FLOATING_POINT_TYPE(X) \
     template struct Quaternion<X>;
 
-INSTANTIATE_QUATERNION_TEMPLATES_FOR_FLOATING_POINT_TYPE(FLOAT)
+INSTANTIATE_QUATERNION_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)
 
 // ----------------------------------------- Matrix2 ----------------------------------------------
 
@@ -434,8 +435,8 @@ template <typename T> Matrix2<T>& Matrix2<T>::operator = (const Matrix2<T>& m)
 	return *this;
 }
 
-template <typename T> Vector2<T>& Matrix2<T>::operator[] (UINT32 i) { return rows[i]; }
-template <typename T> const Vector2<T>& Matrix2<T>::operator[] (UINT32 i) const { return rows[i]; }
+template <typename T> Vector2<T>& Matrix2<T>::operator[] (uint32_t i) { return rows[i]; }
+template <typename T> const Vector2<T>& Matrix2<T>::operator[] (uint32_t i) const { return rows[i]; }
 
 template <typename T> Matrix2<T> Matrix2<T>::operator * (T t) const
 {
@@ -535,8 +536,8 @@ template <typename T> Matrix3<T>& Matrix3<T>::operator = (const Matrix3<T>& m)
 	return *this;
 }
 
-template <typename T> Vector3<T>& Matrix3<T>::operator[] (UINT32 i) { return rows[i]; }
-template <typename T> const Vector3<T>& Matrix3<T>::operator[] (UINT32 i) const { return rows[i]; }
+template <typename T> Vector3<T>& Matrix3<T>::operator[] (uint32_t i) { return rows[i]; }
+template <typename T> const Vector3<T>& Matrix3<T>::operator[] (uint32_t i) const { return rows[i]; }
 
 template <typename T> Matrix3<T> Matrix3<T>::operator * (T t) const
 {
@@ -649,15 +650,15 @@ template <typename T> Matrix4<T>::Matrix4(const Matrix4<T>& m) : Matrix4<T>(m[0]
 
 template <typename T> Matrix4<T>::Matrix4(const Quaternion<T>& q) : Matrix4<T>(1)
 {
-	FLOAT qxx = q.x * q.x;
-	FLOAT qxy = q.x * q.y;
-	FLOAT qxz = q.x * q.z;
-	FLOAT qxw = q.w * q.x;
-	FLOAT qyy = q.y * q.y;
-	FLOAT qyz = q.y * q.z;
-	FLOAT qyw = q.w * q.y;
-	FLOAT qzz = q.z * q.z;
-	FLOAT qzw = q.w * q.z;
+	float qxx = q.x * q.x;
+	float qxy = q.x * q.y;
+	float qxz = q.x * q.z;
+	float qxw = q.w * q.x;
+	float qyy = q.y * q.y;
+	float qyz = q.y * q.z;
+	float qyw = q.w * q.y;
+	float qzz = q.z * q.z;
+	float qzw = q.w * q.z;
 
 	elements[0][0] = 1.0f - 2.0f * (qyy + qzz);
 	elements[0][1] = 2.0f * (qxy + qzw);
@@ -681,8 +682,8 @@ template <typename T> Matrix4<T>& Matrix4<T>::operator = (const Matrix4<T>& m)
 	return *this;
 }
 
-template <typename T> Vector4<T>& Matrix4<T>::operator[] (UINT32 i) { return rows[i]; }
-template <typename T> const Vector4<T>& Matrix4<T>::operator[] (UINT32 i) const { return rows[i]; }
+template <typename T> Vector4<T>& Matrix4<T>::operator[] (uint32_t i) { return rows[i]; }
+template <typename T> const Vector4<T>& Matrix4<T>::operator[] (uint32_t i) const { return rows[i]; }
 
 template <typename T> Matrix4<T> Matrix4<T>::operator * (T t) const
 {
@@ -832,10 +833,10 @@ template <typename T> Matrix4<T> Matrix::Inverse(const Matrix4<T>& m)
 {
 	Matrix4F r;
 
-	FLOAT m0 = m[0][0] * DET3(m[1][1], m[1][2], m[1][3], m[2][1], m[2][2], m[2][3], m[3][1], m[3][2], m[3][3]);
-	FLOAT m1 = m[0][1] * DET3(m[1][0], m[1][2], m[1][3], m[2][0], m[2][2], m[2][3], m[3][0], m[3][2], m[3][3]);
-	FLOAT m2 = m[0][2] * DET3(m[1][0], m[1][1], m[1][3], m[2][0], m[2][1], m[2][3], m[3][0], m[3][1], m[3][3]);
-	FLOAT m3 = m[0][3] * DET3(m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2], m[3][0], m[3][1], m[3][2]);
+	float m0 = m[0][0] * DET3(m[1][1], m[1][2], m[1][3], m[2][1], m[2][2], m[2][3], m[3][1], m[3][2], m[3][3]);
+	float m1 = m[0][1] * DET3(m[1][0], m[1][2], m[1][3], m[2][0], m[2][2], m[2][3], m[3][0], m[3][2], m[3][3]);
+	float m2 = m[0][2] * DET3(m[1][0], m[1][1], m[1][3], m[2][0], m[2][1], m[2][3], m[3][0], m[3][1], m[3][3]);
+	float m3 = m[0][3] * DET3(m[1][0], m[1][1], m[1][2], m[2][0], m[2][1], m[2][2], m[3][0], m[3][1], m[3][2]);
 	T det = static_cast<T>(1) / (m0 - m1 + m2 - m3);
 
 	r[0][0] = +DET3(m[1][1], m[1][2], m[1][3], m[2][1], m[2][2], m[2][3], m[3][1], m[3][2], m[3][3]);
@@ -909,17 +910,17 @@ template <typename T> Matrix4<T> Matrix::Rotate(const Vector3<T>& v)
 	return Matrix4F(Quaternion(v));
 }
 
-template <typename T> std::wstring MatrixToString(T* pElements, SIZE_T nElements)
+template <typename T> std::wstring MatrixToString(T* pElements, size_t nElements)
 {
-	WCHAR buffer[2048] = {};
+	wchar_t buffer[2048] = {};
 
-	CWSTR pBuffer = buffer;
-	SIZE_T szBuffer = _countof(buffer);
+	wchar_t* pBuffer = buffer;
+	size_t szBuffer = _countof(buffer);
 
-	for (UINT32 i = 0; i < nElements; i++)
+	for (uint32_t i = 0; i < nElements; i++)
 	{
 		WriteToBuffer(pBuffer, szBuffer, L"[");
-		for (UINT32 j = 0; j < nElements; j++)
+		for (uint32_t j = 0; j < nElements; j++)
 		{
 			WriteToBuffer(pBuffer, szBuffer, *(pElements + (i * nElements) + j));
 			if (j != (nElements - 1))
@@ -955,4 +956,4 @@ template <typename T> std::wstring Matrix::ToString(const Matrix4<T>& m) { retur
 	template std::wstring Matrix::ToString(const Matrix3<X>& m);						\
 	template std::wstring Matrix::ToString(const Matrix4<X>& m);						\
 
-INSTANTIATE_MATRIX_TEMPLATES_FOR_FLOATING_POINT_TYPE(FLOAT);
+INSTANTIATE_MATRIX_TEMPLATES_FOR_FLOATING_POINT_TYPE(float)

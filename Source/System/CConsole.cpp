@@ -6,54 +6,54 @@
 #include <windows.h>
 #include <strsafe.h>
 
-HANDLE CConsole::m_hStdOut = NULL;
-CWSTR  CConsole::m_pBuffer = NULL;
+HANDLE   CConsole::m_hStdOut = nullptr;
+wchar_t* CConsole::m_pBuffer = nullptr;
 
-BOOL Console::Write(CONST_CWSTR Msg, ...)
+bool Console::Write(const wchar_t* Msg, ...)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	VA_LIST Args;
+	va_list Args;
 	va_start(Args, Msg);
 
-	Status = CConsole::Write(Msg, Args);
+	status = CConsole::Write(Msg, Args);
 
 	va_end(Args);
 
-	return Status;
+	return status;
 }
 
-BOOL Console::Write(CONST_CWSTR Msg, VA_LIST Args)
+bool Console::Write(const wchar_t* Msg, va_list Args)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	Status = CConsole::Write(Msg, Args);
+	status = CConsole::Write(Msg, Args);
 
-	return Status;
+	return status;
 }
 
-BOOL CConsole::Initialize(VOID)
+bool CConsole::Initialize(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	if ((m_hStdOut == NULL) || (m_hStdOut == INVALID_HANDLE_VALUE))
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		m_pBuffer = reinterpret_cast<CWSTR>(Memory::Allocate(MaxLength * sizeof(WCHAR), TRUE));
+		m_pBuffer = reinterpret_cast<wchar_t*>(Memory::Allocate(MaxLength * sizeof(wchar_t), true));
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CConsole::Uninitialize(VOID)
+bool CConsole::Uninitialize(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_hStdOut = NULL;
 
@@ -63,13 +63,13 @@ BOOL CConsole::Uninitialize(VOID)
 		m_pBuffer = NULL;
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CConsole::Write(CONST_CWSTR Msg, VA_LIST Args)
+bool CConsole::Write(const wchar_t* Msg, va_list Args)
 {
-	BOOL Status = TRUE;
-	SIZE_T CharsFree = 0;
+	bool status = true;
+	size_t CharsFree = 0;
 	DWORD  CharsUsed = 0;
 	DWORD  CharsWritten = 0;
 
@@ -79,18 +79,18 @@ BOOL CConsole::Write(CONST_CWSTR Msg, VA_LIST Args)
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = WriteConsole(m_hStdOut, m_pBuffer, CharsUsed, &CharsWritten, NULL);
+		status = WriteConsole(m_hStdOut, m_pBuffer, CharsUsed, &CharsWritten, NULL);
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = (CharsWritten == CharsUsed) ? TRUE : FALSE;
+		status = (CharsWritten == CharsUsed) ? true : false;
 	}
 
-	return Status;
+	return status;
 }

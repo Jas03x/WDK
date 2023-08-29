@@ -25,26 +25,26 @@ private:
 	ID3D12GraphicsCommandList* m_pID3D12CommandList;
 
 public:
-	CCommandBuffer(VOID);
-	~CCommandBuffer(VOID);
+	CCommandBuffer(void);
+	~CCommandBuffer(void);
 
-	BOOL                       Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList);
-	VOID                       Uninitialize(VOID);
+	bool                       Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList);
+	void                       Uninitialize(void);
 
-	virtual VOID               ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[]);
-	virtual VOID               Present(const RenderBuffer& rBuffer);
-	virtual VOID               SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVertexBuffers);
-	virtual VOID               SetConstantBuffer(UINT Index, IConstantBuffer* pIConstantBuffer);
-	virtual VOID			   Draw(UINT NumVertices);
-	virtual VOID               SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth);
-	virtual VOID               ProgramPipeline(IRendererState* pIRendererState);
-	virtual VOID               SetRenderTarget(const RenderBuffer& rBuffer);
+	virtual void               ClearRenderBuffer(const RenderBuffer& rBuffer, const float RGBA[]);
+	virtual void               Present(const RenderBuffer& rBuffer);
+	virtual void               SetVertexBuffers(uint32_t NumBuffers, const IVertexBuffer* pIVertexBuffers);
+	virtual void               SetConstantBuffer(uint32_t Index, IConstantBuffer* pIConstantBuffer);
+	virtual void			   Draw(uint32_t NumVertices);
+	virtual void               SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h, float min_depth, float max_depth);
+	virtual void               ProgramPipeline(IRendererState* pIRendererState);
+	virtual void               SetRenderTarget(const RenderBuffer& rBuffer);
 
-	virtual BOOL               Finalize(VOID);
-	virtual BOOL               Reset(VOID);
+	virtual bool               Finalize(void);
+	virtual bool               Reset(void);
 
-	COMMAND_BUFFER_TYPE        GetType(VOID);
-	ID3D12GraphicsCommandList* GetD3D12Interface(VOID);
+	COMMAND_BUFFER_TYPE        GetType(void);
+	ID3D12GraphicsCommandList* GetD3D12Interface(void);
 };
 
 #endif // WDK_CCOMMAND_BUFFER_HPP

@@ -12,35 +12,35 @@ struct ID3D12DescriptorHeap;
 class CSwapChain
 {
 public:
-	enum : UINT { NUM_BUFFERS = 2 };
+	enum : uint32_t { NUM_BUFFERS = 2 };
 
 	struct Descriptor
 	{
-		UINT         RtvDescriptorIncrement;
+		uint32_t     RtvDescriptorIncrement;
 		RenderBuffer RenderBuffers[NUM_BUFFERS];
 	};
 
 private:
-	UINT                  m_FrameIndex;
+	uint32_t              m_FrameIndex;
 
 	IDXGISwapChain4*      m_pIDxgiSwapChain;
 
 	ID3D12DescriptorHeap* m_pID3D12DescriptorHeap;
 	ID3D12Resource*       m_pID3D12RenderBuffers[NUM_BUFFERS];
 	
-	UINT                  m_RtvDescriptorIncrement;
-	UINT64			      m_RenderBufferCpuDescriptors[NUM_BUFFERS];
+	uint32_t              m_RtvDescriptorIncrement;
+	uint64_t			  m_RenderBufferCpuDescriptors[NUM_BUFFERS];
 
 public:
-	CSwapChain(VOID);
-	~CSwapChain(VOID);
+	CSwapChain(void);
+	~CSwapChain(void);
 
-	BOOL Initialize(IDXGISwapChain4* pIDxgiSwapChain, ID3D12DescriptorHeap* pIRtvDescriptorHeap, const Descriptor& rDesc);
-	VOID Uninitialize(VOID);
+	bool Initialize(IDXGISwapChain4* pIDxgiSwapChain, ID3D12DescriptorHeap* pIRtvDescriptorHeap, const Descriptor& rDesc);
+	void Uninitialize(void);
 
-	UINT GetNumBuffers(VOID);
-	VOID GetCurrentRenderBuffer(HANDLE& hResource, UINT64& CpuDescriptor);
-	BOOL Present(VOID);
+	uint32_t GetNumBuffers(void);
+	void     GetCurrentRenderBuffer(HANDLE& hResource, uint64_t& CpuDescriptor);
+	bool     Present(void);
 };
 
 #endif // WDK_CSWAPCHAIN_HPP

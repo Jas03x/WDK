@@ -10,18 +10,18 @@ class CConstantBuffer : public IConstantBuffer
 private:
 	ID3D12Resource* m_pID3D12Resource;
 
-	VOID*  m_CpuVA;
-	UINT64 m_GpuVA;
+	void*    m_CpuVA;
+	uint64_t m_GpuVA;
 
 public:
-	CConstantBuffer(VOID);
-	~CConstantBuffer(VOID);
+	CConstantBuffer(void);
+	~CConstantBuffer(void);
 
-	BOOL Initialize(ID3D12Resource* pID3D12ConstantBufferResource, VOID* CpuVA);
-	VOID Uninitialize(VOID);
+	bool Initialize(ID3D12Resource* pID3D12ConstantBufferResource, void* CpuVA);
+	void Uninitialize(void);
 
-	virtual VOID*  GetCpuVA(VOID);
-	virtual UINT64 GetGpuVA(VOID);
+	virtual void*    GetCpuVA(void);
+	virtual uint64_t GetGpuVA(void);
 };
 
 #endif // WDK_CCONSTANT_BUFFER_HPP

@@ -5,10 +5,10 @@
 
 #include <vector>
 
-CONST_CWSTR WINDOW_CLASS = L"HelloTriangle";
-CONST_CWSTR WINDOW_TITLE = L"Hello Triangle";
-CONST ULONG WINDOW_HEIGHT  = 512;
-CONST ULONG WINDOW_WIDTH   = 512;
+const wchar_t* WINDOW_CLASS = L"HelloTriangle";
+const wchar_t* WINDOW_TITLE = L"Hello Triangle";
+const uint32_t WINDOW_HEIGHT  = 512;
+const uint32_t WINDOW_WIDTH   = 512;
 
 class HelloTriangle
 {
@@ -19,7 +19,7 @@ private:
 	IMesh*          m_pIMesh;
 	ICommandBuffer* m_pIGraphicsCommandBuffer;
 
-	CONST FLOAT     m_ClearColor[4] = { 0, 0, 0, 0 };
+	const float     m_ClearColor[4] = { 0, 0, 0, 0 };
 
 public:
 	HelloTriangle()
@@ -31,48 +31,48 @@ public:
 		m_pIGraphicsCommandBuffer = NULL;
 	}
 
-	BOOL Initialize(VOID)
+	bool Initialize(void)
 	{
-		BOOL Status = TRUE;
-		std::vector<WCHAR> module_directory(1024);
+		bool status = true;
+		std::vector<wchar_t> module_directory(1024);
 
-		if (Status == TRUE)
+		if (status)
 		{
 			m_pIWindow = WindowFactory::CreateInstance(WINDOW_CLASS, WINDOW_TITLE, WINDOW_WIDTH, WINDOW_HEIGHT);
 			if (m_pIWindow == NULL)
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: Could not initialize window\n");
 			}
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
 			DeviceFactory::Descriptor GfxDeviceDesc = {};
-			GfxDeviceDesc.UploadHeapSize = static_cast<UINT64>(64U * MB);
-			GfxDeviceDesc.PrimaryHeapSize = static_cast<UINT64>(64U * MB);
+			GfxDeviceDesc.UploadHeapSize = static_cast<uint64_t>(64U * MB);
+			GfxDeviceDesc.PrimaryHeapSize = static_cast<uint64_t>(64U * MB);
 
 			m_pIGfxDevice = DeviceFactory::CreateInstance(m_pIWindow, GfxDeviceDesc);
 			if (m_pIGfxDevice == NULL)
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: Could not initialize graphics device\n");
 			}
 		}
 		
-		if (Status == TRUE)
+		if (status)
 		{
-			Status = System::GetModuleDirectory(module_directory.data(), static_cast<DWORD>(module_directory.size()));
+			status = System::GetModuleDirectory(module_directory.data(), static_cast<uint32_t>(module_directory.size()));
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
 			RENDERER_STATE_DESC Desc = {};
 
 			INPUT_ELEMENT_DESC InputElements[] =
 			{
-				{ INPUT_ELEMENT_POSITION, 0, INPUT_ELEMENT_FORMAT_XYZ_32F, 0, sizeof(FLOAT) * 0, INPUT_ELEMENT_TYPE_PER_VERTEX, 0 },
-				{ INPUT_ELEMENT_COLOR,    0, INPUT_ELEMENT_FORMAT_RGB_32F, 0, sizeof(FLOAT) * 3, INPUT_ELEMENT_TYPE_PER_VERTEX, 0 },
+				{ INPUT_ELEMENT_POSITION, 0, INPUT_ELEMENT_FORMAT_XYZ_32F, 0, sizeof(float) * 0, INPUT_ELEMENT_TYPE_PER_VERTEX, 0 },
+				{ INPUT_ELEMENT_COLOR,    0, INPUT_ELEMENT_FORMAT_RGB_32F, 0, sizeof(float) * 3, INPUT_ELEMENT_TYPE_PER_VERTEX, 0 },
 			};
 
 			ReadShaderBytecode(FILE_PATH(module_directory.data(), L"/VertexShader.cso"), Desc.VertexShader);
@@ -84,7 +84,7 @@ public:
 			m_pIRendererState = m_pIGfxDevice->CreateRendererState(Desc);
 			if (m_pIRendererState == NULL)
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: Could not initialize renderer\n");
 			}
 
@@ -92,26 +92,26 @@ public:
 			ReleaseShaderBytecode(Desc.PixelShader);
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
 			m_pIGraphicsCommandBuffer = m_pIGfxDevice->CreateCommandBuffer(COMMAND_BUFFER_TYPE_GRAPHICS);
 
 			if (m_pIGraphicsCommandBuffer == NULL)
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: could not create graphics command buffer\n");
 			}
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
 			struct Vertex
 			{
-				FLOAT vertex[3];
-				FLOAT colour[3];
+				float vertex[3];
+				float colour[3];
 			};
 
-			static CONST Vertex Vertices[] =
+			static const Vertex Vertices[] =
 			{
 				{
 					{  1.0f, -1.0f,  0.0f }, // right
@@ -128,7 +128,7 @@ public:
 			};
 
 			MESH_DESC MeshDesc = {};
-			MeshDesc.pVertexData = reinterpret_cast<CONST VOID*>(Vertices);
+			MeshDesc.pVertexData = reinterpret_cast<const void*>(Vertices);
 			MeshDesc.VertexBufferSize = sizeof(Vertices);
 			MeshDesc.VertexStride = sizeof(Vertex);
 			MeshDesc.NumVertices = sizeof(Vertices) / sizeof(Vertex);
@@ -137,20 +137,20 @@ public:
 
 			if (m_pIMesh == NULL)
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: could not create mesh\n");
 			}
 		}
 
-		if (Status == FALSE)
+		if (status == false)
 		{
 			Uninitialize();
 		}
 
-		return Status;
+		return status;
 	}
 
-	VOID Uninitialize(VOID)
+	void Uninitialize(void)
 	{
 		if (m_pIMesh != NULL)
 		{
@@ -184,13 +184,13 @@ public:
 	}
 
 private:
-	BOOL Render(VOID)
+	bool Render(void)
 	{
-		BOOL Status = TRUE;
+		bool status = true;
 
-		Status = m_pIGraphicsCommandBuffer->Reset();
+		status = m_pIGraphicsCommandBuffer->Reset();
 
-		if (Status == TRUE)
+		if (status)
 		{
 			RenderBuffer CurrentBuffer = m_pIWindow->GetCurrentRenderBuffer();
 
@@ -203,36 +203,36 @@ private:
 			m_pIGraphicsCommandBuffer->Draw(m_pIMesh->GetVertexCount());
 			m_pIGraphicsCommandBuffer->Present(CurrentBuffer);
 
-			Status = m_pIGraphicsCommandBuffer->Finalize();
+			status = m_pIGraphicsCommandBuffer->Finalize();
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
 			m_pIGfxDevice->SubmitCommandBuffer(m_pIGraphicsCommandBuffer);
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
-			Status = m_pIWindow->Present();
+			status = m_pIWindow->Present();
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
-			Status = m_pIGfxDevice->SyncQueue(COMMAND_QUEUE_TYPE_GRAPHICS);
+			status = m_pIGfxDevice->SyncQueue(COMMAND_QUEUE_TYPE_GRAPHICS);
 		}
 
-		return Status;
+		return status;
 	}
 
 public:
-	BOOL Run()
+	bool Run()
 	{
-		BOOL Status = TRUE;
+		bool status = true;
 		WIN_EVENT WinEvent = {};
 
-		while ((Status == TRUE) && (m_pIWindow->Open()))
+		while (status && (m_pIWindow->Open()))
 		{
-			if (m_pIWindow->GetEvent(WinEvent) == TRUE)
+			if (m_pIWindow->GetEvent(WinEvent))
 			{
 				if (WinEvent.msg == WIN_MSG::QUIT)
 				{
@@ -241,45 +241,45 @@ public:
 			}
 			else
 			{
-				Status = Render();
+				status = Render();
 			}
 		}
 
-		return Status;
+		return status;
 	}
 };
 
-INT WdkMain(INT argc, CONST_CWSTR argv[])
+int32_t WdkMain(int32_t argc, const wchar_t* argv[])
 {
-	INT Status = STATUS::SUCCESS;
+	int32_t status = STATUS::SUCCESS;
 
 	Console::Write(L"Hello Triangle!\n");
 
 	HelloTriangle hello_triangle;
 
-	if (hello_triangle.Initialize() != TRUE)
+	if (!hello_triangle.Initialize())
 	{
-		Status = STATUS::UNSUCCESSFUL;
+		status = STATUS::UNSUCCESSFUL;
 	}
 
-	if (Status == STATUS::SUCCESS)
+	if (status == STATUS::SUCCESS)
 	{
-		if (hello_triangle.Run() == FALSE)
+		if (!hello_triangle.Run())
 		{
-			Status = STATUS::UNSUCCESSFUL;
+			status = STATUS::UNSUCCESSFUL;
 		}
 	}
 
 	hello_triangle.Uninitialize();
 
-	if (Status == STATUS::SUCCESS)
+	if (status == STATUS::SUCCESS)
 	{
 		Console::Write(L"Goodbye Triangle!\n");
 	}
 	else
 	{
-		Console::Write(L"Exit with error 0x%X\n", Status);
+		Console::Write(L"Exit with error 0x%X\n", status);
 	}
 	
-	return Status;
+	return status;
 }

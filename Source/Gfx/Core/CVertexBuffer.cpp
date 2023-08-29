@@ -4,7 +4,7 @@
 
 #include <d3d12.h>
 
-CVertexBuffer::CVertexBuffer(VOID)
+CVertexBuffer::CVertexBuffer(void)
 {
 	m_VertexBufferGpuVA = 0;
 	m_pID3D12Resource = NULL;
@@ -12,14 +12,14 @@ CVertexBuffer::CVertexBuffer(VOID)
 	ZeroMemory(&m_Desc, sizeof(VERTEX_BUFFER_DESC));
 }
 
-CVertexBuffer::~CVertexBuffer(VOID)
+CVertexBuffer::~CVertexBuffer(void)
 {
 
 }
 
-BOOL CVertexBuffer::Initialize(ID3D12Resource* pID3D12VertexBuffer, CONST VERTEX_BUFFER_DESC& rDesc)
+bool CVertexBuffer::Initialize(ID3D12Resource* pID3D12VertexBuffer, const VERTEX_BUFFER_DESC& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (pID3D12VertexBuffer != NULL)
 	{
@@ -29,13 +29,13 @@ BOOL CVertexBuffer::Initialize(ID3D12Resource* pID3D12VertexBuffer, CONST VERTEX
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CVertexBuffer::Uninitialize(VOID)
+void CVertexBuffer::Uninitialize(void)
 {
 	m_VertexBufferGpuVA = 0;
 	ZeroMemory(&m_Desc, sizeof(VERTEX_BUFFER_DESC));
@@ -47,12 +47,12 @@ VOID CVertexBuffer::Uninitialize(VOID)
 	}
 }
 
-UINT64 CVertexBuffer::GetGpuVA(VOID)
+UINT64 CVertexBuffer::GetGpuVA(void)
 {
 	return m_VertexBufferGpuVA;
 }
 
-CONST VERTEX_BUFFER_DESC& CVertexBuffer::GetDesc(VOID) const
+const VERTEX_BUFFER_DESC& CVertexBuffer::GetDesc(void) const
 {
 	return m_Desc;
 }

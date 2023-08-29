@@ -22,8 +22,8 @@ typedef struct HINSTANCE__* HMODULE;
 class CGfxDevice : public IGfxDevice
 {
 private:
-	enum : UINT { ADAPTER_INDEX__INVALID = 0xFFFFFFFF };
-	enum : UINT { MAX_INPUT_ELEMENTS = 32 };
+	enum : uint32_t { ADAPTER_INDEX__INVALID = 0xFFFFFFFF };
+	enum : uint32_t { MAX_INPUT_ELEMENTS = 32 };
 
 	IWindow*                   m_pIWindow;
 
@@ -52,42 +52,42 @@ private:
 	ICommandBuffer*            m_pICopyCommandBuffer;
 
 public:
-	CGfxDevice(VOID);
-	virtual ~CGfxDevice(VOID);
+	CGfxDevice(void);
+	virtual ~CGfxDevice(void);
 
-	BOOL				       Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& rDesc);
-	VOID				       Uninitialize(VOID);
+	bool				       Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& rDesc);
+	void				       Uninitialize(void);
 
 private:
-	BOOL				       EnumerateDxgiAdapters(VOID);
-	BOOL				       PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter);
-	BOOL				       PrintDeviceProperties(VOID);
+	bool				       EnumerateDxgiAdapters(void);
+	bool				       PrintAdapterProperties(uint32_t uIndex, IDXGIAdapter4* pIAdapter);
+	bool				       PrintDeviceProperties(void);
 
-	BOOL                       InitializeHeaps(const DeviceFactory::Descriptor& rDesc);
-	BOOL                       InitializeDescriptorHeaps(VOID);
-	BOOL                       InitializeSwapChain(VOID);
+	bool                       InitializeHeaps(const DeviceFactory::Descriptor& rDesc);
+	bool                       InitializeDescriptorHeaps(void);
+	bool                       InitializeSwapChain(void);
 
 	ICommandQueue*             CreateCommandQueue(COMMAND_QUEUE_TYPE Type);
-	VOID                       DestroyCommandQueue(ICommandQueue* pICommandQueue);
+	void                       DestroyCommandQueue(ICommandQueue* pICommandQueue);
 
 public:
 	virtual ICommandBuffer*    CreateCommandBuffer(COMMAND_BUFFER_TYPE Type);
-	virtual VOID               DestroyCommandBuffer(ICommandBuffer* pICommandBuffer);
+	virtual void               DestroyCommandBuffer(ICommandBuffer* pICommandBuffer);
 
-	virtual IRendererState*    CreateRendererState(CONST RENDERER_STATE_DESC& rDesc);
-	virtual VOID               DestroyRendererState(IRendererState* pIRendererState);
+	virtual IRendererState*    CreateRendererState(const RENDERER_STATE_DESC& rDesc);
+	virtual void               DestroyRendererState(IRendererState* pIRendererState);
 
-	virtual IConstantBuffer*   CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc);
-	virtual VOID               DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer);
+	virtual IConstantBuffer*   CreateConstantBuffer(const CONSTANT_BUFFER_DESC& rDesc);
+	virtual void               DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer);
 
-	virtual IVertexBuffer*     CreateVertexBuffer(CONST VOID* pVertexData, UINT Size, UINT Stride);
-	virtual VOID               DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer);
+	virtual IVertexBuffer*     CreateVertexBuffer(const void* pVertexData, uint32_t Size, uint32_t Stride);
+	virtual void               DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer);
 
-	virtual IMesh*             CreateMesh(CONST MESH_DESC& rDesc);
-	virtual VOID               DestroyMesh(IMesh* pIMesh);
+	virtual IMesh*             CreateMesh(const MESH_DESC& rDesc);
+	virtual void               DestroyMesh(IMesh* pIMesh);
 
-	virtual BOOL               SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
-	virtual BOOL               SyncQueue(COMMAND_QUEUE_TYPE Type);
+	virtual bool               SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
+	virtual bool               SyncQueue(COMMAND_QUEUE_TYPE Type);
 };
 
 #endif // WDK_CGFX_DEVICE_HPP

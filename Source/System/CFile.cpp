@@ -3,27 +3,27 @@
 #include <strsafe.h>
 #include <windows.h>
 
-File* File::Open(PCWCHAR Path)
+File* File::Open(const wchar_t* Path)
 {
 	return static_cast<File*>(CFile::Open(Path));
 }
 
-File* File::Open(CONST FILE_PATH& Path)
+File* File::Open(const FILE_PATH& Path)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	File* pFile = NULL;
-	WCHAR Buffer[1024] = {0};
+	wchar_t Buffer[1024] = {0};
 
 	if (StringCchCatEx(Buffer, _countof(Buffer), Path.Directory, NULL, NULL, 0) == S_OK)
 	{
-		Status = (StringCchCatEx(Buffer, _countof(Buffer), Path.FileName, NULL, NULL, 0) == S_OK) ? TRUE : FALSE;
+		status = (StringCchCatEx(Buffer, _countof(Buffer), Path.FileName, NULL, NULL, 0) == S_OK) ? true : false;
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		pFile = File::Open(Buffer);
 	}
@@ -31,7 +31,7 @@ File* File::Open(CONST FILE_PATH& Path)
 	return pFile;
 }
 
-VOID File::Close(File* pIFile)
+void File::Close(File* pIFile)
 {
 	return CFile::Close(static_cast<CFile*>(pIFile));
 }
@@ -45,7 +45,7 @@ CFile::~CFile()
 {
 }
 
-CFile* CFile::Open(CONST_CWSTR Path)
+CFile* CFile::Open(const wchar_t* Path)
 {
 	CFile* pCFile = new CFile();
 
@@ -62,7 +62,7 @@ CFile* CFile::Open(CONST_CWSTR Path)
 	return pCFile;
 }
 
-VOID CFile::Close(CFile* pCFile)
+void CFile::Close(CFile* pCFile)
 {
 	if ((pCFile->hFile != 0) && (pCFile->hFile != INVALID_HANDLE_VALUE))
 	{
@@ -73,44 +73,50 @@ VOID CFile::Close(CFile* pCFile)
 	delete pCFile;
 }
 
-BOOL CFile::Read(BYTE** ppBuffer, DWORD* pSize)
+bool CFile::Read(byte** ppBuffer, uint32_t* pSize)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	LARGE_INTEGER lpFileSize = {};
 
 	if ((ppBuffer == NULL) || (pSize == NULL))
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Invalid or null buffer/size parameters\n");
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		if (GetFileSizeEx(hFile, &lpFileSize) != TRUE)
+		if (!GetFileSizeEx(hFile, &lpFileSize))
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not get file size\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		*ppBuffer = reinterpret_cast<BYTE*>(Memory::Allocate(lpFileSize.QuadPart, TRUE));
+		*ppBuffer = reinterpret_cast<BYTE*>(Memory::Allocate(lpFileSize.QuadPart, true));
 		if (*ppBuffer == NULL)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not allocate buffer to read file\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		if (ReadFile(hFile, *ppBuffer, static_cast<DWORD>(lpFileSize.QuadPart), pSize, NULL) != TRUE)
+		DWORD nBytesRead = 0;
+
+		if (ReadFile(hFile, *ppBuffer, static_cast<DWORD>(lpFileSize.QuadPart), &nBytesRead, NULL))
 		{
-			Status = FALSE;
+			*pSize = nBytesRead;
+		}
+		else
+		{
+			status = false;
 			Console::Write(L"Error: Could read file contents\n");
 		}
 	}
 
-	return Status;
+	return status;
 }

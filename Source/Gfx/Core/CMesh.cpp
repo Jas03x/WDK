@@ -6,27 +6,27 @@
 
 #include "CVertexBuffer.hpp"
 
-CMesh::CMesh(VOID)
+CMesh::CMesh(void)
 {
 	m_pIVertexBuffer = NULL;
 }
 
-CMesh::~CMesh(VOID)
+CMesh::~CMesh(void)
 {
 
 }
 
-BOOL CMesh::Initialize(UINT NumVertices, IVertexBuffer* pIVertexBuffer)
+bool CMesh::Initialize(uint32_t NumVertices, IVertexBuffer* pIVertexBuffer)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_NumVertices = NumVertices;
 	m_pIVertexBuffer = pIVertexBuffer;
 
-	return Status;
+	return status;
 }
 
-VOID CMesh::Uninitialize(VOID)
+void CMesh::Uninitialize(void)
 {
 	if (m_pIVertexBuffer != NULL)
 	{
@@ -38,12 +38,12 @@ VOID CMesh::Uninitialize(VOID)
 	}
 }
 
-UINT CMesh::GetVertexCount(VOID)
+uint32_t CMesh::GetVertexCount(void)
 {
 	return m_NumVertices;
 }
 
-IVertexBuffer* CMesh::GetVertexBuffer(VOID)
+IVertexBuffer* CMesh::GetVertexBuffer(void)
 {
 	return m_pIVertexBuffer;
 }

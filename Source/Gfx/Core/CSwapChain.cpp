@@ -5,7 +5,7 @@
 
 #include "Wdk.hpp"
 
-CSwapChain::CSwapChain(VOID)
+CSwapChain::CSwapChain(void)
 {
 	m_FrameIndex = 0;
 	m_RtvDescriptorIncrement = 0;
@@ -13,28 +13,28 @@ CSwapChain::CSwapChain(VOID)
 	m_pIDxgiSwapChain = NULL;
 	m_pID3D12DescriptorHeap = NULL;
 
-	for (UINT i = 0; i < NUM_BUFFERS; i++)
+	for (uint32_t i = 0; i < NUM_BUFFERS; i++)
 	{
 		m_pID3D12RenderBuffers[i] = NULL;
 		m_RenderBufferCpuDescriptors[i] = 0;
 	}
 }
 
-CSwapChain::~CSwapChain(VOID)
+CSwapChain::~CSwapChain(void)
 {
 
 }
 
-BOOL CSwapChain::Initialize(IDXGISwapChain4* pIDxgiSwapChain, ID3D12DescriptorHeap* pIRtvDescriptorHeap, const Descriptor& rDesc)
+bool CSwapChain::Initialize(IDXGISwapChain4* pIDxgiSwapChain, ID3D12DescriptorHeap* pIRtvDescriptorHeap, const Descriptor& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if ((pIDxgiSwapChain != NULL) && (pIRtvDescriptorHeap != NULL))
 	{
 		m_pIDxgiSwapChain = pIDxgiSwapChain;
 		m_pID3D12DescriptorHeap = pIRtvDescriptorHeap;
 
-		for (UINT i = 0; i < NUM_BUFFERS; i++)
+		for (uint32_t i = 0; i < NUM_BUFFERS; i++)
 		{
 			m_RenderBufferCpuDescriptors[i] = rDesc.RenderBuffers[i].CpuDescriptor;
 			m_pID3D12RenderBuffers[i] = reinterpret_cast<ID3D12Resource*>(rDesc.RenderBuffers[i].hResource);
@@ -45,16 +45,16 @@ BOOL CSwapChain::Initialize(IDXGISwapChain4* pIDxgiSwapChain, ID3D12DescriptorHe
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: NULL swapchain parameters\n");
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CSwapChain::Uninitialize(VOID)
+void CSwapChain::Uninitialize(void)
 {
-	for (UINT32 i = 0; i < NUM_BUFFERS; i++)
+	for (uint32_t i = 0; i < NUM_BUFFERS; i++)
 	{
 		if (m_pID3D12RenderBuffers[i] != NULL)
 		{
@@ -76,20 +76,20 @@ VOID CSwapChain::Uninitialize(VOID)
 	}
 }
 
-UINT CSwapChain::GetNumBuffers(VOID)
+uint32_t CSwapChain::GetNumBuffers(void)
 {
 	return NUM_BUFFERS;
 }
 
-VOID CSwapChain::GetCurrentRenderBuffer(HANDLE& hResource, UINT64& CpuDescriptor)
+void CSwapChain::GetCurrentRenderBuffer(HANDLE& hResource, uint64_t& CpuDescriptor)
 {
 	hResource = m_pID3D12RenderBuffers[m_FrameIndex];
 	CpuDescriptor = m_RenderBufferCpuDescriptors[m_FrameIndex];
 }
 
-BOOL CSwapChain::Present(VOID)
+bool CSwapChain::Present(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (m_pIDxgiSwapChain->Present(1, 0) == S_OK)
 	{
@@ -97,9 +97,9 @@ BOOL CSwapChain::Present(VOID)
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Failed to signal swap chain to present\n");
 	}
 
-	return Status;
+	return status;
 }

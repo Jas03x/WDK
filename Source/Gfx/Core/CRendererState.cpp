@@ -4,22 +4,22 @@
 
 #include "Wdk.hpp"
 
-BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc)
+bool ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	File* pFile = File::Open(Path);
 	if (pFile == NULL)
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Failed to open shader file %s for reading\n", Path.FileName);
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		if (pFile->Read(&rDesc.pCode, &rDesc.Size) != TRUE)
+		if (!pFile->Read(&rDesc.pCode, &rDesc.Size) )
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to read shader file %s\n", Path.FileName);
 		}
 	}
@@ -30,10 +30,10 @@ BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc)
 		pFile = NULL;
 	}
 
-	return Status;
+	return status;
 }
 
-VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc)
+void ReleaseShaderBytecode(SHADER_BYTECODE& rDesc)
 {
 	if (rDesc.pCode != NULL)
 	{
@@ -44,20 +44,20 @@ VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc)
 	rDesc.Size = 0;
 }
 
-CRendererState::CRendererState(VOID)
+CRendererState::CRendererState(void)
 {
 	m_pID3D12PipelineState = NULL;
 	m_pID3D12RootSignature = NULL;
 	m_pShaderResourceHeap  = NULL;
 }
 
-CRendererState::~CRendererState(VOID)
+CRendererState::~CRendererState(void)
 {
 }
 
-BOOL CRendererState::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState, ID3D12DescriptorHeap* pShaderResourceHeap)
+bool CRendererState::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState, ID3D12DescriptorHeap* pShaderResourceHeap)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if ((pIRootSignature != NULL) && (pIPipelineState != NULL) && (pShaderResourceHeap != NULL))
 	{
@@ -69,14 +69,14 @@ BOOL CRendererState::Initialize(ID3D12RootSignature* pIRootSignature, ID3D12Pipe
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Invalid pointer\n");
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CRendererState::Uninitialize(VOID)
+void CRendererState::Uninitialize(void)
 {
 	if (m_pShaderResourceHeap != NULL)
 	{
@@ -97,17 +97,17 @@ VOID CRendererState::Uninitialize(VOID)
 	}
 }
 
-ID3D12PipelineState* CRendererState::GetD3D12PipelineState(VOID)
+ID3D12PipelineState* CRendererState::GetD3D12PipelineState(void)
 {
 	return m_pID3D12PipelineState;
 }
 
-ID3D12RootSignature* CRendererState::GetD3D12RootSignature(VOID)
+ID3D12RootSignature* CRendererState::GetD3D12RootSignature(void)
 {
 	return m_pID3D12RootSignature;
 }
 
-ID3D12DescriptorHeap* CRendererState::GetShaderResourceHeap(VOID)
+ID3D12DescriptorHeap* CRendererState::GetShaderResourceHeap(void)
 {
 	return m_pShaderResourceHeap;
 }

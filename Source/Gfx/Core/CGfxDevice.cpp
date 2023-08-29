@@ -25,7 +25,7 @@ IGfxDevice* DeviceFactory::CreateInstance(IWindow* pIWindow, const DeviceFactory
 
 	if (pDevice != NULL)
 	{
-		if (pDevice->Initialize(pIWindow, rDesc) == FALSE)
+		if (!pDevice->Initialize(pIWindow, rDesc))
 		{
 			DeviceFactory::DestroyInstance(pDevice);
 			pDevice = NULL;
@@ -35,7 +35,7 @@ IGfxDevice* DeviceFactory::CreateInstance(IWindow* pIWindow, const DeviceFactory
 	return pDevice;
 }
 
-VOID DeviceFactory::DestroyInstance(IGfxDevice* pIDevice)
+void DeviceFactory::DestroyInstance(IGfxDevice* pIDevice)
 {
 	CGfxDevice* pDevice = static_cast<CGfxDevice*>(pIDevice);
 
@@ -47,7 +47,7 @@ VOID DeviceFactory::DestroyInstance(IGfxDevice* pIDevice)
 	}
 }
 
-CGfxDevice::CGfxDevice(VOID)
+CGfxDevice::CGfxDevice(void)
 {
 #if _DEBUG
 	m_hDxgiDebugModule = NULL;
@@ -74,14 +74,14 @@ CGfxDevice::CGfxDevice(VOID)
 	m_pICopyCommandBuffer = NULL;
 }
 
-CGfxDevice::~CGfxDevice(VOID)
+CGfxDevice::~CGfxDevice(void)
 {
 
 }
 
-BOOL CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& rDesc)
+bool CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (pIWindow != NULL)
 	{
@@ -89,56 +89,56 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& 
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 	}
 
 #if _DEBUG
-	if (Status == TRUE)
+	if (status)
 	{
-		if (D3D12GetDebugInterface(__uuidof(ID3D12Debug), reinterpret_cast<VOID**>(&m_pID3D12DebugInterface)) == S_OK)
+		if (D3D12GetDebugInterface(__uuidof(ID3D12Debug), reinterpret_cast<void**>(&m_pID3D12DebugInterface)) == S_OK)
 		{
 			m_pID3D12DebugInterface->EnableDebugLayer();
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to get dx12 debug interface\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		m_hDxgiDebugModule = GetModuleHandle(L"dxgidebug.dll");
-		HRESULT (*pfnDxgiGetDebugInterface)(REFIID, VOID**) = NULL;
+		HRESULT (*pfnDxgiGetDebugInterface)(REFIID, void**) = NULL;
 
 		if (m_hDxgiDebugModule != NULL)
 		{
-			pfnDxgiGetDebugInterface = reinterpret_cast<HRESULT(*)(REFIID, VOID**)>(GetProcAddress(m_hDxgiDebugModule, "DXGIGetDebugInterface"));
+			pfnDxgiGetDebugInterface = reinterpret_cast<HRESULT(*)(REFIID, void**)>(GetProcAddress(m_hDxgiDebugModule, "DXGIGetDebugInterface"));
 
 			if (pfnDxgiGetDebugInterface == NULL)
 			{
 				Console::Write(L"Error: Could not find function DXGIGetDebugInterface in the dxgi debug module\n");
-				Status = FALSE;
+				status = false;
 			}
 		}
 		else
 		{
 			Console::Write(L"Error: Could not load the dxgi debug module\n");
-			Status = FALSE;
+			status = false;
 		}
 
-		if (Status == TRUE)
+		if (status)
 		{
-			if (pfnDxgiGetDebugInterface(__uuidof(IDXGIDebug), reinterpret_cast<VOID**>(&m_pIDxgiDebugInterface)) != S_OK)
+			if (pfnDxgiGetDebugInterface(__uuidof(IDXGIDebug), reinterpret_cast<void**>(&m_pIDxgiDebugInterface)) != S_OK)
 			{
 				Console::Write(L"Error: Failed to get dxgi debug interface\n");
-				Status = FALSE;
+				status = false;
 			}
 		}
 	}
 #endif
 
-	if (Status == TRUE)
+	if (status)
 	{
 		UINT Flags = 0;
 
@@ -146,29 +146,29 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& 
 		Flags |= DXGI_CREATE_FACTORY_DEBUG;
 #endif
 
-		if (CreateDXGIFactory2(Flags, __uuidof(IDXGIFactory7), reinterpret_cast<VOID**>(&m_pIDxgiFactory)) != S_OK)
+		if (CreateDXGIFactory2(Flags, __uuidof(IDXGIFactory7), reinterpret_cast<void**>(&m_pIDxgiFactory)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create dxgi factory\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = EnumerateDxgiAdapters();
+		status = EnumerateDxgiAdapters();
 
-		if (Status == FALSE)
+		if (!status)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not get dxgi adapter\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		if (D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), reinterpret_cast<VOID**>(&m_pID3D12Device)) != S_OK)
+		if (D3D12CreateDevice(m_pIDxgiAdapter, D3D_FEATURE_LEVEL_12_0, __uuidof(ID3D12Device), reinterpret_cast<void**>(&m_pID3D12Device)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 		}
 
 		if (m_pID3D12Device != NULL)
@@ -177,63 +177,63 @@ BOOL CGfxDevice::Initialize(IWindow* pIWindow, const DeviceFactory::Descriptor& 
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not create a DX12 device\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		m_pCopyQueue = static_cast<CCommandQueue*>(CreateCommandQueue(COMMAND_QUEUE_TYPE_COPY));
 
 		if (m_pCopyQueue == NULL)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create copy command queue\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		m_pGraphicsQueue = static_cast<CCommandQueue*>(CreateCommandQueue(COMMAND_QUEUE_TYPE_GRAPHICS));
 
 		if (m_pGraphicsQueue == NULL)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create graphics command queue\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = InitializeSwapChain();
+		status = InitializeSwapChain();
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = InitializeHeaps(rDesc);
+		status = InitializeHeaps(rDesc);
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = InitializeDescriptorHeaps();
+		status = InitializeDescriptorHeaps();
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		m_pICopyCommandBuffer = CreateCommandBuffer(COMMAND_BUFFER_TYPE_COPY);
 
 		if (m_pICopyCommandBuffer == NULL)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create copy command buffer\n");
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CGfxDevice::Uninitialize(VOID)
+void CGfxDevice::Uninitialize(void)
 {
 	if (m_pIWindow != NULL)
 	{
@@ -326,16 +326,16 @@ VOID CGfxDevice::Uninitialize(VOID)
 	m_pIWindow = NULL;
 }
 
-BOOL CGfxDevice::EnumerateDxgiAdapters(VOID)
+bool CGfxDevice::EnumerateDxgiAdapters(void)
 {
-	BOOL Status = TRUE;
-	UINT uIndex = 0;
+	bool status = true;
+	uint32_t uIndex = 0;
 	IDXGIAdapter4* pIAdapter = NULL;
-	INT AdapterIndex = -1;
+	int32_t AdapterIndex = -1;
 
-	while (Status == TRUE)
+	while (status)
 	{
-		HRESULT result = m_pIDxgiFactory->EnumAdapterByGpuPreference(uIndex, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, __uuidof(IDXGIAdapter4), reinterpret_cast<VOID**>(&pIAdapter));
+		HRESULT result = m_pIDxgiFactory->EnumAdapterByGpuPreference(uIndex, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, __uuidof(IDXGIAdapter4), reinterpret_cast<void**>(&pIAdapter));
 
 		if (result == DXGI_ERROR_NOT_FOUND)
 		{
@@ -344,14 +344,14 @@ BOOL CGfxDevice::EnumerateDxgiAdapters(VOID)
 		else if (result != S_OK)
 		{
 			Console::Write(L"Error: Could not enumerate adapters\n");
-			Status = FALSE;
+			status = false;
 			break;
 		}
 		else
 		{
-			Status = PrintAdapterProperties(uIndex, pIAdapter);
+			status = PrintAdapterProperties(uIndex, pIAdapter);
 
-			if (Status == TRUE)
+			if (status)
 			{
 				if (AdapterIndex == -1)
 				{
@@ -382,12 +382,12 @@ BOOL CGfxDevice::EnumerateDxgiAdapters(VOID)
 		Console::Write(L"Error: Could not find adapter to use\n");
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CGfxDevice::PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter)
+bool CGfxDevice::PrintAdapterProperties(uint32_t uIndex, IDXGIAdapter4* pIAdapter)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	DXGI_ADAPTER_DESC3 Desc = { 0 };
 
 	if (pIAdapter->GetDesc3(&Desc) == S_OK)
@@ -398,9 +398,9 @@ BOOL CGfxDevice::PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter)
 		Console::Write(L"\tDeviceId: %X\n", Desc.DeviceId);
 		Console::Write(L"\tsubSysId: %X\n", Desc.SubSysId);
 		Console::Write(L"\tRevision: %X\n", Desc.Revision);
-		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<FLOAT>(Desc.DedicatedVideoMemory) / static_cast<FLOAT>(GB)));
-		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<FLOAT>(Desc.DedicatedSystemMemory) / static_cast<FLOAT>(GB)));
-		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<FLOAT>(Desc.SharedSystemMemory) / static_cast<FLOAT>(GB)));
+		Console::Write(L"\tDedicatedVideoMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedVideoMemory) / static_cast<float>(GB)));
+		Console::Write(L"\tDedicatedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.DedicatedSystemMemory) / static_cast<float>(GB)));
+		Console::Write(L"\tSharedSystemMemory: %.0f GB\n", ceilf(static_cast<float>(Desc.SharedSystemMemory) / static_cast<float>(GB)));
 
 		if (Desc.Flags != DXGI_ADAPTER_FLAG3_NONE)
 		{
@@ -483,18 +483,18 @@ BOOL CGfxDevice::PrintAdapterProperties(UINT uIndex, IDXGIAdapter4* pIAdapter)
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Could not get description for adapter %u\n", uIndex);
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CGfxDevice::PrintDeviceProperties(VOID)
+bool CGfxDevice::PrintDeviceProperties(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_FEATURE_DATA_ARCHITECTURE1 ArchData = {};
 		ArchData.NodeIndex = 0;
@@ -509,57 +509,57 @@ BOOL CGfxDevice::PrintDeviceProperties(VOID)
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not get device architecture\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		DXGI_QUERY_VIDEO_MEMORY_INFO NonLocalMemoryInfo = {};
 
 		if (m_pIDxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &NonLocalMemoryInfo) == S_OK)
 		{
 			Console::Write(L"\tNon-Local Memory Info:\n");
-			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.Budget) / static_cast<FLOAT>(GB));
-			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.CurrentUsage) / static_cast<FLOAT>(GB));
-			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.AvailableForReservation) / static_cast<FLOAT>(GB));
-			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<FLOAT>(NonLocalMemoryInfo.CurrentReservation) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.Budget) / static_cast<float>(GB));
+			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.CurrentUsage) / static_cast<float>(GB));
+			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.AvailableForReservation) / static_cast<float>(GB));
+			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<float>(NonLocalMemoryInfo.CurrentReservation) / static_cast<float>(GB));
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not get adapter non-local memory info\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		DXGI_QUERY_VIDEO_MEMORY_INFO LocalMemoryInfo = {};
 
 		if (m_pIDxgiAdapter->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &LocalMemoryInfo) == S_OK)
 		{
 			Console::Write(L"\tLocal Memory Info:\n");
-			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.Budget) / static_cast<FLOAT>(GB));
-			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.CurrentUsage) / static_cast<FLOAT>(GB));
-			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.AvailableForReservation) / static_cast<FLOAT>(GB));
-			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<FLOAT>(LocalMemoryInfo.CurrentReservation) / static_cast<FLOAT>(GB));
+			Console::Write(L"\t\tBudget: %.2f GB\n", static_cast<float>(LocalMemoryInfo.Budget) / static_cast<float>(GB));
+			Console::Write(L"\t\tCurrentUsage: %.2f GB\n", static_cast<float>(LocalMemoryInfo.CurrentUsage) / static_cast<float>(GB));
+			Console::Write(L"\t\tAvailableForReservation: %.2f GB\n", static_cast<float>(LocalMemoryInfo.AvailableForReservation) / static_cast<float>(GB));
+			Console::Write(L"\t\tCurrentReservation: %.2f GB\n", static_cast<float>(LocalMemoryInfo.CurrentReservation) / static_cast<float>(GB));
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not get adapter local memory info\n");
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CGfxDevice::InitializeHeaps(const DeviceFactory::Descriptor& rDesc)
+bool CGfxDevice::InitializeHeaps(const DeviceFactory::Descriptor& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_RESOURCE_DESC UploadHeapResourceDesc = { };
 		UploadHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -584,14 +584,14 @@ BOOL CGfxDevice::InitializeHeaps(const DeviceFactory::Descriptor& rDesc)
 		UploadHeapDesc.Properties.CreationNodeMask = 1;
 		UploadHeapDesc.Properties.VisibleNodeMask = 1;
 
-		if (m_pID3D12Device->CreateHeap(&UploadHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<VOID**>(&m_pID3D12UploadHeap)) != S_OK)
+		if (m_pID3D12Device->CreateHeap(&UploadHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<void**>(&m_pID3D12UploadHeap)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create upload heap\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_RESOURCE_DESC PrimaryHeapResourceDesc = { };
 		PrimaryHeapResourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -616,21 +616,21 @@ BOOL CGfxDevice::InitializeHeaps(const DeviceFactory::Descriptor& rDesc)
 		PrimaryHeapDesc.Properties.CreationNodeMask = 1;
 		PrimaryHeapDesc.Properties.VisibleNodeMask = 1;
 
-		if (m_pID3D12Device->CreateHeap(&PrimaryHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<VOID**>(&m_pID3D12PrimaryHeap)) != S_OK)
+		if (m_pID3D12Device->CreateHeap(&PrimaryHeapDesc, __uuidof(ID3D12Heap), reinterpret_cast<void**>(&m_pID3D12PrimaryHeap)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create upload heap\n");
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CGfxDevice::InitializeDescriptorHeaps(VOID)
+bool CGfxDevice::InitializeDescriptorHeaps(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC cbvHeapDesc = {};
 		cbvHeapDesc.NodeMask = 0;
@@ -638,28 +638,28 @@ BOOL CGfxDevice::InitializeDescriptorHeaps(VOID)
 		cbvHeapDesc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
 		cbvHeapDesc.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
 
-		m_pID3D12Device->CreateDescriptorHeap(&cbvHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&m_pID3D12ShaderResourceHeap));
+		m_pID3D12Device->CreateDescriptorHeap(&cbvHeapDesc, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(&m_pID3D12ShaderResourceHeap));
 
 		if (m_pID3D12ShaderResourceHeap == NULL)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create constant buffer descriptor heap\n");
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CGfxDevice::InitializeSwapChain(VOID)
+bool CGfxDevice::InitializeSwapChain(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	IDXGISwapChain4* pIDxgiSwapChain = NULL;
 	ID3D12DescriptorHeap* pIRtvDescriptorHeap = NULL;
 
 	UINT RtvDescriptorIncrement = 0;
 	CSwapChain::Descriptor Descriptor = {};
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_DESCRIPTOR_HEAP_DESC descHeap = {};
 		descHeap.Type = D3D12_DESCRIPTOR_HEAP_TYPE_RTV;
@@ -667,7 +667,7 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 		descHeap.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
 		descHeap.NodeMask = 0;
 
-		if (m_pID3D12Device->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<VOID**>(&pIRtvDescriptorHeap)) == S_OK)
+		if (m_pID3D12Device->CreateDescriptorHeap(&descHeap, __uuidof(ID3D12DescriptorHeap), reinterpret_cast<void**>(&pIRtvDescriptorHeap)) == S_OK)
 		{
 			RtvDescriptorIncrement = m_pID3D12Device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
 
@@ -675,16 +675,16 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create descriptor heap\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		WIN_RECT Rect = {};
 
-		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, Rect) == TRUE)
+		if (m_pIWindow->GetRect(WIN_AREA::CLIENT, Rect))
 		{
 			DXGI_SWAP_CHAIN_DESC1 SwapChainDesc = { };
 			SwapChainDesc.Width = Rect.width;
@@ -704,32 +704,32 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 
 			if (m_pIDxgiFactory->CreateSwapChainForHwnd(m_pGraphicsQueue->GetD3D12CommandQueue(), m_pIWindow->GetHandle(), &SwapChainDesc, NULL, NULL, &pISwapChain1) == S_OK)
 			{
-				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<VOID**>(&pIDxgiSwapChain));
+				pISwapChain1->QueryInterface(__uuidof(IDXGISwapChain4), reinterpret_cast<void**>(&pIDxgiSwapChain));
 				pISwapChain1->Release();
 			}
 			else
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: Failed to create swap chain\n");
 			}
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_CPU_DESCRIPTOR_HANDLE CpuDescriptor = pIRtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 
-		for (UINT i = 0; (Status == TRUE) && (i < CSwapChain::NUM_BUFFERS); i++)
+		for (UINT i = 0; status && (i < CSwapChain::NUM_BUFFERS); i++)
 		{
 			ID3D12Resource* pIRenderBuffer = NULL;
 
-			if (pIDxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&pIRenderBuffer)) != S_OK)
+			if (pIDxgiSwapChain->GetBuffer(i, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&pIRenderBuffer)) != S_OK)
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: Could not get swap chain buffer %u\n", i);
 			}
 
@@ -741,7 +741,7 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		m_pSwapChain = new CSwapChain();
 
@@ -760,7 +760,7 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 		}
 	}
 
-	if (Status == FALSE)
+	if (!status)
 	{
 		if (pIDxgiSwapChain != NULL)
 		{
@@ -775,20 +775,20 @@ BOOL CGfxDevice::InitializeSwapChain(VOID)
 		}
 	}
 
-	return Status;
+	return status;
 }
 
 ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	ICommandQueue* pICommandQueue = NULL;
 	D3D12_COMMAND_LIST_TYPE CmdListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	ID3D12Fence* pID3D12Fence = NULL;
 	ID3D12CommandQueue* pID3D12CommandQueue = NULL;
 
-	Status = EnumTranslator::CommandQueueType_To_CommandListType(Type, CmdListType);
+	status = EnumTranslator::CommandQueueType_To_CommandListType(Type, CmdListType);
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_COMMAND_QUEUE_DESC CmdQueueDesc = { };
 		CmdQueueDesc.Type = CmdListType;
@@ -796,28 +796,28 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 		CmdQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 		CmdQueueDesc.NodeMask = 0;
 
-		if (m_pID3D12Device->CreateCommandQueue(&CmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<VOID**>(&pID3D12CommandQueue)) != S_OK)
+		if (m_pID3D12Device->CreateCommandQueue(&CmdQueueDesc, __uuidof(ID3D12CommandQueue), reinterpret_cast<void**>(&pID3D12CommandQueue)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create d3d12 command queue\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<VOID**>(&pID3D12Fence)) != S_OK)
+		if (m_pID3D12Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, __uuidof(ID3D12Fence), reinterpret_cast<void**>(&pID3D12Fence)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create d3d12 fence\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		pICommandQueue = new CCommandQueue();
 		if (pICommandQueue != NULL)
 		{
-			if (static_cast<CCommandQueue*>(pICommandQueue)->Initialize(Type, pID3D12CommandQueue, pID3D12Fence) != TRUE)
+			if (!static_cast<CCommandQueue*>(pICommandQueue)->Initialize(Type, pID3D12CommandQueue, pID3D12Fence))
 			{
 				DestroyCommandQueue(pICommandQueue);
 				pICommandQueue = NULL;
@@ -825,7 +825,7 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 		}
 	}
 
-	if (Status != TRUE)
+	if (!status)
 	{
 		if (pID3D12CommandQueue != NULL)
 		{
@@ -843,7 +843,7 @@ ICommandQueue* CGfxDevice::CreateCommandQueue(COMMAND_QUEUE_TYPE Type)
 	return pICommandQueue;
 }
 
-VOID CGfxDevice::DestroyCommandQueue(ICommandQueue* pICommandQueue)
+void CGfxDevice::DestroyCommandQueue(ICommandQueue* pICommandQueue)
 {
 	CCommandQueue* pCommandQueue = static_cast<CCommandQueue*>(pICommandQueue);
 	if (pCommandQueue != NULL)
@@ -854,9 +854,9 @@ VOID CGfxDevice::DestroyCommandQueue(ICommandQueue* pICommandQueue)
 	}
 }
 
-IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc)
+IRendererState* CGfxDevice::CreateRendererState(const RENDERER_STATE_DESC& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	IRendererState* pIRendererState = NULL;
 	ID3D12PipelineState* pID3D12PipelineState = NULL;
@@ -865,24 +865,24 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 	
 	if (rDesc.InputLayout.NumInputs <= MAX_INPUT_ELEMENTS)
 	{
-		for (UINT i = 0; (Status == TRUE) && (i < rDesc.InputLayout.NumInputs); i++)
+		for (UINT i = 0; status && (i < rDesc.InputLayout.NumInputs); i++)
 		{
-			if (Status == TRUE)
+			if (status)
 			{
-				Status = EnumTranslator::InputElement_To_SemanticName(rDesc.InputLayout.pInputElements[i].Element, InputElementDescs[i].SemanticName);
+				status = EnumTranslator::InputElement_To_SemanticName(rDesc.InputLayout.pInputElements[i].Element, InputElementDescs[i].SemanticName);
 			}
 
-			if (Status == TRUE)
+			if (status)
 			{
-				Status = EnumTranslator::InputElementFormat_To_DxgiFormat(rDesc.InputLayout.pInputElements[i].ElementFormat, InputElementDescs[i].Format);
+				status = EnumTranslator::InputElementFormat_To_DxgiFormat(rDesc.InputLayout.pInputElements[i].ElementFormat, InputElementDescs[i].Format);
 			}
 
-			if (Status == TRUE)
+			if (status)
 			{
-				Status = EnumTranslator::InputElementType_To_InputSlotClass(rDesc.InputLayout.pInputElements[i].Type, InputElementDescs[i].InputSlotClass);
+				status = EnumTranslator::InputElementType_To_InputSlotClass(rDesc.InputLayout.pInputElements[i].Type, InputElementDescs[i].InputSlotClass);
 			}
 
-			if (Status == TRUE)
+			if (status)
 			{
 				InputElementDescs[i].AlignedByteOffset    = rDesc.InputLayout.pInputElements[i].AlignedByteOffset;
 				InputElementDescs[i].InputSlot            = rDesc.InputLayout.pInputElements[i].InputSlot;
@@ -893,11 +893,11 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Too many input elements\n");
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_ROOT_SIGNATURE_FLAGS Flags = D3D12_ROOT_SIGNATURE_FLAG_NONE;
 		Flags |= D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
@@ -925,16 +925,16 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 
 		if (D3D12SerializeRootSignature(&Desc, D3D_ROOT_SIGNATURE_VERSION_1, &pSignature, &pError) == S_OK)
 		{
-			if (m_pID3D12Device->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<VOID**>(&pID3D12RootSignature)) != S_OK)
+			if (m_pID3D12Device->CreateRootSignature(0, pSignature->GetBufferPointer(), pSignature->GetBufferSize(), __uuidof(ID3D12RootSignature), reinterpret_cast<void**>(&pID3D12RootSignature)) != S_OK)
 			{
 				Console::Write(L"Error: Could not create root signature\n");
-				Status = FALSE;
+				status = false;
 			}
 		}
 		else
 		{
 			Console::Write(L"Error: Could not initialize root signature\n");
-			Status = FALSE;
+			status = false;
 
 			if (pError != NULL)
 			{
@@ -955,7 +955,7 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_GRAPHICS_PIPELINE_STATE_DESC Desc;
 		
@@ -1072,19 +1072,19 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 		
 		Desc.Flags                           = D3D12_PIPELINE_STATE_FLAG_NONE;
 
-		if (m_pID3D12Device->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<VOID**>(&pID3D12PipelineState)) != S_OK)
+		if (m_pID3D12Device->CreateGraphicsPipelineState(&Desc, __uuidof(ID3D12PipelineState), reinterpret_cast<void**>(&pID3D12PipelineState)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create graphics pipeline state object\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		pIRendererState = new CRendererState();
 		if (pIRendererState != NULL)
 		{
-			if (static_cast<CRendererState*>(pIRendererState)->Initialize(pID3D12RootSignature, pID3D12PipelineState, m_pID3D12ShaderResourceHeap) == FALSE)
+			if (!static_cast<CRendererState*>(pIRendererState)->Initialize(pID3D12RootSignature, pID3D12PipelineState, m_pID3D12ShaderResourceHeap))
 			{
 				DestroyRendererState(pIRendererState);
 				pIRendererState = NULL;
@@ -1100,7 +1100,7 @@ IRendererState* CGfxDevice::CreateRendererState(CONST RENDERER_STATE_DESC& rDesc
 	return pIRendererState;
 }
 
-VOID CGfxDevice::DestroyRendererState(IRendererState* pIRendererState)
+void CGfxDevice::DestroyRendererState(IRendererState* pIRendererState)
 {
 	CRendererState* pRendererState = static_cast<CRendererState*>(pIRendererState);
 	if (pRendererState != NULL)
@@ -1111,21 +1111,21 @@ VOID CGfxDevice::DestroyRendererState(IRendererState* pIRendererState)
 	}
 }
 
-IConstantBuffer* CGfxDevice::CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rDesc)
+IConstantBuffer* CGfxDevice::CreateConstantBuffer(const CONSTANT_BUFFER_DESC& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	IConstantBuffer* pIConstantBuffer = NULL;
 	ID3D12Resource* pID3D12ConstantBufferResource = NULL;
-	VOID* CpuVa = 0;
+	void* CpuVa = 0;
 
 	if (rDesc.Size % 256 != 0)
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: constant buffer size invalid - must be aligned to 256 bytes\n");
 	}
 
 	// Create the constant buffer allocation
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_RESOURCE_DESC cbDesc = {};
 		cbDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -1140,14 +1140,14 @@ IConstantBuffer* CGfxDevice::CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rD
 		cbDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		cbDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12UploadHeap, 0, &cbDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&pID3D12ConstantBufferResource)) != S_OK)
+		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12UploadHeap, 0, &cbDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&pID3D12ConstantBufferResource)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 		}
 	}
 
 	// Create the constant buffer view
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_CONSTANT_BUFFER_VIEW_DESC cbvDesc = {};
 		cbvDesc.BufferLocation = pID3D12ConstantBufferResource->GetGPUVirtualAddress();
@@ -1157,7 +1157,7 @@ IConstantBuffer* CGfxDevice::CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rD
 	}
 
 	// Map the constant buffer
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_RANGE cpuReadRange = {};
 		cpuReadRange.Begin = 0;
@@ -1165,18 +1165,18 @@ IConstantBuffer* CGfxDevice::CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rD
 
 		if (pID3D12ConstantBufferResource->Map(0, &cpuReadRange, reinterpret_cast<void**>(&CpuVa)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: failed to map constant buffer to cpu\n");
 		}
 	}
 
 	// Create the constant buffer object
-	if (Status == TRUE)
+	if (status)
 	{
 		pIConstantBuffer = new CConstantBuffer();
 		if (pIConstantBuffer != NULL)
 		{
-			if (static_cast<CConstantBuffer*>(pIConstantBuffer)->Initialize(pID3D12ConstantBufferResource, CpuVa) != TRUE)
+			if (!static_cast<CConstantBuffer*>(pIConstantBuffer)->Initialize(pID3D12ConstantBufferResource, CpuVa))
 			{
 				DestroyConstantBuffer(pIConstantBuffer);
 				pIConstantBuffer = NULL;
@@ -1184,7 +1184,7 @@ IConstantBuffer* CGfxDevice::CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rD
 		}
 	}
 
-	if (Status != TRUE)
+	if (!status)
 	{
 		if (pID3D12ConstantBufferResource != NULL)
 		{
@@ -1198,7 +1198,7 @@ IConstantBuffer* CGfxDevice::CreateConstantBuffer(CONST CONSTANT_BUFFER_DESC& rD
 	return pIConstantBuffer;
 }
 
-VOID CGfxDevice::DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer)
+void CGfxDevice::DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer)
 {
 	CConstantBuffer* pConstantBuffer = reinterpret_cast<CConstantBuffer*>(pIConstantBuffer);
 	if (pConstantBuffer != NULL)
@@ -1211,38 +1211,38 @@ VOID CGfxDevice::DestroyConstantBuffer(IConstantBuffer* pIConstantBuffer)
 
 ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	D3D12_COMMAND_LIST_TYPE CommandListType = D3D12_COMMAND_LIST_TYPE_DIRECT;
 	ICommandBuffer* pICommandBuffer = NULL;
 	ID3D12CommandAllocator* pID3D12CommandAllocator = NULL;
 	ID3D12GraphicsCommandList* pID3D12GraphicsCommandList = NULL;
 
-	Status = EnumTranslator::CommandBufferType_To_CommandListType(Type, CommandListType);
+	status = EnumTranslator::CommandBufferType_To_CommandListType(Type, CommandListType);
 
-	if (Status == TRUE)
+	if (status)
 	{
-		if (m_pID3D12Device->CreateCommandAllocator(CommandListType, __uuidof(ID3D12CommandAllocator), reinterpret_cast<VOID**>(&pID3D12CommandAllocator)) != S_OK)
+		if (m_pID3D12Device->CreateCommandAllocator(CommandListType, __uuidof(ID3D12CommandAllocator), reinterpret_cast<void**>(&pID3D12CommandAllocator)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not create d3d12 command allocator\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		if (m_pID3D12Device->CreateCommandList(0, CommandListType, pID3D12CommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<VOID**>(&pID3D12GraphicsCommandList)) != S_OK)
+		if (m_pID3D12Device->CreateCommandList(0, CommandListType, pID3D12CommandAllocator, NULL, __uuidof(ID3D12GraphicsCommandList), reinterpret_cast<void**>(&pID3D12GraphicsCommandList)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to create command list\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		pICommandBuffer = new CCommandBuffer();
 		if (pICommandBuffer != NULL)
 		{
-			if (static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(Type, pID3D12CommandAllocator, pID3D12GraphicsCommandList) == FALSE)
+			if (!static_cast<CCommandBuffer*>(pICommandBuffer)->Initialize(Type, pID3D12CommandAllocator, pID3D12GraphicsCommandList))
 			{
 				DestroyCommandBuffer(pICommandBuffer);
 				pICommandBuffer = NULL;
@@ -1250,7 +1250,7 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 		}
 	}
 
-	if (Status == FALSE)
+	if (!status)
 	{
 		if (pID3D12GraphicsCommandList == NULL)
 		{
@@ -1268,7 +1268,7 @@ ICommandBuffer* CGfxDevice::CreateCommandBuffer(COMMAND_BUFFER_TYPE Type)
 	return pICommandBuffer;
 }
 
-VOID CGfxDevice::DestroyCommandBuffer(ICommandBuffer* pICommandBuffer)
+void CGfxDevice::DestroyCommandBuffer(ICommandBuffer* pICommandBuffer)
 {
 	CCommandBuffer* pCommandBuffer = static_cast<CCommandBuffer*>(pICommandBuffer);
 	if (pCommandBuffer != NULL)
@@ -1279,15 +1279,15 @@ VOID CGfxDevice::DestroyCommandBuffer(ICommandBuffer* pICommandBuffer)
 	}
 }
 
-IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size, UINT Stride)
+IVertexBuffer* CGfxDevice::CreateVertexBuffer(const void* pVertexData, UINT Size, UINT Stride)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	IVertexBuffer* pIVertexBuffer = NULL;
 	ID3D12Resource* pID3D12VertexBuffer = NULL;
 	ID3D12Resource* pID3D12VertexDataUploadBuffer = NULL;
 	ID3D12GraphicsCommandList* pICommandList = static_cast<CCommandBuffer*>(m_pICopyCommandBuffer)->GetD3D12Interface();
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_RESOURCE_DESC VertexBufferDesc = {};
 		VertexBufferDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
@@ -1302,18 +1302,18 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size
 		VertexBufferDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
 		VertexBufferDesc.Flags = D3D12_RESOURCE_FLAG_NONE;
 
-		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12PrimaryHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&pID3D12VertexBuffer)) != S_OK)
+		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12PrimaryHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_COPY_DEST, NULL, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&pID3D12VertexBuffer)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 		}
 
-		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12UploadHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, __uuidof(ID3D12Resource), reinterpret_cast<VOID**>(&pID3D12VertexDataUploadBuffer)) != S_OK)
+		if (m_pID3D12Device->CreatePlacedResource(m_pID3D12UploadHeap, 0, &VertexBufferDesc, D3D12_RESOURCE_STATE_GENERIC_READ, NULL, __uuidof(ID3D12Resource), reinterpret_cast<void**>(&pID3D12VertexDataUploadBuffer)) != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		BYTE* VertexBufferCpuVa = NULL;
 
@@ -1321,19 +1321,19 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size
 		CpuReadRange.Begin = 0;
 		CpuReadRange.End = 0;
 
-		if (pID3D12VertexDataUploadBuffer->Map(0, &CpuReadRange, reinterpret_cast<VOID**>(&VertexBufferCpuVa)) == S_OK)
+		if (pID3D12VertexDataUploadBuffer->Map(0, &CpuReadRange, reinterpret_cast<void**>(&VertexBufferCpuVa)) == S_OK)
 		{
 			CopyMemory(VertexBufferCpuVa, pVertexData, Size);
 			pID3D12VertexDataUploadBuffer->Unmap(0, NULL);
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Failed to map vertex buffer allocation\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		D3D12_RESOURCE_BARRIER Barrier = {};
 		Barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -1347,21 +1347,21 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size
 		pICommandList->ResourceBarrier(1, &Barrier);
 		if (pICommandList->Close() != S_OK)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not finalize command buffer\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		ID3D12CommandList* pICommandLists[] = { pICommandList };
 
 		m_pCopyQueue->GetD3D12CommandQueue()->ExecuteCommandLists(1, pICommandLists);
 
-		Status = m_pCopyQueue->Sync();
+		status = m_pCopyQueue->Sync();
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		pIVertexBuffer = new CVertexBuffer();
 
@@ -1372,16 +1372,16 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size
 			Descriptor.Size = Size;
 			Descriptor.Stride = Stride;
 
-			if (static_cast<CVertexBuffer*>(pIVertexBuffer)->Initialize(pID3D12VertexBuffer, Descriptor) == FALSE)
+			if (!static_cast<CVertexBuffer*>(pIVertexBuffer)->Initialize(pID3D12VertexBuffer, Descriptor))
 			{
-				Status = FALSE;
+				status = false;
 				DestroyVertexBuffer(pIVertexBuffer);
 				pIVertexBuffer = NULL;
 			}
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 		}
 	}
 
@@ -1391,7 +1391,7 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size
 		pID3D12VertexDataUploadBuffer = NULL;
 	}
 
-	if ((Status == FALSE) && (pID3D12VertexBuffer != NULL))
+	if (!status && (pID3D12VertexBuffer != NULL))
 	{
 		pID3D12VertexBuffer->Release();
 		pID3D12VertexBuffer = NULL;
@@ -1400,7 +1400,7 @@ IVertexBuffer* CGfxDevice::CreateVertexBuffer(CONST VOID* pVertexData, UINT Size
 	return pIVertexBuffer;
 }
 
-VOID CGfxDevice::DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer)
+void CGfxDevice::DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer)
 {
 	CVertexBuffer* pVertexBuffer = static_cast<CVertexBuffer*>(pIVertexBuffer);
 	if (pVertexBuffer != NULL)
@@ -1411,41 +1411,41 @@ VOID CGfxDevice::DestroyVertexBuffer(IVertexBuffer* pIVertexBuffer)
 	}
 }
 
-IMesh* CGfxDevice::CreateMesh(CONST MESH_DESC& rDesc)
+IMesh* CGfxDevice::CreateMesh(const MESH_DESC& rDesc)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	IMesh* pIMesh = NULL;
 	IVertexBuffer* pIVertexBuffer = NULL;
 
-	if (Status == TRUE)
+	if (status)
 	{
 		pIVertexBuffer = CreateVertexBuffer(rDesc.pVertexData, rDesc.VertexBufferSize, rDesc.VertexStride);
 
 		if (pIVertexBuffer == NULL)
 		{
-			Status = FALSE;
+			status = false;
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		pIMesh = new CMesh();
 		if (pIMesh != NULL)
 		{
-			if (static_cast<CMesh*>(pIMesh)->Initialize(rDesc.NumVertices, pIVertexBuffer) == FALSE)
+			if (!static_cast<CMesh*>(pIMesh)->Initialize(rDesc.NumVertices, pIVertexBuffer))
 			{
-				Status = FALSE;
+				status = false;
 				DestroyMesh(pIMesh);
 				pIMesh = NULL;
 			}
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 		}
 	}
 
-	if ((Status == FALSE) && (pIVertexBuffer != NULL))
+	if (!status && (pIVertexBuffer != NULL))
 	{
 		DestroyVertexBuffer(pIVertexBuffer);
 		pIVertexBuffer = NULL;
@@ -1454,7 +1454,7 @@ IMesh* CGfxDevice::CreateMesh(CONST MESH_DESC& rDesc)
 	return pIMesh;
 }
 
-VOID CGfxDevice::DestroyMesh(IMesh* pIMesh)
+void CGfxDevice::DestroyMesh(IMesh* pIMesh)
 {
 	CMesh* pMesh = static_cast<CMesh*>(pIMesh);
 	if (pMesh != NULL)
@@ -1465,16 +1465,16 @@ VOID CGfxDevice::DestroyMesh(IMesh* pIMesh)
 	}
 }
 
-BOOL CGfxDevice::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
+bool CGfxDevice::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (pICommandBuffer == NULL)
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		CCommandBuffer* pCommandBuffer = static_cast<CCommandBuffer*>(pICommandBuffer);
 		
@@ -1487,39 +1487,39 @@ BOOL CGfxDevice::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
 			}
 			default:
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: Trying to submit unsupported command buffer\n");
 				break;
 			}
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CGfxDevice::SyncQueue(COMMAND_QUEUE_TYPE Type)
+bool CGfxDevice::SyncQueue(COMMAND_QUEUE_TYPE Type)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	switch (Type)
 	{
 		case COMMAND_QUEUE_TYPE_GRAPHICS:
 		{
-			Status = m_pGraphicsQueue->Sync();
+			status = m_pGraphicsQueue->Sync();
 			break;
 		}
 		case COMMAND_QUEUE_TYPE_COPY:
 		{
-			Status = m_pCopyQueue->Sync();
+			status = m_pCopyQueue->Sync();
 			break;
 		}
 		default:
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Trying to sync unsupported command queue\n");
 			break;
 		}
 	}
 
-	return Status;
+	return status;
 }

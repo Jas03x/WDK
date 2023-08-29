@@ -11,7 +11,7 @@ struct ID3D12Fence;
 class CCommandQueue : public ICommandQueue
 {
 private:
-	enum : UINT { COMMAND_QUEUE_TIMEOUT = 1000 };
+	enum : uint32_t { COMMAND_QUEUE_TIMEOUT = 1000 };
 
 	COMMAND_QUEUE_TYPE      m_Type;
 
@@ -19,19 +19,19 @@ private:
 	ID3D12Fence*            m_pID3D12Fence;
 
 	HANDLE                  m_hFenceEvent;
-	UINT64                  m_FenceValue;
+	uint64_t                m_FenceValue;
 
 public:
-	CCommandQueue(VOID);
-	~CCommandQueue(VOID);
+	CCommandQueue(void);
+	~CCommandQueue(void);
 
-	BOOL                    Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence);
-	VOID                    Uninitialize(VOID);
+	bool                    Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence);
+	void                    Uninitialize(void);
 
-	BOOL                    SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
-	BOOL                    Sync(VOID);
+	bool                    SubmitCommandBuffer(ICommandBuffer* pICommandBuffer);
+	bool                    Sync(void);
 
-	ID3D12CommandQueue*     GetD3D12CommandQueue(VOID);
+	ID3D12CommandQueue*     GetD3D12CommandQueue(void);
 };
 
 #endif // WDK_CCOMMAND_QUEUE_HPP

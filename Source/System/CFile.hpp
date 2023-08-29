@@ -14,11 +14,11 @@ private:
 	~CFile();
 
 public:
-	static CFile* Open(CONST_CWSTR Path);
-	static VOID Close(CFile* pCFile);
+	static CFile* Open(const wchar_t* Path);
+	static void   Close(CFile* pCFile);
 
 public:
-	virtual BOOL Read(BYTE** ppBuffer, DWORD* pSize);
+	virtual bool  Read(byte** ppBuffer, uint32_t* pSize);
 };
 
 #endif // WDK_CFILE_HPP

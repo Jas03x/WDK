@@ -5,22 +5,22 @@
 
 #include <windows.h>
 
-HANDLE CMemory::m_hHeap = NULL;
-INT64  CMemory::m_nBytesAllocated = 0;
+HANDLE   CMemory::m_hHeap = NULL;
+uint64_t CMemory::m_nBytesAllocated = 0;
 
-PVOID Memory::Allocate(SIZE_T nBytes, BOOL bClear)
+PVOID Memory::Allocate(size_t nBytes, bool bClear)
 {
 	return CMemory::Allocate(nBytes, bClear);
 }
 
-BOOL Memory::Release(PVOID pMemory)
+bool Memory::Release(void* pMemory)
 {
 	return CMemory::Release(pMemory);
 }
 
-BOOL CMemory::Initialize(VOID)
+bool CMemory::Initialize(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_nBytesAllocated = 0;
 
@@ -28,35 +28,35 @@ BOOL CMemory::Initialize(VOID)
 
 	if (m_hHeap == NULL)
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CMemory::Uninitialize(VOID)
+bool CMemory::Uninitialize(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_hHeap = NULL;
 
 	if (m_nBytesAllocated != 0)
 	{
-		CONST WCHAR ErrorMsg[] = __FUNCTION__ L": ERROR - Memory leak detected\n";
+		const WCHAR ErrorMsg[] = __FUNCTION__ L": ERROR - Memory leak detected\n";
 
 		HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
 		if (hStdOut != NULL)
 		{
 			WriteConsole(hStdOut, ErrorMsg, _countof(ErrorMsg), NULL, NULL);
-			Status = FALSE;
+			status = false;
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-PVOID CMemory::Allocate(SIZE_T nBytes, BOOL bClear)
+PVOID CMemory::Allocate(size_t nBytes, bool bClear)
 {
 	PVOID pAlloc = NULL;
 	DWORD Flags = 0;
@@ -76,21 +76,21 @@ PVOID CMemory::Allocate(SIZE_T nBytes, BOOL bClear)
 	return pAlloc;
 }
 
-BOOL CMemory::Release(PVOID pMemory)
+bool CMemory::Release(void* pMemory)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (pMemory != NULL)
 	{
-		SIZE_T nBytes = HeapSize(m_hHeap, 0, pMemory);
+		size_t nBytes = HeapSize(m_hHeap, 0, pMemory);
 
-		if (nBytes != static_cast<SIZE_T>(-1))
+		if (nBytes != static_cast<size_t>(-1))
 		{
 			m_nBytesAllocated -= nBytes;
 		}
 	}
 
-	Status = HeapFree(m_hHeap, 0, pMemory);
+	status = HeapFree(m_hHeap, 0, pMemory);
 
-	return Status;
+	return status;
 }

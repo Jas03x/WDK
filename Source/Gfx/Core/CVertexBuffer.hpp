@@ -9,19 +9,19 @@ class CVertexBuffer : public IVertexBuffer
 {
 	VERTEX_BUFFER_DESC                m_Desc;
 
-	UINT64                            m_VertexBufferGpuVA;
+	uint64_t                          m_VertexBufferGpuVA;
 
 	ID3D12Resource*                   m_pID3D12Resource;
 
 public:
-	CVertexBuffer(VOID);
-	~CVertexBuffer(VOID);
+	CVertexBuffer(void);
+	~CVertexBuffer(void);
 
-	BOOL                              Initialize(ID3D12Resource* pID3D12VertexBuffer, CONST VERTEX_BUFFER_DESC& rDesc);
-	VOID                              Uninitialize(VOID);
+	bool                              Initialize(ID3D12Resource* pID3D12VertexBuffer, const VERTEX_BUFFER_DESC& rDesc);
+	void                              Uninitialize(void);
 
-	UINT64                            GetGpuVA(VOID);
-	virtual CONST VERTEX_BUFFER_DESC& GetDesc(VOID) const;
+	uint64_t                          GetGpuVA(void);
+	virtual const VERTEX_BUFFER_DESC& GetDesc(void) const;
 };
 
 #endif // WDK_CVERTEX_BUFFER_HPP

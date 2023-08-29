@@ -21,30 +21,30 @@ private:
 	HINSTANCE        m_hInstance;
 	ATOM             m_hCID;
 	HWND             m_hWnd;
-	BOOL             m_bOpen;
-	WCHAR            m_ClassName[256];
+	bool             m_bOpen;
+	wchar_t          m_ClassName[256];
 
 	CSwapChain*      m_pSwapChain;
 
 	static LRESULT WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
-	CWindow(VOID);
-	virtual ~CWindow(VOID);
+	CWindow(void);
+	virtual ~CWindow(void);
 
-	BOOL                 Initialize(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
-	VOID                 Uninitialize(VOID);
+	bool                 Initialize(const wchar_t* ClassName, const wchar_t* WindowName, uint32_t ClientWidth, uint32_t ClientHeight);
+	void                 Uninitialize(void);
 
 public:
-	virtual HWND         GetHandle(VOID);
-	virtual BOOL         Open(VOID);
-	virtual BOOL         GetEvent(WIN_EVENT& rEvent);
-	virtual BOOL         GetRect(WIN_AREA area, WIN_RECT& rRect);
+	virtual HWND         GetHandle(void);
+	virtual bool         Open(void);
+	virtual bool         GetEvent(WIN_EVENT& rEvent);
+	virtual bool         GetRect(WIN_AREA area, WIN_RECT& rRect);
 
-	BOOL                 SwapChainNotification(SWAPCHAIN_NOTIFICATION Notification, HANDLE hSwapChain);
+	bool                 SwapChainNotification(SWAPCHAIN_NOTIFICATION Notification, HANDLE hSwapChain);
 
-	virtual BOOL         Present(VOID);
-	virtual RenderBuffer GetCurrentRenderBuffer(VOID);
+	virtual bool         Present(void);
+	virtual RenderBuffer GetCurrentRenderBuffer(void);
 };
 
 #endif // WDK_CWINDOW_HPP

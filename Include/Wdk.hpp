@@ -3,24 +3,24 @@
 
 #include "WdkDef.hpp"
 
-INT WdkMain(INT argc, CONST_CWSTR argv[]);
+int32_t WdkMain(int32_t argc, const wchar_t* argv[]);
 
-void WdkAssert(BOOL b, CONST_CWSTR error, ...);
+void WdkAssert(bool b, const wchar_t* error, ...);
 
 // Memory
 class Memory
 {
 public:
-	static PVOID Allocate(SIZE_T nBytes, BOOL bClear);
-	static BOOL  Release(PVOID pMemory);
+	static void* Allocate(size_t nBytes, bool bClear);
+	static bool  Release(void* pMemory);
 };
 
 // Console
 class Console
 {
 public:
-	static BOOL Write(CONST_CWSTR Msg, ...);
-	static BOOL Write(CONST_CWSTR Msg, VA_LIST Args);
+	static bool Write(const wchar_t* Msg, ...);
+	static bool Write(const wchar_t* Msg, va_list Args);
 };
 
 // File
@@ -33,12 +33,12 @@ public:
 		WRITE = 1
 	};
 
-	static File*  Open(CONST_CWSTR Path);
-	static File*  Open(CONST FILE_PATH& Path);
+	static File*  Open(const wchar_t* Path);
+	static File*  Open(const FILE_PATH& Path);
 
-	static VOID   Close(File* pIFile);
+	static void   Close(File* pIFile);
 
-	virtual BOOL  Read(BYTE** ppBuffer, DWORD* pSize) = 0;
+	virtual bool  Read(byte** ppBuffer, uint32_t* pSize) = 0;
 };
 
 // System
@@ -46,8 +46,8 @@ class System
 {
 public:
 	// Path
-	static BOOL GetModulePath(CWSTR pPath, DWORD nSize);
-	static BOOL GetModuleDirectory(CWSTR pPath, DWORD nSize);
+	static bool GetModulePath(wchar_t* pPath, uint32_t nSize);
+	static bool GetModuleDirectory(wchar_t* pPath, uint32_t nSize);
 };
 
 #endif // WDK__HPP

@@ -8,7 +8,7 @@
 #include "CMesh.hpp"
 #include "CRendererState.hpp"
 
-CCommandBuffer::CCommandBuffer(VOID)
+CCommandBuffer::CCommandBuffer(void)
 {
 	m_Type = COMMAND_BUFFER_TYPE_INVALID;
 	m_pID3D12CommandAllocator = NULL;
@@ -16,14 +16,14 @@ CCommandBuffer::CCommandBuffer(VOID)
 	m_State = STATE_ERROR;
 }
 
-CCommandBuffer::~CCommandBuffer(VOID)
+CCommandBuffer::~CCommandBuffer(void)
 {
 
 }
 
-BOOL CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList)
+bool CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator* pICommandAllocator, ID3D12GraphicsCommandList* pICommandList)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_Type = Type;
 	m_State = STATE_RESET;
@@ -35,14 +35,14 @@ BOOL CCommandBuffer::Initialize(COMMAND_BUFFER_TYPE Type, ID3D12CommandAllocator
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Could not create command buffer - null interfaces\n");
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CCommandBuffer::Uninitialize(VOID)
+void CCommandBuffer::Uninitialize(void)
 {
 	if (m_pID3D12CommandList != NULL)
 	{
@@ -57,19 +57,19 @@ VOID CCommandBuffer::Uninitialize(VOID)
 	}
 }
 
-COMMAND_BUFFER_TYPE CCommandBuffer::GetType(VOID)
+COMMAND_BUFFER_TYPE CCommandBuffer::GetType(void)
 {
 	return m_Type;
 }
 
-ID3D12GraphicsCommandList* CCommandBuffer::GetD3D12Interface(VOID)
+ID3D12GraphicsCommandList* CCommandBuffer::GetD3D12Interface(void)
 {
 	return m_pID3D12CommandList;
 }
 
-BOOL CCommandBuffer::Finalize(VOID)
+bool CCommandBuffer::Finalize(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (m_State == STATE_RECORDING)
 	{
@@ -79,22 +79,22 @@ BOOL CCommandBuffer::Finalize(VOID)
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not finalize command list\n");
 		}
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Cannot finalize empty command buffer\n");
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CCommandBuffer::Reset(VOID)
+bool CCommandBuffer::Reset(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (m_State != STATE_RESET)
 	{
@@ -102,11 +102,11 @@ BOOL CCommandBuffer::Reset(VOID)
 		{
 			if (m_pID3D12CommandAllocator->Reset() != S_OK)
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: Failed to reset D3D12 command allocator\n");
 			}
 
-			if (Status == TRUE)
+			if (status)
 			{
 				if (m_pID3D12CommandList->Reset(m_pID3D12CommandAllocator, NULL) == S_OK)
 				{
@@ -114,30 +114,30 @@ BOOL CCommandBuffer::Reset(VOID)
 				}
 				else
 				{
-					Status = FALSE;
+					status = false;
 					Console::Write(L"Error: Failed to reset D3D12 command list\n");
 				}
 			}
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Cannot reset command buffer in error state\n");
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CCommandBuffer::SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth, FLOAT max_depth)
+void CCommandBuffer::SetViewport(uint32_t x, uint32_t y, uint32_t w, uint32_t h, float min_depth, float max_depth)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
 		D3D12_VIEWPORT Viewport = {};
-		Viewport.TopLeftX = static_cast<FLOAT>(x);
-		Viewport.TopLeftY = static_cast<FLOAT>(y);
-		Viewport.Width = static_cast<FLOAT>(w);
-		Viewport.Height = static_cast<FLOAT>(h);
+		Viewport.TopLeftX = static_cast<float>(x);
+		Viewport.TopLeftY = static_cast<float>(y);
+		Viewport.Width = static_cast<float>(w);
+		Viewport.Height = static_cast<float>(h);
 		Viewport.MinDepth = min_depth;
 		Viewport.MaxDepth = max_depth;
 
@@ -153,7 +153,7 @@ VOID CCommandBuffer::SetViewport(UINT x, UINT y, UINT w, UINT h, FLOAT min_depth
 	}
 }
 
-VOID CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
+void CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
@@ -176,7 +176,7 @@ VOID CCommandBuffer::ProgramPipeline(IRendererState* pIRendererState)
 	}
 }
 
-VOID CCommandBuffer::SetConstantBuffer(UINT Index, IConstantBuffer* pIConstantBuffer)
+void CCommandBuffer::SetConstantBuffer(uint32_t Index, IConstantBuffer* pIConstantBuffer)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
@@ -195,7 +195,7 @@ VOID CCommandBuffer::SetConstantBuffer(UINT Index, IConstantBuffer* pIConstantBu
 	}
 }
 
-VOID CCommandBuffer::SetRenderTarget(const RenderBuffer& rBuffer)
+void CCommandBuffer::SetRenderTarget(const RenderBuffer& rBuffer)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
@@ -224,7 +224,7 @@ VOID CCommandBuffer::SetRenderTarget(const RenderBuffer& rBuffer)
 	}
 }
 
-VOID CCommandBuffer::Present(const RenderBuffer& rBuffer)
+void CCommandBuffer::Present(const RenderBuffer& rBuffer)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
@@ -251,7 +251,7 @@ VOID CCommandBuffer::Present(const RenderBuffer& rBuffer)
 	}
 }
 
-VOID CCommandBuffer::ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT RGBA[])
+void CCommandBuffer::ClearRenderBuffer(const RenderBuffer& rBuffer, const float RGBA[])
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{
@@ -270,7 +270,7 @@ VOID CCommandBuffer::ClearRenderBuffer(const RenderBuffer& rBuffer, CONST FLOAT 
 	}
 }
 
-VOID CCommandBuffer::SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVertexBuffers)
+void CCommandBuffer::SetVertexBuffers(uint32_t NumBuffers, const IVertexBuffer* pIVertexBuffers)
 {
 	enum { MAX_VERTEX_BUFFERS = 8 };
 
@@ -294,9 +294,9 @@ VOID CCommandBuffer::SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVe
 		{
 			D3D12_VERTEX_BUFFER_VIEW VertexBufferViews[MAX_VERTEX_BUFFERS] = {};
 
-			for (UINT i = 0; i < NumBuffers; i++)
+			for (uint32_t i = 0; i < NumBuffers; i++)
 			{
-				CONST VERTEX_BUFFER_DESC& Desc = pIVertexBuffers[i].GetDesc();
+				const VERTEX_BUFFER_DESC& Desc = pIVertexBuffers[i].GetDesc();
 
 				VertexBufferViews[i].BufferLocation = Desc.GpuVA;
 				VertexBufferViews[i].SizeInBytes = Desc.Size;
@@ -314,7 +314,7 @@ VOID CCommandBuffer::SetVertexBuffers(UINT NumBuffers, CONST IVertexBuffer* pIVe
 	}
 }
 
-VOID CCommandBuffer::Draw(UINT NumVertices)
+void CCommandBuffer::Draw(uint32_t NumVertices)
 {
 	if ((m_State != STATE_CLOSED) && (m_State != STATE_ERROR))
 	{

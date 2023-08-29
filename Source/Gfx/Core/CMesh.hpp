@@ -8,17 +8,17 @@ class CMesh : public IMesh
 private:
 	IVertexBuffer*         m_pIVertexBuffer;
 
-	UINT                   m_NumVertices;
+	uint32_t               m_NumVertices;
 
 public:
-	CMesh(VOID);
-	~CMesh(VOID);
+	CMesh(void);
+	~CMesh(void);
 
-	BOOL                   Initialize(UINT NumVertices, IVertexBuffer* pIVertexBuffer);
-	VOID                   Uninitialize(VOID);
+	bool                   Initialize(uint32_t NumVertices, IVertexBuffer* pIVertexBuffer);
+	void                   Uninitialize(void);
 
-	virtual UINT           GetVertexCount(VOID);
-	virtual IVertexBuffer* GetVertexBuffer(VOID);
+	virtual uint32_t       GetVertexCount(void);
+	virtual IVertexBuffer* GetVertexBuffer(void);
 };
 
 #endif //WDK_CMESH_HPP

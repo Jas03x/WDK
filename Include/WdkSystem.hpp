@@ -15,10 +15,10 @@ enum WIN_AREA
 
 struct WIN_RECT
 {
-	UINT x;
-	UINT y;
-	UINT width;
-	UINT height;
+	uint32_t x;
+	uint32_t y;
+	uint32_t width;
+	uint32_t height;
 };
 
 enum WIN_MSG
@@ -45,20 +45,20 @@ struct RenderBuffer
 class __declspec(novtable) IWindow
 {
 public:
-	virtual HWND         GetHandle(VOID) = 0;
-	virtual BOOL         Open(VOID) = 0;
-	virtual BOOL         GetEvent(WIN_EVENT& rEvent) = 0;
-	virtual BOOL         GetRect(WIN_AREA area, WIN_RECT& rRect) = 0;
+	virtual HWND         GetHandle(void) = 0;
+	virtual bool         Open(void) = 0;
+	virtual bool         GetEvent(WIN_EVENT& rEvent) = 0;
+	virtual bool         GetRect(WIN_AREA area, WIN_RECT& rRect) = 0;
 
-	virtual BOOL         Present(VOID) = 0;
-	virtual RenderBuffer GetCurrentRenderBuffer(VOID) = 0;
+	virtual bool         Present(void) = 0;
+	virtual RenderBuffer GetCurrentRenderBuffer(void) = 0;
 };
 
 class __declspec(novtable) WindowFactory
 {
 public:
-	static IWindow* CreateInstance(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight);
-	static VOID     DestroyInstance(IWindow* pIWindow);
+	static IWindow* CreateInstance(const wchar_t* ClassName, const wchar_t* WindowName, uint32_t ClientWidth, uint32_t ClientHeight);
+	static void     DestroyInstance(IWindow* pIWindow);
 };
 
 #endif // WDK_SYS__HPP

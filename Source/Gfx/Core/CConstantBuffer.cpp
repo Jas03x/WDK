@@ -4,21 +4,21 @@
 
 #include <d3d12.h>
 
-CConstantBuffer::CConstantBuffer(VOID)
+CConstantBuffer::CConstantBuffer(void)
 {
 	m_CpuVA = NULL;
 	m_GpuVA = 0;
 	m_pID3D12Resource = NULL;
 }
 
-CConstantBuffer::~CConstantBuffer(VOID)
+CConstantBuffer::~CConstantBuffer(void)
 {
 
 }
 
-BOOL CConstantBuffer::Initialize(ID3D12Resource* pID3D12ConstantBufferResource, VOID* CpuVA)
+bool CConstantBuffer::Initialize(ID3D12Resource* pID3D12ConstantBufferResource, void* CpuVA)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (pID3D12ConstantBufferResource != NULL)
 	{
@@ -28,14 +28,14 @@ BOOL CConstantBuffer::Initialize(ID3D12Resource* pID3D12ConstantBufferResource, 
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Failed to initialize constant buffer\n");
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CConstantBuffer::Uninitialize(VOID)
+void CConstantBuffer::Uninitialize(void)
 {
 	if (m_pID3D12Resource != NULL)
 	{
@@ -44,12 +44,12 @@ VOID CConstantBuffer::Uninitialize(VOID)
 	}
 }
 
-VOID* CConstantBuffer::GetCpuVA(VOID)
+void* CConstantBuffer::GetCpuVA(void)
 {
 	return m_CpuVA;
 }
 
-UINT64 CConstantBuffer::GetGpuVA(VOID)
+UINT64 CConstantBuffer::GetGpuVA(void)
 {
 	return m_GpuVA;
 }

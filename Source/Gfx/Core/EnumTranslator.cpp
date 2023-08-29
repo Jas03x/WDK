@@ -4,9 +4,9 @@
 
 #include <Wdk.hpp>
 
-BOOL EnumTranslator::CommandBufferType_To_CommandListType(COMMAND_BUFFER_TYPE CmdBufType, D3D12_COMMAND_LIST_TYPE& rCmdListType)
+bool EnumTranslator::CommandBufferType_To_CommandListType(COMMAND_BUFFER_TYPE CmdBufType, D3D12_COMMAND_LIST_TYPE& rCmdListType)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	switch (CmdBufType)
 	{
@@ -27,19 +27,19 @@ BOOL EnumTranslator::CommandBufferType_To_CommandListType(COMMAND_BUFFER_TYPE Cm
 		}
 		default:
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Invalid command buffer type %u\n", CmdBufType);
 			rCmdListType = static_cast<D3D12_COMMAND_LIST_TYPE>(-1);
 			break;
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL EnumTranslator::CommandQueueType_To_CommandListType(COMMAND_QUEUE_TYPE CmdQueueType, D3D12_COMMAND_LIST_TYPE& rCmdListType)
+bool EnumTranslator::CommandQueueType_To_CommandListType(COMMAND_QUEUE_TYPE CmdQueueType, D3D12_COMMAND_LIST_TYPE& rCmdListType)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	switch (CmdQueueType)
 	{
@@ -60,19 +60,19 @@ BOOL EnumTranslator::CommandQueueType_To_CommandListType(COMMAND_QUEUE_TYPE CmdQ
 	}
 	default:
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Invalid command queue type %u\n", CmdQueueType);
 		rCmdListType = static_cast<D3D12_COMMAND_LIST_TYPE>(-1);
 		break;
 	}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL EnumTranslator::InputElement_To_SemanticName(INPUT_ELEMENT Element, CONST_CSTR& rSemanticName)
+bool EnumTranslator::InputElement_To_SemanticName(INPUT_ELEMENT Element, const char*& rSemanticName)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	switch (Element)
 	{
@@ -88,19 +88,19 @@ BOOL EnumTranslator::InputElement_To_SemanticName(INPUT_ELEMENT Element, CONST_C
 		}
 		default:
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Invalid semantic index %u\n", Element);
 			rSemanticName = "INVALID";
 			break;
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL EnumTranslator::InputElementFormat_To_DxgiFormat(INPUT_ELEMENT_FORMAT ElementFormat, DXGI_FORMAT& rDxgiFormat)
+bool EnumTranslator::InputElementFormat_To_DxgiFormat(INPUT_ELEMENT_FORMAT ElementFormat, DXGI_FORMAT& rDxgiFormat)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	switch (ElementFormat)
 	{
@@ -116,19 +116,19 @@ BOOL EnumTranslator::InputElementFormat_To_DxgiFormat(INPUT_ELEMENT_FORMAT Eleme
 		}
 		default:
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Invalid element format: %u\n", ElementFormat);
 			rDxgiFormat = DXGI_FORMAT_UNKNOWN;
 			break;
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL EnumTranslator::InputElementType_To_InputSlotClass(INPUT_ELEMENT_TYPE ElementType, D3D12_INPUT_CLASSIFICATION& rInputSlotClass)
+bool EnumTranslator::InputElementType_To_InputSlotClass(INPUT_ELEMENT_TYPE ElementType, D3D12_INPUT_CLASSIFICATION& rInputSlotClass)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	switch (ElementType)
 	{
@@ -144,12 +144,12 @@ BOOL EnumTranslator::InputElementType_To_InputSlotClass(INPUT_ELEMENT_TYPE Eleme
 		}
 		default:
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Invalid element type %u\n", ElementType);
 			rInputSlotClass = static_cast<D3D12_INPUT_CLASSIFICATION>(-1);
 			break;
 		}
 	}
 
-	return Status;
+	return status;
 }

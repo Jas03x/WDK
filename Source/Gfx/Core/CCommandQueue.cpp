@@ -6,7 +6,7 @@
 
 #include "CCommandBuffer.hpp"
 
-CCommandQueue::CCommandQueue(VOID)
+CCommandQueue::CCommandQueue(void)
 {
 	m_pID3D12CommandQueue = NULL;
 	m_pID3D12Fence = NULL;
@@ -15,13 +15,13 @@ CCommandQueue::CCommandQueue(VOID)
 	m_FenceValue = 0;
 }
 
-CCommandQueue::~CCommandQueue(VOID)
+CCommandQueue::~CCommandQueue(void)
 {
 }
 
-BOOL CCommandQueue::Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence)
+bool CCommandQueue::Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICommandQueue, ID3D12Fence* pIFence)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_Type = Type;
 	m_hFenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -32,11 +32,11 @@ BOOL CCommandQueue::Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICo
 	}
 	else
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: could not initialize fence event handle\n");
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		if ((pICommandQueue != NULL) && (pIFence != NULL))
 		{
@@ -45,15 +45,15 @@ BOOL CCommandQueue::Initialize(COMMAND_QUEUE_TYPE Type, ID3D12CommandQueue* pICo
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: could not initialize command queue - received null d3d12 interface(s)\n");
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CCommandQueue::Uninitialize(VOID)
+void CCommandQueue::Uninitialize(void)
 {
 	if (m_pID3D12CommandQueue != NULL)
 	{
@@ -74,21 +74,21 @@ VOID CCommandQueue::Uninitialize(VOID)
 	}
 }
 
-ID3D12CommandQueue* CCommandQueue::GetD3D12CommandQueue(VOID)
+ID3D12CommandQueue* CCommandQueue::GetD3D12CommandQueue(void)
 {
 	return m_pID3D12CommandQueue;
 }
 
-BOOL CCommandQueue::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
+bool CCommandQueue::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (pICommandBuffer == NULL)
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		CCommandBuffer* pCommandBuffer = static_cast<CCommandBuffer*>(pICommandBuffer);
 
@@ -99,25 +99,25 @@ BOOL CCommandQueue::SubmitCommandBuffer(ICommandBuffer* pICommandBuffer)
 		}
 		else
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Submitting different command buffer type to command queue\n");
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CCommandQueue::Sync(VOID)
+bool CCommandQueue::Sync(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	if (m_pID3D12CommandQueue->Signal(m_pID3D12Fence, m_FenceValue) != S_OK)
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Failed to signal fence from command queue\n");
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		if (m_pID3D12Fence->GetCompletedValue() < m_FenceValue)
 		{
@@ -133,19 +133,19 @@ BOOL CCommandQueue::Sync(VOID)
 				}
 				case WAIT_TIMEOUT:
 				{
-					Status = FALSE;
+					status = false;
 					Console::Write(L"Error: command queue submission timed out\n");
 					break;
 				}
 				case WAIT_FAILED:
 				{
-					Status = FALSE;
+					status = false;
 					Console::Write(L"Error: failed to wait for command queue submission\n");
 					break;
 				}
 				default:
 				{
-					Status = FALSE;
+					status = false;
 					Console::Write(L"Error: unknown error occurred while waiting for command queue submission\n");
 					break;
 				}
@@ -153,7 +153,7 @@ BOOL CCommandQueue::Sync(VOID)
 			}
 			else
 			{
-				Status = FALSE;
+				status = false;
 				Console::Write(L"Error: failed to set fence event on completition\n");
 			}
 		}
@@ -161,5 +161,5 @@ BOOL CCommandQueue::Sync(VOID)
 
 	m_FenceValue++;
 
-	return Status;
+	return status;
 }

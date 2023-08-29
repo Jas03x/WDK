@@ -17,18 +17,18 @@ private:
 	ID3D12DescriptorHeap* m_pShaderResourceHeap;
 
 public:
-	CRendererState(VOID);
-	~CRendererState(VOID);
+	CRendererState(void);
+	~CRendererState(void);
 
-	BOOL Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState, ID3D12DescriptorHeap* pShaderResourceHeap);
-	VOID Uninitialize(VOID);
+	bool Initialize(ID3D12RootSignature* pIRootSignature, ID3D12PipelineState* pIPipelineState, ID3D12DescriptorHeap* pShaderResourceHeap);
+	void Uninitialize(void);
 
-	ID3D12PipelineState*  GetD3D12PipelineState(VOID);
-	ID3D12RootSignature*  GetD3D12RootSignature(VOID);
-	ID3D12DescriptorHeap* GetShaderResourceHeap(VOID);
+	ID3D12PipelineState*  GetD3D12PipelineState(void);
+	ID3D12RootSignature*  GetD3D12RootSignature(void);
+	ID3D12DescriptorHeap* GetShaderResourceHeap(void);
 };
 
-BOOL ReadShaderBytecode(CONST FILE_PATH& Path, SHADER_BYTECODE& rDesc);
-VOID ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
+bool ReadShaderBytecode(const FILE_PATH& Path, SHADER_BYTECODE& rDesc);
+void ReleaseShaderBytecode(SHADER_BYTECODE& rDesc);
 
 #endif // WDK_CRENDERER_STATE_HPP

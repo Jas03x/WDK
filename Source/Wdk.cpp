@@ -7,12 +7,12 @@
 #include "System/CConsole.hpp"
 #include "System/CMemory.hpp"
 
-BOOL WdkInitialize(INT argc, CONST_CWSTR argv[]);
-BOOL WdkTerminate(VOID);
+bool WdkInitialize(int32_t argc, const wchar_t* argv[]);
+bool WdkTerminate(void);
 
-void WdkAssert(BOOL b, CONST_CWSTR error, ...)
+void WdkAssert(bool b, const wchar_t* error, ...)
 {
-	if (b != TRUE)
+	if (!b)
 	{
 		va_list args;
 		va_start(args, error);
@@ -23,11 +23,11 @@ void WdkAssert(BOOL b, CONST_CWSTR error, ...)
 	}
 }
 
-INT main(INT argc, CONST_CWSTR argv[])
+INT main(INT argc, const wchar_t* argv[])
 {
 	INT Status = STATUS::SUCCESS;
 
-	if (WdkInitialize(argc, argv) == TRUE)
+	if (WdkInitialize(argc, argv))
 	{
 		Status = WdkMain(argc, argv);
 	}
@@ -36,7 +36,7 @@ INT main(INT argc, CONST_CWSTR argv[])
 		Status = STATUS::UNSUCCESSFUL;
 	}
 
-	if (WdkTerminate() == FALSE)
+	if (!WdkTerminate())
 	{
 		if (Status == STATUS::SUCCESS)
 		{
@@ -47,46 +47,46 @@ INT main(INT argc, CONST_CWSTR argv[])
 	return Status;
 }
 
-BOOL WdkInitialize(INT argc, CONST_CWSTR argv[])
+bool WdkInitialize(int32_t argc, const wchar_t* argv[])
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = CMemory::Initialize();
+		status = CMemory::Initialize();
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		Status = CConsole::Initialize();
+		status = CConsole::Initialize();
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL WdkTerminate(VOID)
+bool WdkTerminate(void)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
-	if (CConsole::Uninitialize() != TRUE)
+	if (!CConsole::Uninitialize())
 	{
-		Status = FALSE;
+		status = false;
 	}
 	
-	if (CMemory::Uninitialize() != TRUE)
+	if (!CMemory::Uninitialize())
 	{
-		Status = FALSE;
+		status = false;
 	}
 
-	return Status;
+	return status;
 }
 
-PVOID operator new(SIZE_T size)
+PVOID operator new(size_t size)
 {
-	return Memory::Allocate(size, TRUE);
+	return Memory::Allocate(size, true);
 }
 
-VOID operator delete(PVOID ptr)
+void operator delete(void* ptr)
 {
 	Memory::Release(ptr);
 }

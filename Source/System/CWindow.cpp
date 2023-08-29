@@ -6,13 +6,13 @@
 
 #undef CreateWindow
 
-IWindow* WindowFactory::CreateInstance(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+IWindow* WindowFactory::CreateInstance(const wchar_t* ClassName, const wchar_t* WindowName, uint32_t ClientWidth, uint32_t ClientHeight)
 {
 	CWindow* pWindow = new CWindow();
 
 	if (pWindow != NULL)
 	{
-		if (pWindow->Initialize(ClassName, WindowName, ClientWidth, ClientHeight) == FALSE)
+		if (!pWindow->Initialize(ClassName, WindowName, ClientWidth, ClientHeight))
 		{
 			WindowFactory::DestroyInstance(pWindow);
 			pWindow = NULL;
@@ -22,7 +22,7 @@ IWindow* WindowFactory::CreateInstance(CONST_CWSTR ClassName, CONST_CWSTR Window
 	return pWindow;
 }
 
-VOID WindowFactory::DestroyInstance(IWindow* pIWindow)
+void WindowFactory::DestroyInstance(IWindow* pIWindow)
 {
 	CWindow* pWindow = static_cast<CWindow*>(pIWindow);
 	if (pWindow != NULL)
@@ -34,26 +34,26 @@ VOID WindowFactory::DestroyInstance(IWindow* pIWindow)
 	}
 }
 
-CWindow::CWindow(VOID)
+CWindow::CWindow(void)
 {
 	m_hCID = 0;
-	m_bOpen = FALSE;
+	m_bOpen = false;
 	m_hWnd = NULL;
 	m_hInstance = NULL;
 	
 	ZeroMemory(m_ClassName, sizeof(m_ClassName));
 }
 
-CWindow::~CWindow(VOID)
+CWindow::~CWindow(void)
 {
 }
 
-BOOL CWindow::Initialize(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG ClientWidth, ULONG ClientHeight)
+bool CWindow::Initialize(const wchar_t* ClassName, const wchar_t* WindowName, uint32_t ClientWidth, uint32_t ClientHeight)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	m_hInstance = GetModuleHandle(NULL);
-	StringCchCopy(m_ClassName, sizeof(m_ClassName) / sizeof(WCHAR), ClassName);
+	StringCchCopy(m_ClassName, sizeof(m_ClassName) / sizeof(wchar_t), ClassName);
 
 	WNDCLASSEX wndClassEx = { 0 };
 	wndClassEx.cbSize = sizeof(WNDCLASSEX);
@@ -81,49 +81,49 @@ BOOL CWindow::Initialize(CONST_CWSTR ClassName, CONST_CWSTR WindowName, ULONG Cl
 	// The window size includes the borders, top bar, etc.
 	// The client area is the area with the contents of the window.
 	// We use AdjustWindowRect to calculate the window size based off the required client size.
-	if (AdjustWindowRect(&wndRect, WS_OVERLAPPEDWINDOW, FALSE) != TRUE)
+	if (!AdjustWindowRect(&wndRect, WS_OVERLAPPEDWINDOW, FALSE))
 	{
-		Status = FALSE;
+		status = false;
 		Console::Write(L"Error: Could not calculate window bounds\n");
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		m_hCID = RegisterClassEx(&wndClassEx);
 
 		if (m_hCID == 0)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not register class\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		m_hWnd = CreateWindowEx(0, ClassName, WindowName, WS_OVERLAPPEDWINDOW, wndRect.left, wndRect.top, wndRect.right - wndRect.left, wndRect.bottom - wndRect.top, NULL, NULL, m_hInstance, NULL);
 
 		if (m_hWnd == NULL)
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Could not create window\n");
 		}
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		SetWindowLongPtr(m_hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(this));
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
-		m_bOpen = TRUE;
+		m_bOpen = true;
 		ShowWindow(m_hWnd, SW_SHOW);
 	}
 
-	return Status;
+	return status;
 }
 
-VOID CWindow::Uninitialize(VOID)
+void CWindow::Uninitialize(void)
 {
 	if (m_pSwapChain != NULL)
 	{
@@ -140,16 +140,16 @@ VOID CWindow::Uninitialize(VOID)
 
 	m_hCID = 0;
 	m_hInstance = NULL;
-	m_bOpen = FALSE;
+	m_bOpen = false;
 	ZeroMemory(m_ClassName, sizeof(m_ClassName));
 }
 
-HWND CWindow::GetHandle(VOID)
+HWND CWindow::GetHandle(void)
 {
 	return m_hWnd;
 }
 
-BOOL CWindow::Open(VOID)
+bool CWindow::Open(void)
 {
 	return m_bOpen;
 }
@@ -163,7 +163,7 @@ LRESULT CWindow::WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	{
 		case WM_CLOSE:
 		{
-			pWindow->m_bOpen = FALSE;
+			pWindow->m_bOpen = false;
 			break;
 		}
 
@@ -183,9 +183,9 @@ LRESULT CWindow::WindowProcedure(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return Result;
 }
 
-BOOL CWindow::GetEvent(WIN_EVENT& rEvent)
+bool CWindow::GetEvent(WIN_EVENT& rEvent)
 {
-	BOOL Status = FALSE;
+	bool status = false;
 	MSG msg = { 0 };
 
 	rEvent.msg = WIN_MSG::INVALID;
@@ -201,24 +201,24 @@ BOOL CWindow::GetEvent(WIN_EVENT& rEvent)
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CWindow::GetRect(WIN_AREA area, WIN_RECT& rRect)
+bool CWindow::GetRect(WIN_AREA area, WIN_RECT& rRect)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 	RECT rect = {};
 
 	if (area == WIN_AREA::CLIENT)
 	{
-		Status = GetClientRect(m_hWnd, &rect);
+		status = GetClientRect(m_hWnd, &rect);
 	}
 	else
 	{
-		Status = GetWindowRect(m_hWnd, &rect);
+		status = GetWindowRect(m_hWnd, &rect);
 	}
 
-	if (Status == TRUE)
+	if (status)
 	{
 		rRect.x = rect.left;
 		rRect.y = rect.top;
@@ -226,12 +226,12 @@ BOOL CWindow::GetRect(WIN_AREA area, WIN_RECT& rRect)
 		rRect.height = rect.bottom - rect.top;
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CWindow::SwapChainNotification(SWAPCHAIN_NOTIFICATION Notification, HANDLE hSwapChain)
+bool CWindow::SwapChainNotification(SWAPCHAIN_NOTIFICATION Notification, HANDLE hSwapChain)
 {
-	BOOL Status = TRUE;
+	bool status = true;
 
 	switch (Notification)
 	{
@@ -247,23 +247,23 @@ BOOL CWindow::SwapChainNotification(SWAPCHAIN_NOTIFICATION Notification, HANDLE 
 		}
 		default:
 		{
-			Status = FALSE;
+			status = false;
 			Console::Write(L"Error: Invalid swap chain notification event\n");
 			break;
 		}
 	}
 
-	return Status;
+	return status;
 }
 
-BOOL CWindow::Present(VOID)
+bool CWindow::Present(void)
 {
-	BOOL Status = TRUE;
-	Status = m_pSwapChain->Present();
-	return Status;
+	bool status = true;
+	status = m_pSwapChain->Present();
+	return status;
 }
 
-RenderBuffer CWindow::GetCurrentRenderBuffer(VOID)
+RenderBuffer CWindow::GetCurrentRenderBuffer(void)
 {
 	RenderBuffer Buffer = {};
 	m_pSwapChain->GetCurrentRenderBuffer(Buffer.hResource, Buffer.CpuDescriptor);

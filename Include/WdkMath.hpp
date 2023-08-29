@@ -43,8 +43,8 @@ struct Vector2
 
 	Vector2<T>& operator = (const Vector2<T>& v);
 
-	T& operator[] (UINT32 i);
-	const T& operator[] (UINT32 i) const;
+	T& operator[] (uint32_t i);
+	const T& operator[] (uint32_t i) const;
 
 	Vector2<T>  operator + () const;
 	Vector2<T>  operator - () const;
@@ -83,8 +83,8 @@ struct Vector3
 
 	Vector3<T>& operator = (const Vector3<T>& v);
 
-	T& operator[] (UINT32 i);
-	const T& operator[] (UINT32 i) const;
+	T& operator[] (uint32_t i);
+	const T& operator[] (uint32_t i) const;
 
 	Vector3<T>  operator + () const;
 	Vector3<T>  operator - () const;
@@ -124,8 +124,8 @@ struct Vector4
 
 	Vector4<T>& operator = (const Vector4<T>& v);
 
-	T& operator[] (UINT32 i);
-	const T& operator[] (UINT32 i) const;
+	T& operator[] (uint32_t i);
+	const T& operator[] (uint32_t i) const;
 
 	Vector4<T>  operator + () const;
 	Vector4<T>  operator - () const;
@@ -144,15 +144,15 @@ struct Vector4
 	bool        operator != (const Vector4<T>& v) const;
 };
 
-typedef Vector2<FLOAT>  Vector2F;
-typedef Vector3<FLOAT>  Vector3F;
-typedef Vector4<FLOAT>  Vector4F;
-typedef Vector2<INT32>  Vector2I;
-typedef Vector3<INT32>  Vector3I;
-typedef Vector4<INT32>  Vector4I;
-typedef Vector2<UINT32> Vector2U;
-typedef Vector3<UINT32> Vector3U;
-typedef Vector4<UINT32> Vector4U;
+typedef Vector2<float>    Vector2F;
+typedef Vector3<float>    Vector3F;
+typedef Vector4<float>    Vector4F;
+typedef Vector2<int32_t>  Vector2I;
+typedef Vector3<int32_t>  Vector3I;
+typedef Vector4<int32_t>  Vector4I;
+typedef Vector2<uint32_t> Vector2U;
+typedef Vector3<uint32_t> Vector3U;
+typedef Vector4<uint32_t> Vector4U;
 
 namespace Vector
 {
@@ -184,7 +184,7 @@ namespace Vector
 // prototype for Quaternion::Quaternion(const struct Matrix3<T>&)
 template <typename T> struct Matrix3;
 
-template <typename T = FLOAT>
+template <typename T = float>
 struct Quaternion
 {
 	union
@@ -215,7 +215,7 @@ struct Matrix2
 	union
 	{
 		Vector2<T> rows[2];
-		FLOAT      elements[2][2];
+		float      elements[2][2];
 		struct { Vector2<T> v0, v1; };
 	};
 
@@ -226,8 +226,8 @@ struct Matrix2
 
 	Matrix2<T>& operator = (const Matrix2<T>& m);
 
-	Vector2<T>& operator[] (UINT32 i);
-	const Vector2<T>& operator[] (UINT32 i) const;
+	Vector2<T>& operator[] (uint32_t i);
+	const Vector2<T>& operator[] (uint32_t i) const;
 
 	Matrix2<T>  operator *  (T t) const;
 	Matrix2<T>& operator *= (T t);
@@ -249,7 +249,7 @@ struct Matrix3
 	union
 	{
 		Vector3<T> rows[3];
-		FLOAT      elements[3][3];
+		float      elements[3][3];
 		struct { Vector3<T> v0, v1, v2; };
 	};
 
@@ -260,8 +260,8 @@ struct Matrix3
 
 	Matrix3<T>& operator = (const Matrix3<T>& m);
 
-	Vector3<T>& operator[] (UINT32 i);
-	const Vector3<T>& operator[] (UINT32 i) const;
+	Vector3<T>& operator[] (uint32_t i);
+	const Vector3<T>& operator[] (uint32_t i) const;
 
 	Matrix3<T>  operator *  (T t) const;
 	Matrix3<T>& operator *= (T t);
@@ -283,7 +283,7 @@ struct Matrix4
 	union
 	{
 		Vector4<T> rows[4];
-		FLOAT      elements[4][4];
+		float      elements[4][4];
 		struct { Vector4<T> v0, v1, v2, v3; };
 	};
 
@@ -295,8 +295,8 @@ struct Matrix4
 
 	Matrix4<T>& operator = (const Matrix4<T>& m);
 
-	Vector4<T>& operator[] (UINT32 i);
-	const Vector4<T>& operator[] (UINT32 i) const;
+	Vector4<T>& operator[] (uint32_t i);
+	const Vector4<T>& operator[] (uint32_t i) const;
 
 	Matrix4<T>  operator *  (T t) const;
 	Matrix4<T>& operator *= (T t);
@@ -312,9 +312,9 @@ struct Matrix4
 	Vector4<T>  operator  * (const Vector4<T>& v) const;
 };
 
-typedef Matrix2<FLOAT> Matrix2F;
-typedef Matrix3<FLOAT> Matrix3F;
-typedef Matrix4<FLOAT> Matrix4F;
+typedef Matrix2<float> Matrix2F;
+typedef Matrix3<float> Matrix3F;
+typedef Matrix4<float> Matrix4F;
 
 namespace Matrix
 {
