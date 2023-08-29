@@ -190,7 +190,7 @@ private:
 
 		status = m_pIGraphicsCommandBuffer->Reset();
 
-		if (status == false)
+		if (status)
 		{
 			RenderBuffer CurrentBuffer = m_pIWindow->GetCurrentRenderBuffer();
 

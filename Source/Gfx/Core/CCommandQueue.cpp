@@ -8,6 +8,8 @@
 
 CCommandQueue::CCommandQueue(void)
 {
+	m_Type = COMMAND_QUEUE_TYPE_INVALID;
+
 	m_pID3D12CommandQueue = NULL;
 	m_pID3D12Fence = NULL;
 
@@ -127,28 +129,28 @@ bool CCommandQueue::Sync(void)
 
 				switch (Result)
 				{
-				case WAIT_OBJECT_0:
-				{
-					break;
-				}
-				case WAIT_TIMEOUT:
-				{
-					status = false;
-					Console::Write(L"Error: command queue submission timed out\n");
-					break;
-				}
-				case WAIT_FAILED:
-				{
-					status = false;
-					Console::Write(L"Error: failed to wait for command queue submission\n");
-					break;
-				}
-				default:
-				{
-					status = false;
-					Console::Write(L"Error: unknown error occurred while waiting for command queue submission\n");
-					break;
-				}
+					case WAIT_OBJECT_0:
+					{
+						break;
+					}
+					case WAIT_TIMEOUT:
+					{
+						status = false;
+						Console::Write(L"Error: command queue submission timed out\n");
+						break;
+					}
+					case WAIT_FAILED:
+					{
+						status = false;
+						Console::Write(L"Error: failed to wait for command queue submission\n");
+						break;
+					}
+					default:
+					{
+						status = false;
+						Console::Write(L"Error: unknown error occurred while waiting for command queue submission\n");
+						break;
+					}
 				}
 			}
 			else

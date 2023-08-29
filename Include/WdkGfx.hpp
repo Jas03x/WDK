@@ -21,7 +21,7 @@ struct RenderBuffer
 // IRendererState
 struct SHADER_BYTECODE
 {
-	byte* pCode;
+	byte*    pCode;
 	uint32_t Size;
 };
 
@@ -122,7 +122,7 @@ struct MESH_DESC
 class __declspec(novtable) IMesh
 {
 public:
-	virtual uint32_t           GetVertexCount(void) = 0;
+	virtual uint32_t       GetVertexCount(void) = 0;
 	virtual IVertexBuffer* GetVertexBuffer(void) = 0;
 };
 
